@@ -1,17 +1,16 @@
-import useLogger, { Logger, teal, gray, logJSON } from "./useLogger.ts"
 import { crypto, toHashString } from "deno/crypto/mod.ts"
 import TeaError, { panic } from "../utils/error.ts"
-import { Verbosity } from "../types.ts"
 import useConfig from "./useConfig.ts"
 import useFetch from "./useFetch.ts"
-import { isString } from "is-what"
 import Path from "../utils/Path.ts"
+import * as fs from "node:fs"
+import "../utils/misc.ts"
 
 interface DownloadOptions {
   src: URL
-  headers?: Record<string, string>
-  logger?: Logger | string
   dst?: Path
+  headers?: Record<string, string>
+  logger?: (info: {src: URL, dst: Path, rcvd?: number, total?: number }) => void
 }
 
 interface RV {
@@ -22,20 +21,16 @@ interface RV {
   sha: string | undefined
 }
 
-async function internal<T>({ src, headers, logger, dst }: DownloadOptions): Promise<[Path, ReadableStream<Uint8Array> | undefined]>
-{
-  const { options: { suppress_download_progress_output }, modifiers: { verbosity, json } } = useConfig()
-  const silent = verbosity <= Verbosity.quiet
-  logger = isString(logger) ? useLogger().new(logger) : logger ?? useLogger().new()
 
+async function internal<T>({ src, headers, logger, dst }: DownloadOptions): Promise<[Path, ReadableStream<Uint8Array> | undefined, number | undefined]>
+{
   const hash = hash_key(src)
   const mtime_entry = hash.join("mtime")
   const etag_entry = hash.join("etag")
 
   dst ??= hash.join(new Path(src.pathname).basename())
-  if (src.protocol === "file:") throw new Error()
 
-  console.log({src: src, dst})
+  if (logger) logger({ src, dst })
 
   if (dst.isReadableFile()) {
     headers ??= {}
@@ -47,9 +42,9 @@ async function internal<T>({ src, headers, logger, dst }: DownloadOptions): Prom
     if (mtime_entry.isFile()) {
       headers["If-Modified-Since"] = await mtime_entry.read()
     }
-  } else if (!json) {
-    logger.replace(teal('downloading'))
   }
+
+  if (logger) logger({ src, dst })
 
   const rsp = await useFetch(src, { headers })
 
@@ -57,13 +52,7 @@ async function internal<T>({ src, headers, logger, dst }: DownloadOptions): Prom
   case 200: {
     const sz = parseInt(rsp.headers.get("Content-Length")!).chuzzle()
 
-    let txt = teal('downloading')
-    if (sz) txt += ` ${gray(pretty_size(sz))}`
-    if (!json) {
-      logger.replace(txt)
-    } else {
-      logJSON({status: "downloading"})
-    }
+    if (logger) logger({ src, dst, total: sz })
 
     const reader = rsp.body ?? panic()
 
@@ -72,39 +61,23 @@ async function internal<T>({ src, headers, logger, dst }: DownloadOptions): Prom
     const etag = rsp.headers.get("ETag")
     if (etag) etag_entry.write({text: etag, force: true})
 
-    if (silent || suppress_download_progress_output) {
-      return [dst, reader]
+    if (!logger) {
+      return [dst, reader, sz]
     } else {
       let n = 0
       return [dst, reader.pipeThrough(new TransformStream({
         transform: (buf, controller) => {
           n += buf.length
-          if (json) {
-            logJSON({status: "downloading", "received": n, "content-size": sz })
-          } else if (!sz) {
-            (logger as Logger).replace(`${txt} ${pretty_size(n)}`)
-          } else {
-            let s = txt
-            if (n < sz) {
-              let pc = n / sz * 100;
-              pc = pc < 1 ? Math.round(pc) : Math.floor(pc);  // don’t say 100% at 99.5%
-              s += ` ${pc}%`
-            } else {
-              s = teal('extracting')
-            }
-            (logger as Logger).replace(s)
-          }
+          logger({ src, dst: dst!, rcvd: n, total: sz })
           controller.enqueue(buf)
-      }}))]
+      }})), sz]
     }
   }
-  case 304:
-    if (json) {
-      logJSON({status: "downloaded"})
-    } else {
-      logger.replace(`cache: ${teal('hit')}`)
-    }
-    return [dst, undefined]
+  case 304: {
+    const sz = (await Deno.stat(dst.string)).size
+    if (logger) logger({ src, dst, rcvd: sz, total: sz })
+    return [dst, undefined, sz]
+  }
   default:
     throw new Error(`${rsp.status}: ${src}`)
   }
@@ -131,10 +104,16 @@ async function download(opts: DownloadOptions): Promise<Path> {
   }
 }
 
-async function stream<T>(opts: DownloadOptions): Promise<AsyncIterableIterator<Uint8Array> | undefined> {
+/// the `number` is the server reported file size
+async function stream<T>(opts: DownloadOptions): Promise<[AsyncIterableIterator<Uint8Array>, number | undefined, 'network' | Path]> {
   try {
-    const [, stream] = await internal(opts)
-    return stream?.[Symbol.asyncIterator]()
+    const [dst, stream, sz] = await internal(opts)
+    if (stream) {
+      return [stream[Symbol.asyncIterator](), sz, 'network']
+    } else {
+      const stream = fs.createReadStream(dst.string)[Symbol.asyncIterator]()
+      return [stream, sz, dst]
+    }
   } catch (cause) {
     throw new TeaError('http', {cause, ...opts})
   }
@@ -162,15 +141,4 @@ export default function useDownload() {
     stream,
     hash_key
   }
-}
-
-function pretty_size(n: number) {
-  const units = ["B", "KiB", "MiB", "GiB", "TiB"]
-  let i = 0
-  while (n > 1024 && i < units.length - 1) {
-    n /= 1024
-    i++
-  }
-  const precision = n < 10 ? 2 : n < 100 ? 1 : 0
-  return `${n.toFixed(precision)} ${units[i]}`
 }

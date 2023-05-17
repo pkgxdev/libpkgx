@@ -1,18 +1,9 @@
-import { Package, Stowage } from "../types.ts"
+import { Stowage } from "../types.ts"
 import useConfig from "./useConfig.ts"
 import host from "../utils/host.ts"
 
 export default function useCache() {
   return { path }
-}
-
-type DownloadOptions = {
-  type: 'bottle'
-  pkg: Package
-} | {
-  type: 'src',
-  url: URL
-  pkg: Package
 }
 
 const path = (stowage: Stowage) => {
@@ -27,5 +18,5 @@ const path = (stowage: Stowage) => {
     filename += stowage.extname
   }
 
-  return useConfig().prefix.join("tea.xyz/var/www", filename)
+  return useConfig().cache.join(filename)
 }

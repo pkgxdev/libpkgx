@@ -62,7 +62,7 @@ export default async function hydrate(
 
         if (children.has(dep.project)) {
           if (!bootstrap.has(dep.project)) {
-            console.warn(`${dep.project} must be bootstrapped to build ${node.project}`)
+            console.warn(`tea: cyclic dep: ${dep.project}: ${node.project}`)
 
             //TODO the bootstrap should keep the version constraint since it may be different
             bootstrap.add(dep.project)

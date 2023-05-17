@@ -47,7 +47,7 @@ async function map({installations}: Options): Promise<Record<string, string[]>> 
   for (const installation of installations) {
 
     if (!seen.insert(installation.pkg.project).inserted) {
-      console.warn("warning: env is being duped:", installation.pkg.project)
+      console.warn("tea: env is being duped:", installation.pkg.project)
     }
 
     for (const key of EnvKeys) {

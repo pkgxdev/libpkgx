@@ -1,13 +1,10 @@
 import SemVer, * as semver from "../utils/semver.ts"
 import { Package, Installation } from "../types.ts"
 import useCellar from "../hooks/useCellar.ts"
-import useConfig from "../hooks/useConfig.ts"
 import { panic } from "../utils/error.ts"
 import Path from "../utils/Path.ts"
 
 export default async function link(pkg: Package | Installation) {
-  if (useConfig().modifiers.dryrun) return
-
   const installation = await useCellar().resolve(pkg)
   pkg = installation.pkg
 
@@ -17,8 +14,9 @@ export default async function link(pkg: Package | Installation) {
     .sort(([a],[b]) => a.compare(b))
 
   if (versions.length <= 0) {
-    console.error(pkg, installation)
-    throw new Error(`no versions`)
+    const err = new Error('no versions')
+    err.cause = pkg
+    throw err
   }
 
   const shelf = installation.path.parent()
@@ -45,8 +43,9 @@ export default async function link(pkg: Package | Installation) {
   }
 
   async function makeSymlink(symname: string) {
-    const linkfile = shelf.join(symname)
-    console.log({ "symlinking:": linkfile })
-    await Deno.symlink(installation.path.basename(), linkfile.rm().string, {type: 'dir'})
+    await Deno.symlink(
+      installation.path.basename(),
+      shelf.join(symname).rm().string,
+      {type: 'dir'})
   }
 }

@@ -4,7 +4,7 @@ import SemVer from "../utils/semver.ts"
 import { Package } from "../types.ts"
 import install from "./install.ts"
 
-Deno.test("install", async runner => {
+Deno.test("install.integration.tests", async runner => {
   const pkg: Package = {
     project: "tea.xyz/brewkit",
     version: new SemVer("0.30.0")

@@ -16,8 +16,6 @@ export interface Inventory {
 const select = async (rq: PackageRequirement | Package) => {
   const versions = await get(rq)
 
-  console.debug({ project: rq.project, versions })
-
   if ("constraint" in rq) {
     return rq.constraint.max(versions)
   } else if (versions.find(x => x.eq(rq.version))) {

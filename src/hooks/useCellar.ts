@@ -39,7 +39,7 @@ export default function useCellar() {
         if (await vacant(path)) continue  // failed build probs
         rv.push({path, pkg: {project, version}})
       } catch {
-        console.debug(`invalid version: ${name}`)
+        //noop: other directories can exist
       }
     }
 
@@ -67,7 +67,6 @@ export default function useCellar() {
         const installations = await ls(pkg.project)
         const versions = installations.map(({ pkg: {version}}) => version)
         const version = pkg.constraint.max(versions)
-        console.debug({ installations, versions, version })
         if (version) {
           const path = installations.find(({pkg: {version: v}}) => v.eq(version))!.path
           return { path, pkg: { project: pkg.project, version } }

@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-deprecated-deno-api
-// dnt doesn’t support Deno.Command yet so we’re stuck with the deprecated Deno.run for now
+// ^^ dnt doesn’t support Deno.Command yet so we’re stuck with the deprecated Deno.run for now
 
-import useLogger, { Logger, red, teal, gray, logJSON } from "../hooks/useLogger.ts"
+import { createHash } from "https://deno.land/std@0.177.0/node/crypto.ts"
 import { Package, Installation, StowageNativeBottle } from "../types.ts"
 import useOffLicense from "../hooks/useOffLicense.ts"
 import useDownload from "../hooks/useDownload.ts"
@@ -10,51 +10,36 @@ import useCellar from "../hooks/useCellar.ts"
 import { flock } from "../utils/flock.deno.ts"
 import useCache from "../hooks/useCache.ts"
 import useFetch from "../hooks/useFetch.ts"
-import * as pkgutils from "../utils/pkg.ts"
 import Path from "../utils/Path.ts"
-import * as fs from "node:fs"
 
-import { createHash } from "https://deno.land/std@0.177.0/node/crypto.ts"
+
+interface Logger {
+  locking(pkg: Package): void
+  /// raw http info
+  downloading(info: {pkg: Package, src?: URL, dst?: Path, rcvd?: number, total?: number}): void
+  /// we are simultaneously downloading and untarring the bottle
+  /// the install progress here is proper and tied to download progress
+  /// progress is a either a fraction between 0 and 1 or the number of bytes that have been untarred
+  /// we try to give you the fraction as soon as possible, but you will need to deal with both formats
+  installing(info: {pkg: Package, progress: number | undefined}): void
+  unlocking(pkg: Package): void
+  installed(installation: Installation): void
+}
 
 
 export default async function install(pkg: Package, logger?: Logger): Promise<Installation> {
   const { project, version } = pkg
-  logger ??= useLogger().new(pkgutils.str(pkg))
 
   const cellar = useCellar()
-  const { modifiers, prefix: tea_prefix } = useConfig()
+  const { prefix: tea_prefix } = useConfig()
   const { compression } = useConfig().options
   const stowage = StowageNativeBottle({ pkg: { project, version }, compression })
   const url = useOffLicense('s3').url(stowage)
   const tarball = useCache().path(stowage)
   const shelf = tea_prefix.join(pkg.project)
 
-  const pkg_prefix_str = (pkg: Package) => [
-      gray(useConfig().prefix.prettyString()),
-      pkg.project,
-      `${gray('v')}${pkg.version}`
-    ].join(gray('/'))
+  logger?.locking(pkg)
 
-  const log_install_msg = (install: Installation, title = 'installed') => {
-    if (modifiers.json) {
-      logJSON({status: title, pkg: pkgutils.str(install.pkg)})
-    } else {
-      const str = pkg_prefix_str(install.pkg)
-      logger!.replace(`${title}: ${str}`, { prefix: false })
-    }
-  }
-
-  if (modifiers.dryrun) {
-    const install = { pkg, path: tea_prefix.join(pkg.project, `v${pkg.version}`) }
-    log_install_msg(install, 'imagined')
-    return install
-  }
-
-  if (!modifiers.json) {
-    logger.replace(teal("locking"))
-  } else {
-    logJSON({status: "locking", pkg: pkgutils.str(pkg) })
-  }
   const { rid } = await Deno.open(shelf.mkpath().string)
   flock(rid, 'ex')
 
@@ -63,27 +48,24 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     if (already_installed) {
       // some other tea instance installed us while we were waiting for the lock
       // or potentially we were already installed and the caller is naughty
-      if (!modifiers.json) {
-        logger.replace(teal("installed"))
-      } else {
-        logJSON({status: "installed", pkg: pkgutils.str(pkg) })
-      }
+      logger?.installed(already_installed)
       return already_installed
     }
 
-    if (!modifiers.json) {
-      logger.replace(teal("querying"))
-    } else {
-      logJSON({status: "querying", pkg: pkgutils.str(pkg) })
-    }
+    logger?.downloading({pkg})
 
-    let stream: AsyncIterableIterator<Uint8Array> | undefined = await useDownload().stream({ src: url, logger, dst: tarball })
-    const is_downloading = stream !== undefined
-    stream ??= fs.createReadStream(tarball.string)[Symbol.asyncIterator]()
-    const tar_args = compression == 'xz' ? 'xJ' : 'xz'  // laughably confusing
+    let total: number | undefined
+    const [stream, sz, method] = await useDownload().stream({
+      src: url, dst: tarball,
+      logger: info => {
+        logger?.downloading({ pkg, ...info })
+        total ??= info.total
+      },
+    })
+    total ??= sz
 
     const datasaver = await (() => {
-      if (!is_downloading) return
+      if (method !== 'network') return
       tarball.parent().mkdir('p')
       return Deno.open(tarball.string, {create: true, write: true, truncate: true})
     })()
@@ -93,6 +75,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
       dir: tea_prefix.join("local/tmp")
       //NOTE ^^ inside tea prefix to avoid TMPDIR is on a different volume problems
     })
+    const tar_args = compression == 'xz' ? 'xJ' : 'xz'  // laughably confusing
     const untar = Deno.run({
       cmd: ["tar", tar_args, "--strip-components", (pkg.project.split("/").length + 1).toString()],
       stdin: 'piped', stdout: "inherit", stderr: "inherit",
@@ -101,10 +84,13 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     const hasher = createHash("sha256")
     const remote_SHA_promise = remote_SHA(new URL(`${url}.sha256sum`))
 
+    let n = 0
     for await (const blob of stream) {
       const p1 = datasaver?.write(blob)
       const p2 = untar.stdin.write(blob)
+      n += blob.length
       hasher.update(blob)
+      logger?.installing({ pkg, progress: total ? n / total : total })
       await Promise.all([p1, p2])
     }
 
@@ -122,22 +108,22 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     const checksum = await remote_SHA_promise
 
     if (computed_hash_value != checksum) {
-      if (!modifiers.json) logger.replace(red('error'))
       tarball.rm()
-      console.error("we deleted the invalid tarball. try again?")
+      console.error("tea: we deleted the invalid tarball. try again?")
       throw new Error(`sha: expected: ${checksum}, got: ${computed_hash_value}`)
     }
 
     const path = tmpdir.mv({ to: shelf.join(`v${pkg.version}`) })
     const install = { pkg, path }
 
-    log_install_msg(install)
+    logger?.installed(install)
 
     return install
   } catch (err) {
     tarball.rm()  //FIXME resumable downloads!
     throw err
   } finally {
+    logger?.unlocking(pkg)
     flock(rid, 'un')
     Deno.close(rid)  // docs aren't clear if we need to do this or not
   }
