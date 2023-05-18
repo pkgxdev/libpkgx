@@ -23,7 +23,7 @@ Deno.test("install.integration.tests", async runner => {
   })
 
   await runner.step("untar & install", async () => {
-    // since we're already downloaded this tests the untar directly path
+    // since we're already downloaded this tests the untar directly code-path
 
     const installation = await install(pkg)
 

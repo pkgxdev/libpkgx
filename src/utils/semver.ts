@@ -165,9 +165,8 @@ export class Range {
         throw err()
       })
 
-      if (this.set.length == 0) {
-        throw err()
-      }
+      /// I think this is an impossible state but let’s be sure
+      if (this.set.length == 0) throw err()
 
       for (const i of this.set) {
         if (isArray(i) && !i[0].lt(i[1])) throw err()
@@ -213,7 +212,8 @@ export class Range {
   // }
 
   /// tolerant to stuff in the wild that hasn’t semver specifiers
-  static parse(input: string): Range | undefined {
+  static parse(input: string | number): Range | undefined {
+    input = input.toString()
     try {
       return new Range(input)
     } catch {

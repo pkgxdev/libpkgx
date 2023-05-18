@@ -4,6 +4,7 @@
 import { createHash } from "https://deno.land/std@0.177.0/node/crypto.ts"
 import { Package, Installation, StowageNativeBottle } from "../types.ts"
 import useOffLicense from "../hooks/useOffLicense.ts"
+import { writeAll } from "deno/streams/write_all.ts"
 import useDownload from "../hooks/useDownload.ts"
 import useConfig from "../hooks/useConfig.ts"
 import useCellar from "../hooks/useCellar.ts"
@@ -13,7 +14,7 @@ import useFetch from "../hooks/useFetch.ts"
 import Path from "../utils/Path.ts"
 
 
-interface Logger {
+export interface Logger {
   locking(pkg: Package): void
   /// raw http info
   downloading(info: {pkg: Package, src?: URL, dst?: Path, rcvd?: number, total?: number}): void
@@ -86,8 +87,8 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
 
     let n = 0
     for await (const blob of stream) {
-      const p1 = datasaver?.write(blob)
-      const p2 = untar.stdin.write(blob)
+      const p1 = datasaver ? writeAll(datasaver, blob) : Promise.resolve()
+      const p2 = writeAll(untar.stdin, blob)
       n += blob.length
       hasher.update(blob)
       logger?.installing({ pkg, progress: total ? n / total : total })

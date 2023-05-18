@@ -1,4 +1,4 @@
-import { parse as parseYaml } from "deno/encoding/yaml.ts"
+import { parse as parseYaml } from "https://deno.land/std@0.182.0/encoding/yaml.ts"
 import { readLines } from "deno/io/read_lines.ts"
 import * as sys from "deno/path/mod.ts"
 import { PlainObject } from "is-what"

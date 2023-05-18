@@ -31,7 +31,6 @@ export { validate }
 declare global {
   interface Array<T> {
     compact<S>(body?: (t: T) => S | null | undefined | false, opts?: { rescue: boolean }): Array<S>
-    uniq(): Array<T>
   }
 
   interface Set<T> {
@@ -46,16 +45,6 @@ Set.prototype.insert = function<T>(t: T) {
     this.add(t)
     return {inserted: true}
   }
-}
-
-Array.prototype.uniq = function<T>(): Array<T> {
-  const set = new Set<T>()
-  return this.compact(x => {
-    const s = x.toString()
-    if (set.has(s)) return
-    set.add(s)
-    return x
-  })
 }
 
 Array.prototype.compact = function<T, S>(body?: (t: T) => S | null | undefined | false, opts?: { rescue: boolean }) {

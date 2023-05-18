@@ -23,8 +23,8 @@ interface RT {
 /// node 19 is the latest we return node 13. if `update` is true we return node
 /// 19 and *you will need to install it*.
 export default async function resolve(reqs: (Package | PackageRequirement)[], {update}: {update: boolean} = {update: false}): Promise<RT> {
-  const inventory = useInventory()
-  const cellar = useCellar()
+  const inventory = _internals.useInventory()
+  const cellar = _internals.useCellar()
   const rv: RT = { pkgs: [], installed: [], pending: [] }
   let installation: Installation | undefined
   for (const req of reqs) {
@@ -48,4 +48,9 @@ export default async function resolve(reqs: (Package | PackageRequirement)[], {u
     }
   }
   return rv
+}
+
+export const _internals = {
+  useInventory,
+  useCellar
 }

@@ -23,4 +23,7 @@ Deno.test("etag-mtime-check",async () => {
   assert(etagA === etag)
 
   await rsp.body?.cancel()
+
+
+  await useDownload().download({src}) // for coverage
 })

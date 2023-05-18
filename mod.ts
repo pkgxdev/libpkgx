@@ -25,11 +25,7 @@ import resolve from "./src/prefab/resolve.ts"
 import { validatePackageRequirement } from "./src/utils/hacks.ts"
 
 const utils = {
-  pkg, SemVer, semver, host, flatmap, validate
-}
-
-const error = {
-  panic
+  pkg, host, flatmap, validate, panic
 }
 
 const hooks = {
@@ -56,6 +52,9 @@ const hacks = {
   validatePackageRequirement
 }
 
-export { utils, error, hooks, prefab, hacks }
-export { TeaError, Path }
+export { utils, hooks, prefab, hacks, semver }
+
+/// export types
+// we cannot add these to the above objects or they cannot be used as types
+export { TeaError, Path, SemVer }
 export * from "./src/types.ts"

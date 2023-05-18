@@ -1,16 +1,12 @@
-import { PlainObject, isString, isNumber } from "is-what"
 import { PackageRequirement } from "../types.ts"
-import { validate } from "./misc.ts"
+import { isString, isNumber } from "is-what"
 import * as semver from "./semver.ts"
 import host from "./host.ts"
 
-export function validatePackageRequirement(input: PlainObject): PackageRequirement | undefined {
-  let { constraint, project } = input
-
+export function validatePackageRequirement(project: string, constraint: unknown): PackageRequirement | undefined
+{
   if (host().platform == 'darwin' && (project == "apple.com/xcode/clt" || project == "tea.xyz/gx/make")) {
-    // Apple will error out and prompt the user to install
-    //NOTE what we would really like is to error out when this dependency is *used*
-    // this is not the right place to error that. so FIXME
+    // Apple will error out and prompt the user to install when the tool is used
     return  // compact this dep away
   }
   if (host().platform == 'linux' && project == "tea.xyz/gx/make") {
@@ -18,30 +14,18 @@ export function validatePackageRequirement(input: PlainObject): PackageRequireme
     constraint = '*'
   }
 
-  validate.str(project)
-
-  //HACKS
   if (constraint == 'c99' && project == 'tea.xyz/gx/cc') {
     constraint = '^0.1'
   }
 
-  if (constraint === undefined) {
-    constraint = '*'
-  } else if (isNumber(constraint)) {
-    //FIXME change all pantry entries to use proper syntax
+  if (isNumber(constraint)) {
     constraint = `^${constraint}`
+  } else if (!isString(constraint)) {
+    throw new Error(`invalid constraint for ${project}: ${constraint}`)
   }
-  if (!isString(constraint)) {
-    throw new Error(`invalid constraint: ${constraint}`)
-  } else if (/^\d/.test(constraint)) {
-    //FIXME change all pantry entries to use proper syntax
-    constraint = `^${constraint}`
-  }
-
-  constraint = new semver.Range(constraint)
 
   return {
     project,
-    constraint
+    constraint: new semver.Range(constraint as string)
   }
 }

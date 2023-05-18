@@ -5,7 +5,7 @@ import { Package, Installation } from "../types.ts"
 import host from "../utils/host.ts"
 import * as os from "node:os"
 
-export function tokenizePackage(pkg: Package) {
+function tokenizePackage(pkg: Package) {
   return [{ from: "prefix", to: useCellar().keg(pkg).string }]
 }
 
@@ -48,7 +48,8 @@ export default function() {
     apply,
     tokenize: {
       version: tokenizeVersion,
-      host: tokenizeHost
+      host: tokenizeHost,
+      pkg: tokenizePackage
     }
   }
 

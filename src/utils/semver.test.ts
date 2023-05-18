@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-explicit-any
 import { assert, assertEquals, assertFalse, assertThrows } from "deno/testing/asserts.ts"
 import SemVer, * as semver from "./semver.ts"
 
@@ -226,4 +227,51 @@ Deno.test("semver", async test => {
     //   assertEquals(c.toString(), "^11.3,^12.2")
     // })
   })
+})
+
+Deno.test("coverage", () => {
+  assert(new SemVer("1.2.3").eq(new SemVer([1,2,3])))
+  assert(new SemVer("1.2.3").neq(new SemVer([1,2,4])))
+  assert(new SemVer("1.2.3").lt(new SemVer([1,2,4])))
+  assert(new SemVer("1.2.4").gt(new SemVer([1,2,3])))
+
+  assertThrows(() => new SemVer("1.q.3"))
+
+  assert(semver.Range.parse("^1")?.satisfies(new SemVer("1.2.3")))
+
+  assertEquals(new semver.Range("=1.0.0").single(), new SemVer("1.0.0"))
+
+  assertEquals((new semver.Range("^1") as any)[Symbol.for("Deno.customInspect")](), "^1")
+  assertEquals((new SemVer("1.2.3") as any)[Symbol.for("Deno.customInspect")](), "1.2.3")
+
+  assert(semver.parse("a") == undefined)
+
+  assertThrows(() => new semver.Range(">=3<2"))
+  assertThrows(() => new semver.Range(""))
+
+  assertEquals(new SemVer(new SemVer("1.2.3")), new SemVer("1.2.3"))
+  assertEquals(new SemVer(new semver.Range("=1.0.0")), new SemVer("1.0.0"))
+  assertThrows(() => new SemVer(new semver.Range("^1")))
+
+  assertThrows(() => new semver.Range("1"))
+
+  assertEquals(semver.Range.parse("1"), new semver.Range("^1"))
+  assertEquals(semver.Range.parse("1.1"), new semver.Range("^1.1"))
+  assertEquals(semver.Range.parse("1.1.2"), new semver.Range("~1.1.2"))
+
+  assertEquals(semver.Range.parse("a"), undefined)
+
+  assertEquals(new semver.Range("*").toString(), "*")
+
+  assert(new semver.Range("*").satisfies(new SemVer("1.2.3")))
+
+  assertEquals(new semver.Range("^1").max([new SemVer("1.2.3"), new SemVer("1.2.4")]), new SemVer("1.2.4"))
+
+  assertEquals(new semver.Range("*").single(), undefined)
+
+  assert(semver.intersect(new semver.Range("*"), new semver.Range("^2")))
+  assert(semver.intersect(new semver.Range("^2"), new semver.Range("*")))
+
+
+  assertEquals(new semver.Range("^1.2.0").toString(), "^1.2")
 })

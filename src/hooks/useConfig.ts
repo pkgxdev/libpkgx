@@ -60,4 +60,4 @@ function initialized() {
   return config !== undefined
 }
 
-export const _internals = { reset, initialized }
+export const _internals = { reset, initialized, boolize }

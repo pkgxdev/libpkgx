@@ -1,6 +1,6 @@
 import { isNumber, isPlainObject, isString, isArray, isPrimitive, PlainObject, isBoolean } from "is-what"
-import { Package, PackageRequirement, Installation } from "../types.ts"
 import { validatePackageRequirement } from "../utils/hacks.ts"
+import { Package, Installation } from "../types.ts"
 import useMoustaches from "./useMoustaches.ts"
 import { validate } from "../utils/misc.ts"
 import TeaError from "../utils/error.ts"
@@ -38,19 +38,18 @@ export default function usePantry() {
   const project = (input: string | { project: string }) => {
     const project = isString(input) ? input : input.project
 
-    const { yaml } = (() => {
+    const yaml = (() => {
       for (const prefix of pantry_paths()) {
         if (!prefix.exists()) throw new TeaError('not-found: pantry', { path: prefix.parent() })
         const dir = prefix.join(project)
         const filename = dir.join("package.yml")
         if (!filename.exists()) continue
 
-        let _yaml: Promise<PlainObject> | undefined
-        const yaml = () => _yaml ?? (_yaml = filename.readYAML()
+        let memo: Promise<PlainObject> | undefined
+
+        return () => memo ?? (memo = filename.readYAML()
           .then(validate.obj)
           .catch(cause => { throw new TeaError('parser: pantry: package.yml', {cause, project, filename}) }))
-
-        return { yaml }
       }
       throw new TeaError('not-found: pantry: package.yml', {project}, )
     })()
@@ -132,7 +131,7 @@ export default function usePantry() {
       available,
       provides,
       provider,
-      yaml,
+      yaml
     }
   }
 
@@ -160,7 +159,9 @@ export default function usePantry() {
     prefix,
     which,
     ls,
-    project
+    project,
+    parse_pkgs_node,
+    expand_env_obj
   }
 
   function pantry_paths(): Path[] {
@@ -187,12 +188,9 @@ export function parse_pkgs_node(node: any) {
   node = validate.obj(node)
   platform_reduce(node)
 
-  const rv: PackageRequirement[] = []
-  for (const [project, constraint] of Object.entries(node)) {
-    const pkg = validatePackageRequirement({ project, constraint })
-    if (pkg) rv.push(pkg)
-  }
-  return rv
+  return Object.entries(node)
+    .compact(([project, constraint]) =>
+      validatePackageRequirement(project, constraint))
 }
 
 /// expands platform specific keys into the object

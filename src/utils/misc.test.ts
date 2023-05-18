@@ -1,5 +1,6 @@
 import { assertEquals, assertRejects, assertThrows } from "deno/testing/asserts.ts"
 import { async_flatmap, flatmap, validate } from "./misc.ts"
+import { isNumber } from "is-what"
 
 Deno.test("validate string", () => {
   assertEquals(validate.str(true), "true")
@@ -14,9 +15,15 @@ Deno.test("validate array", () => {
   assertThrows(() => validate.arr("jkl"), "not-array: jkl")
 })
 
+Deno.test("validate obj", () => {
+  assertEquals(validate.obj({a: 1}), {a: 1})
+  assertThrows(() => validate.obj("jkl"), "not-array: jkl")
+})
+
 Deno.test("flatmap", () => {
   assertEquals(flatmap(1, (n) => n + 1), 2)
   assertEquals(flatmap(undefined, (n: number) => n + 1), undefined)
+  assertEquals(flatmap(1, (_: number) => undefined), undefined)
 
   const throws = (_n: number) => {
     throw Error("test error")
@@ -49,4 +56,26 @@ Deno.test("chuzzle", () => {
   assertEquals("test".chuzzle(), "test")
   assertEquals((1).chuzzle(), 1)
   assertEquals(NaN.chuzzle(), undefined)
+})
+
+Deno.test("set insert", () => {
+  const s = new Set([1, 2, 3])
+
+  assertEquals(s.insert(1), {inserted: false})
+  assertEquals(s.insert(4), {inserted: true})
+  assertEquals(s.size, 4)
+
+  assertEquals(s.has(1), true)
+  assertEquals(s.has(4), true)
+})
+
+Deno.test("array compact", () => {
+  assertEquals([1, 2, undefined, null, false, 3].compact(), [1, 2, 3])
+  assertEquals([1, 2, undefined, null, false, 3].compact((n) => isNumber(n) && n * 2), [2, 4, 6])
+
+  const throws = () => {
+    throw Error("test error")
+  }
+  assertEquals([()=>1, ()=>2, throws, ()=>3].compact((n) => n() * 2, { rescue: true }), [2, 4, 6])
+  assertThrows(() => [()=>1, ()=>2, throws, ()=>3].compact((n) => n() * 2))
 })
