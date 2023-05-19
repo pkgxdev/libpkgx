@@ -55,22 +55,6 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
 
     logger?.downloading({pkg})
 
-    let total: number | undefined
-    const [stream, sz, method] = await useDownload().stream({
-      src: url, dst: tarball,
-      logger: info => {
-        logger?.downloading({ pkg, ...info })
-        total ??= info.total
-      },
-    })
-    total ??= sz
-
-    const datasaver = await (() => {
-      if (method !== 'network') return
-      tarball.parent().mkdir('p')
-      return Deno.open(tarball.string, {create: true, write: true, truncate: true})
-    })()
-
     const tmpdir = Path.mktemp({
       prefix: pkg.project.replaceAll("/", "_") + "_",
       dir: tea_prefix.join("local/tmp")
@@ -85,18 +69,23 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     const hasher = createHash("sha256")
     const remote_SHA_promise = remote_SHA(new URL(`${url}.sha256sum`))
 
+    let total: number | undefined
     let n = 0
-    for await (const blob of stream) {
-      const p1 = datasaver ? writeAll(datasaver, blob) : Promise.resolve()
-      const p2 = writeAll(untar.stdin, blob)
+    await useDownload().download({
+      src: url,
+      dst: tarball,
+      logger: info => {
+        logger?.downloading({ pkg, ...info })
+        total ??= info.total
+      }
+    }, blob => {
       n += blob.length
       hasher.update(blob)
       logger?.installing({ pkg, progress: total ? n / total : total })
-      await Promise.all([p1, p2])
-    }
+      return writeAll(untar.stdin, blob)
+    })
 
     untar.stdin.close()
-    datasaver?.close()
 
     const untar_exit_status = await untar.status()
     if (!untar_exit_status.success) {

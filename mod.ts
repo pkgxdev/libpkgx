@@ -23,6 +23,7 @@ import link from "./src/prefab/link.ts"
 import install from "./src/prefab/install.ts"
 import resolve from "./src/prefab/resolve.ts"
 import { validatePackageRequirement } from "./src/utils/hacks.ts"
+import useSync from "./src/hooks/useSync.ts"
 
 const utils = {
   pkg, host, flatmap, validate, panic
@@ -39,6 +40,7 @@ const hooks = {
   useOffLicense,
   usePantry,
   useShellEnv,
+  useSync,
 }
 
 const prefab = {

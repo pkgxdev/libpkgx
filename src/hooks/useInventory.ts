@@ -4,6 +4,7 @@ import SemVer from "../utils/semver.ts"
 import useFetch from "./useFetch.ts"
 import host from "../utils/host.ts"
 import Path from "../utils/Path.ts"
+import "../utils/misc.ts"
 
 export interface Inventory {
   [project: string]: {

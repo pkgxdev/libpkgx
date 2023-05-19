@@ -31,3 +31,14 @@ jobs:
 
       - run: npm publish
         working-directory: dist
+
+  tagger:
+    permissions:
+      contents: write
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: fischerscode/tagger@v0
+        with:
+          prefix: v

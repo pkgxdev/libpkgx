@@ -1,7 +1,7 @@
 import { assert, assertEquals } from "deno/testing/asserts.ts"
 import usePantry from './usePantry.ts'
 import { _internals } from "../utils/host.ts"
-import { stub } from "https://deno.land/std@0.182.0/testing/mock.ts"
+import { stub } from "deno/testing/mock.ts"
 
 Deno.test("provides()", async () => {
   const exenames = await usePantry().project("python.org").provides()

@@ -10,7 +10,7 @@ Deno.test("install.integration.tests", async runner => {
     version: new SemVer("0.30.0")
   }
 
-  const conf = useTestConfig({ VERBOSE: '-1' })
+  const conf = useTestConfig()
 
   await runner.step("download & install", async () => {
     const installation = await install(pkg)

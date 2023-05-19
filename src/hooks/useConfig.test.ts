@@ -23,12 +23,9 @@ import { ConfigDefault } from "./useConfig.ts"
 import Path from "../utils/Path.ts"
 
 export function useTestConfig(env?: Record<string, string>) {
-  const pantries = [Path.home().join(".tea/tea.xyz/var/pantry")]
-  const conf = ConfigDefault(env)
+  env ??= {}
+  env.TEA_PANTRY_PATH ??= Path.home().join(".tea/tea.xyz/var/pantry").string
+  env.TEA_PREFIX ??= Path.mktemp().string
 
-  return useConfig({
-    ...conf,
-    prefix: Path.mktemp(),
-    pantries,
-  })
+  return useConfig(ConfigDefault(env))
 }

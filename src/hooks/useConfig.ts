@@ -12,6 +12,8 @@ export interface Config {
   }
 
   UserAgent?: string
+
+  git?: Path
 }
 
 export function ConfigDefault(env = Deno.env.toObject()): Config {
@@ -27,6 +29,7 @@ export function ConfigDefault(env = Deno.env.toObject()): Config {
     options: {
       compression,
     },
+    git: git(prefix, env.PATH)
   }
 }
 
@@ -34,7 +37,7 @@ export default function useConfig(input?: Config): Config {
   if (!config || input) {
     config = input ?? ConfigDefault()
   }
-  return config
+  return {...config}  // copy to prevent mutation
 }
 
 let config: Config | undefined
@@ -61,3 +64,27 @@ function initialized() {
 }
 
 export const _internals = { reset, initialized, boolize }
+
+
+/// we support a tea installed or system installed git, nothing else
+/// eg. `git` could be a symlink in `PATH` to tea, which would cause a fork bomb
+/// on darwin if xcode or xcode/clt is not installed this will fail to our http fallback above
+function git(prefix: Path, PATH?: string): Path | undefined {
+  const pkg = prefix.join('git-scm.org/v2').isDirectory()
+  return (pkg ?? usr())?.join("bin/git")
+
+  function usr() {
+    // only return /usr/bin if in the PATH so user can explicitly override this
+    const rv = PATH?.split(":")?.includes("/usr/bin") ? new Path("/usr") : undefined
+
+    /// don’t cause macOS to abort and then prompt the user to install the XcodeCLT
+    //FIXME test! but this is hard to test without docker images or something!
+    if (host().platform == 'darwin') {
+      if (new Path("/Library/Developer/CommandLineTools/usr/bin/git").isExecutableFile()) return rv
+      if (new Path("/Application/Xcode.app").isDirectory()) return rv
+      return  // don’t use `git`
+    }
+
+    return  rv
+  }
+}

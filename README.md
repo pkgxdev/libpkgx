@@ -19,18 +19,105 @@
 # libtea
 
 tea aims to provide packaging primitives. This library is a route to that
-goal.
+goal. libtea can install and provide sandboxed environments for packages
+without you or your user needing to install [tea/cli]
 
-Documentation will be added over time.
+## Importing libtea
+
+```sh
+$ npm i @teaxyz/lib
+```
+
+Or with deno:
+
+```ts
+import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
+```
+
+## Usage
+
+To install python 3.10 into `~/.tea`
+
+```ts
+import { prefab, semver, hooks } from "tea"
+const { install, hydrate, resolve } = prefab
+const { useSync } = hooks
+
+// ensure pantry exists and is up-to-date
+await useSync()
+
+// define the pkg(s) you want
+// see https://devhints.io/semver for semver syntax (~, ^, etc)
+const pkg = { project: 'python.org', constraint: semver.Range("~3.10") }
+// hydrate the full dependency tree
+const { pkgs: tree } = await hydrate(pkg)
+// resolve the tree of constraints to specific package versions
+const { pending } = await resolve(tree)
+
+for (const pkg of pending) {
+  await install(pkg)
+  // ^^ install packages that aren’t yet installed
+  // ^^ takes a logger parameter so you can show progress to the user
+}
+
+// the above is quite verbose, but we’ll provide a façade pattern soon
+```
+
+All of tea’s packages are relocatable so you can configure libtea to install
+wherever you want:
+
+```ts
+import { hooks } from "tea"
+const { useConfig } = hooks
+
+useConfig({ prefix: "/my/installation/directory" })
+
+// now
+```
+
+# Caveats
+
+If the user has no existing tea/cli or you use your own prefix then the
+pantry must be sync’d with `useSync()` at least once. `useSync` requires
+either `git` or `tar` to be in `PATH`. We’ll remove this requirement with
+time.
+
+We have our own implementation of semver because open source has existed for
+decades and Semantic Versioning is much newer than that. Our implementation is
+quite compatible but not completely so. Use our semver with with libtea.
+Our implementation is 100% compatible with strings output from node’s own
+semver.
+
+Setting `useConfig()` is not thread safe. Thus if you are using web workers
+you must ensure the initial call to `useConfig()` is called on the main thread
+before any other calls might happen. We call it explicitly in our code so you
+will need to call it yourself in such a case. This is not ideal and we’d
+appreciate your help in fixing it.
+
+There is minimal magic, [tea/cli] has magic because the end-user appreciates
+it but libraries need well defined behavior. We will provide a façade patterns
+to make life easier, but the primitives of libtea require you to read the
+docs to use them effectively.
+
+# What packages are available?
+
+We can install anything in the [pantry].
+
+&nbsp;
 
 
-# Anatomy
+# Contributing
 
-The code is written with [deno] because we use deno to write [tea/cli] but
-is compiled to a node package because [tea/gui] is a node based Electron app.
+We would be thrilled to hear your ideas† or receive your pull requests.
 
+> † [discussions][discussion]
 
-# Supporting Other Languages
+## Anatomy
+
+The code is written with [deno] (just like [tea/cli]) but is compiled to a
+node package for wider accessibility (and ∵ [tea/gui] is node/electron)
+
+## Supporting Other Languages
 
 We would love to port this code to every language. We are deliberately keeping
 the scope *tight*. Probably we would prefer to have one repo per language.
@@ -44,3 +131,18 @@ Open a [discussion] to start.
 [tea/cli]: https://github.com/teaxyz/cli
 [tea/gui]: https://github.com/teaxyz/gui
 [deno]: https://deno.land
+[pantry]: https://github.com/teaxyz/pantry
+
+&nbsp;
+
+
+# Tasks
+
+## Coverage
+
+```sh
+deno task test --coverage=cov_profile
+deno coverage cov_profile --lcov --output=cov_profile.lcov
+tea genhtml -o cov_profile/html cov_profile.lcov
+open cov_profile/html/index.html
+```
