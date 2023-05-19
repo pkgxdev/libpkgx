@@ -7,7 +7,7 @@
   <a href="https://discord.tea.xyz">
     <img src="https://img.shields.io/discord/906608167901876256?label=discord&color=1bcf6f&logo=discord&logoColor=fff" alt="Discord" />
   </a>
-  <a href='https://coveralls.io/github/teaxyz/cli?branch=main'>
+  <a href='https://coveralls.io/github/teaxyz/lib?branch=main'>
     <img src='https://coveralls.io/repos/github/teaxyz/lib/badge.svg?branch=main' alt='Coverage Status' />
   </a>
   <a href="https://docs.tea.xyz">
@@ -25,10 +25,11 @@ without you or your user needing to install [tea/cli]
 ## Importing libtea
 
 ```sh
-$ npm i @teaxyz/lib
+$ npm i https://github.com/teaxyz/libx
+# ^^ we’ll publish to npm after we’ve worked out the rough edges
 ```
 
-Or with deno:
+Or with Deno:
 
 ```ts
 import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
@@ -36,7 +37,7 @@ import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 
 ## Usage
 
-To install python 3.10 into `~/.tea`
+To install Python 3.10 into `~/.tea`
 
 ```ts
 import { prefab, semver, hooks } from "tea"
@@ -57,10 +58,10 @@ const { installed, pending } = await resolve(tree)
 
 for (const pkg of pending) {
   const install = await install(pkg)
-  installed.push(install)
   // ^^ install packages that aren’t yet installed
   // ^^ takes a logger parameter so you can show progress to the user
   // ^^ you could do these in parallel to speed things up
+  installed.push(install)
 }
 
 const { map, flatten } = useShellEnv()
@@ -79,8 +80,9 @@ import { hooks } from "tea"
 const { useConfig } = hooks
 
 useConfig({ prefix: "/my/installation/directory" })
+// ^^ must be done before any other libtea calls
 
-// now
+// now installs and env will use this prefix
 ```
 
 ### Notes

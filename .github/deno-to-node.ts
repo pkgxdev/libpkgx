@@ -46,13 +46,13 @@ await build({
     "./src/utils/flock.deno.ts": "./src/utils/flock.node.ts"
   },
   package: {
-    name: "libtea",
+    name: "@teaxyz/lib",
     version,
     description: "pkg primitives",
     license: "Apache-2.0",
     repository: {
       type: "git",
-      url: "git+https://github.com/teaxyz/lib.git",
+      url: "git://github.com/teaxyz/lib.git",
     },
     bugs: {
       url: "https://github.com/teaxyz/lib/issues",
@@ -63,6 +63,9 @@ await build({
     },
     devDependencies: {
       "@types/fs-ext": "^2"
+    },
+    publishConfig: {
+      registry: "https://npm.pkg.github.com"
     },
   },
   postBuild() {
