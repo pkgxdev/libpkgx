@@ -19,17 +19,17 @@
 # libtea
 
 tea aims to provide packaging primitives. This library is a route to that
-goal. libtea can install and provide sandboxed environments for packages
-without you or your user needing to install [tea/cli]
+goal. libtea can install and provide sandboxed environments for packages that
+have no effect on the wider system without you or your user needing to install
+[tea/cli].
 
 ## Importing libtea
 
 ```sh
-$ npm i https://github.com/teaxyz/libx
-# ^^ we’ll publish to npm after we’ve worked out the rough edges
+$ npm install @teaxyz/lib
 ```
 
-Or with Deno:
+Or with [Deno]:
 
 ```ts
 import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
@@ -37,7 +37,7 @@ import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 
 ## Usage
 
-To install Python 3.10 into `~/.tea`
+To install and utilize Python 3.10:
 
 ```ts
 import { prefab, semver, hooks } from "tea"
@@ -61,6 +61,7 @@ for (const pkg of pending) {
   // ^^ install packages that aren’t yet installed
   // ^^ takes a logger parameter so you can show progress to the user
   // ^^ you could do these in parallel to speed things up
+  // ^^ by default, versioned installs go to ~/.tea, separated from the user’s system. The install location can be customized, see next section.
   installed.push(install)
 }
 
@@ -76,13 +77,14 @@ All of tea’s packages are relocatable so you can configure libtea to install
 wherever you want:
 
 ```ts
-import { hooks } from "tea"
+import { hooks, Path } from "tea"
 const { useConfig } = hooks
 
-useConfig({ prefix: "/my/installation/directory" })
+useConfig({ prefix: Path.home().join(".local/share/my-app") })
 // ^^ must be done before any other libtea calls
 
-// now installs and env will use this prefix
+// now if you install python you’ll get:
+//     /home/you/.local/share/my-app/python.org/v3.10.11/bin/python
 ```
 
 ### Notes
@@ -133,7 +135,7 @@ We would be thrilled to hear your ideas† or receive your pull requests.
 
 ## Anatomy
 
-The code is written with [deno] (just like [tea/cli]) but is compiled to a
+The code is written with Deno (just like [tea/cli]) but is compiled to a
 node package for wider accessibility (and ∵ [tea/gui] is node/electron)
 
 ## Supporting Other Languages
@@ -149,7 +151,7 @@ Open a [discussion] to start.
 [discussion]: https://github.com/orgs/teaxyz/discussions
 [tea/cli]: https://github.com/teaxyz/cli
 [tea/gui]: https://github.com/teaxyz/gui
-[deno]: https://deno.land
+[Deno]: https://deno.land
 [pantry]: https://github.com/teaxyz/pantry
 
 &nbsp;
