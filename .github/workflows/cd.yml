@@ -1,0 +1,44 @@
+name: CD
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  packages: write
+  contents: read
+
+concurrency:
+  group: ${{ github.event.release.tag_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: teaxyz/setup@v0
+
+      - name: build
+        run: .github/deno-to-node.ts ${{ github.event.release.tag_name }}
+
+      - name: configure npm
+        run: |
+          npm config set @teaxyz:registry https://npm.pkg.github.com
+          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> .npmrc
+        working-directory: dist
+
+      - run: npm publish
+        working-directory: dist
+
+  tagger:
+    permissions:
+      contents: write
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: fischerscode/tagger@v0
+        with:
+          prefix: v

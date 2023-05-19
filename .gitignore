@@ -1,0 +1,5 @@
+.DS_Store
+/deno.lock
+/dist
+/cov_profile
+/cov_profile.lcov
