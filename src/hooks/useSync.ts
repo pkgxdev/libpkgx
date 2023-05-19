@@ -21,7 +21,7 @@ export default async function(logger?: Logger) {
   logger?.syncing(pantry_dir)
 
   const { rid } = await Deno.open(pantry_dir.mkpath().string)
-  flock(rid, 'ex')
+  await flock(rid, 'ex')
 
   try {
     //TODO if there was already a lock, just wait on it, don’t do the following stuff
@@ -56,7 +56,7 @@ export default async function(logger?: Logger) {
     proc.close()
 
   } finally {
-    flock(rid, 'un')
+    await flock(rid, 'un')
     Deno.close(rid)  // docs aren't clear if we need to do this or not
   }
 

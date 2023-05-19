@@ -40,8 +40,9 @@ To install python 3.10 into `~/.tea`
 
 ```ts
 import { prefab, semver, hooks } from "tea"
+import { exec } from "node:child_process"
 const { install, hydrate, resolve } = prefab
-const { useSync } = hooks
+const { useSync, useShellEnv } = hooks
 
 // ensure pantry exists and is up-to-date
 await useSync()
@@ -52,13 +53,20 @@ const pkg = { project: 'python.org', constraint: semver.Range("~3.10") }
 // hydrate the full dependency tree
 const { pkgs: tree } = await hydrate(pkg)
 // resolve the tree of constraints to specific package versions
-const { pending } = await resolve(tree)
+const { installed, pending } = await resolve(tree)
 
 for (const pkg of pending) {
-  await install(pkg)
+  const install = await install(pkg)
+  installed.push(install)
   // ^^ install packages that aren’t yet installed
   // ^^ takes a logger parameter so you can show progress to the user
+  // ^^ you could do these in parallel to speed things up
 }
+
+const { map, flatten } = useShellEnv()
+const env = flatten(map(installed))
+
+exec("python -c 'print(\"Hello, World!\")'", { env })
 
 // the above is quite verbose, but we’ll provide a façade pattern soon
 ```
@@ -75,7 +83,12 @@ useConfig({ prefix: "/my/installation/directory" })
 // now
 ```
 
-# Caveats
+### Notes
+
+We use a hook-like pattern because it is great. This library is not itself
+designed for React.
+
+### Caveats
 
 If the user has no existing tea/cli or you use your own prefix then the
 pantry must be sync’d with `useSync()` at least once. `useSync` requires
@@ -99,9 +112,13 @@ it but libraries need well defined behavior. We will provide a façade patterns
 to make life easier, but the primitives of libtea require you to read the
 docs to use them effectively.
 
-# What packages are available?
+## What Packages are Available?
 
 We can install anything in the [pantry].
+
+If something you need is not there, adding to the pantry has been designed to
+be an easy and enjoyable process. Your contribution is both welcome and
+desired!
 
 &nbsp;
 

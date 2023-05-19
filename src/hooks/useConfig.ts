@@ -19,12 +19,13 @@ export interface Config {
 export function ConfigDefault(env = Deno.env.toObject()): Config {
   const prefix = Path.abs(env['TEA_PREFIX']) ?? Path.home().join('.tea')
   const pantries = env['TEA_PANTRY_PATH']?.split(":").map(x => Path.cwd().join(x)) ?? []
+  const cache = Path.abs(env['TEA_CACHE_DIR']) ?? prefix.join('tea.xyz/var/www')
   const isCI = boolize(env['CI']) ?? false
   const compression = !isCI && host().platform == 'darwin' ? 'xz' : 'gz'
   return {
     prefix,
     pantries,
-    cache: prefix.join('tea.xyz/var/www'),
+    cache,
     UserAgent: `tea.lib/0.1.0`, //FIXME version
     options: {
       compression,

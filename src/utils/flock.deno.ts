@@ -1,7 +1,7 @@
-export function flock(fd: number, op: 'ex' | 'un') {
+export async function flock(fd: number, op: 'ex' | 'un') {
   if (op == 'ex') {
-    Deno.flockSync(fd, true)
+    await Deno.flock(fd, true)
   } else {
-    Deno.funlockSync(fd)
+    await Deno.funlock(fd)
   }
 }

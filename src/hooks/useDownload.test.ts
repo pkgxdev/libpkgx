@@ -3,7 +3,7 @@ import { assert } from "deno/testing/asserts.ts"
 import useDownload from "./useDownload.ts"
 
 Deno.test("etag-mtime-check", async runner => {
-  useTestConfig()
+  useTestConfig({ TEA_CACHE_DIR: Deno.makeTempDirSync() })
 
   const src = new URL("https://dist.tea.xyz/ijg.org/versions.txt")
   const { download, cache } = useDownload()

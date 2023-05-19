@@ -27,6 +27,18 @@ export interface Logger {
   installed(installation: Installation): void
 }
 
+// deno-lint-ignore no-explicit-any
+export function ConsoleLogger(prefix?: any): Logger {
+  prefix = prefix ? `${prefix}: ` : ""
+  return {
+    locking: function() { console.error(`${prefix}locking`, ...arguments) },
+    downloading: function() { console.error(`${prefix}downloading`, ...arguments) },
+    installing: function() { console.error(`${prefix}installing`, ...arguments) },
+    unlocking: function() { console.error(`${prefix}unlocking`, ...arguments) },
+    installed: function() { console.error(`${prefix}installed`, ...arguments) }
+  }
+}
+
 
 export default async function install(pkg: Package, logger?: Logger): Promise<Installation> {
   const { project, version } = pkg
@@ -40,9 +52,8 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
   const shelf = tea_prefix.join(pkg.project)
 
   logger?.locking(pkg)
-
   const { rid } = await Deno.open(shelf.mkpath().string)
-  flock(rid, 'ex')
+  await flock(rid, 'ex')
 
   try {
     const already_installed = await cellar.has(pkg)
@@ -114,7 +125,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     throw err
   } finally {
     logger?.unlocking(pkg)
-    flock(rid, 'un')
+    await flock(rid, 'un')
     Deno.close(rid)  // docs aren't clear if we need to do this or not
   }
 }
