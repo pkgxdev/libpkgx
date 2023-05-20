@@ -22,7 +22,7 @@ jobs:
           - macos-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: teaxyz/setup@v0
+      - uses: denoland/setup-deno@v1
       - run: deno task test --coverage=cov_profile
       - run: deno coverage cov_profile --lcov --exclude=tests/ --output=cov_profile.lcov
       - uses: coverallsapp/github-action@v1
