@@ -43,9 +43,19 @@ export default async function link(pkg: Package | Installation) {
   }
 
   async function makeSymlink(symname: string) {
-    await Deno.symlink(
-      installation.path.basename(),
-      shelf.join(symname).rm().string,
-      {type: 'dir'})
+    try {
+      await Deno.symlink(
+        installation.path.basename(),  // makes it relative
+        shelf.join(symname).rm().string,
+        {type: 'dir'})
+      } catch (err) {
+        if (err instanceof Deno.errors.AlreadyExists) {
+          //FIXME race condition for installing the same pkg simultaneously
+          // real fix is to lock around the entire download/untar/link process
+          return
+        } else {
+          throw err
+        }
+      }
   }
 }
