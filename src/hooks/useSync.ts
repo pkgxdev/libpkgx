@@ -3,6 +3,9 @@
 import { writeAll } from "deno/streams/write_all.ts"
 import { flock } from "../utils/flock.deno.ts"
 import useDownload from "./useDownload.ts"
+import useShellEnv from "./useShellEnv.ts"
+import { Installation } from "../types.ts"
+import SemVer from "../utils/semver.ts"
 import usePantry from "./usePantry.ts"
 import useConfig from "./useConfig.ts"
 import Path from "../utils/Path.ts"
@@ -66,13 +69,24 @@ export default async function(logger?: Logger) {
 //////////////////////// utils
 
 async function git(...args: (string | Path)[]) {
-  const { git } = useConfig()
+  const { git, prefix } = useConfig()
+  const env = await (async () => {
+    //TODO lol hacky
+    if (!git?.string.startsWith(prefix.string)) return
+    const installation: Installation = {
+      path: git.parent().parent(),
+      pkg: { project: 'git-scm.org', version: new SemVer('2.40.0')}
+    }
+    const { map, flatten } = useShellEnv()
+    return flatten(await map({installations: [installation]}))
+  })()
   if (!git) throw new Error("no-git")  // caught above to trigger http download instead
-  await run({cmd: [git, ...args]})
+  await run({cmd: [git, ...args], env})
 }
 
 export interface RunOptions {
   cmd: (string | Path)[]
+  env?: Record<string, string>
 }
 
 async function run(opts: RunOptions) {
