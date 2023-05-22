@@ -24,7 +24,8 @@ Deno.test("install()", async runner => {
     assertEquals(installation.pkg.version, pkg.version)
     assertEquals(installation.path, conf.prefix.join(pkg.project, `v${pkg.version}`))
 
-    installation.path.rm({ recursive: true  })
+    /// so next test works
+    installation.path.rm({ recursive: true })
 
     stubber.restore()
   })

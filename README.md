@@ -57,12 +57,14 @@ const { pkgs: tree } = await hydrate(pkg)
 const { installed, pending } = await resolve(tree)
 
 for (const pkg of pending) {
-  const install = await install(pkg)
+  const installation = await install(pkg)
   // ^^ install packages that aren’t yet installed
   // ^^ takes a logger parameter so you can show progress to the user
   // ^^ you could do these in parallel to speed things up
   // ^^ by default, versioned installs go to ~/.tea, separated from the user’s system. The install location can be customized, see next section.
-  installed.push(install)
+  await link(installation)
+  // ^^ creates v*, vx, vx.y symlinks ∵ some packages depend on this
+  installed.push(installation)
 }
 
 const { map, flatten } = useShellEnv()
