@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0
-      - run: deno cache
+      - run: deno cache $(find . -name \*.ts)
       - run: deno task test --coverage=cov_profile --no-check
       # ^^ no check as we have a separate type-checking step and it’s noise here
       - run: deno coverage cov_profile --lcov --exclude=tests/ --output=cov_profile.lcov
