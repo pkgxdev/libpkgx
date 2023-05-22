@@ -34,16 +34,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{github.token}}
 
-      # provided by ChatGPT
-      - name: Convert pre-release to release
-        run: |
-          curl -X PATCH \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            -d '{"draft": false}' \
-            "https://api.github.com/repos/${{ github.repository }}/releases/${{ github.event.release.id }}"
-
-  tagger:
+  publish:
     permissions:
       contents: write
     needs: [build]
@@ -53,3 +44,11 @@ jobs:
       - uses: fischerscode/tagger@v0
         with:
           prefix: v
+      # provided by ChatGPT
+      - name: Convert pre-release to release
+        run: |
+          curl -fX PATCH \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -d '{"draft": false}' \
+            "https://api.github.com/repos/${{ github.repository }}/releases/${{ github.event.release.id }}"
