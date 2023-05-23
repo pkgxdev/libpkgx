@@ -70,9 +70,10 @@ export const _internals = { reset, initialized, boolize }
 /// we support a tea installed or system installed git, nothing else
 /// eg. `git` could be a symlink in `PATH` to tea, which would cause a fork bomb
 /// on darwin if xcode or xcode/clt is not installed this will fail to our http fallback above
-function git(prefix: Path, PATH?: string): Path | undefined {
-  const pkg = prefix.join('git-scm.org/v2').isDirectory()
-  return (pkg ?? usr())?.join("bin/git")
+//TODO be able to use our own git if installed
+//NOTE however we don’t want to have to fully hydrate its env when libtea is initialized only when needed so…
+function git(_prefix: Path, PATH?: string): Path | undefined {
+  return usr()
 
   function usr() {
     // only return /usr/bin if in the PATH so user can explicitly override this
@@ -86,6 +87,6 @@ function git(prefix: Path, PATH?: string): Path | undefined {
       return  // don’t use `git`
     }
 
-    return  rv
+    return rv?.join("bin/git")
   }
 }
