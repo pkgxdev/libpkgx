@@ -1,4 +1,5 @@
 import host from "../utils/host.ts"
+import { flatmap } from "../utils/misc.ts";
 import Path from "../utils/Path.ts"
 
 export interface Config {
@@ -17,7 +18,7 @@ export interface Config {
 }
 
 export function ConfigDefault(env = Deno.env.toObject()): Config {
-  const prefix = Path.abs(env['TEA_PREFIX']) ?? Path.home().join('.tea')
+  const prefix = flatmap(env['TEA_PREFIX'], x => new Path(x)) ?? Path.home().join('.tea')
   const pantries = env['TEA_PANTRY_PATH']?.split(":").map(x => Path.cwd().join(x)) ?? []
   const cache = Path.abs(env['TEA_CACHE_DIR']) ?? prefix.join('tea.xyz/var/www')
   const isCI = boolize(env['CI']) ?? false
