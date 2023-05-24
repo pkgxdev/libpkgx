@@ -23,7 +23,7 @@ async function download(opts: DownloadOptions, chunk?: (blob: Uint8Array) => Pro
 
       const writer = await (() => {
         if (stream) {
-          dst.parent().mkpath()
+          dst.parent().mkdir('p')
           return Deno.open(dst.string, {write: true, create: true, truncate: true})
         }
       })()
@@ -49,7 +49,7 @@ function cache({ for: url }: {for: URL}): Path {
     .join(url.protocol.slice(0, -1))
     .join(url.hostname)
     .join(hash())
-    .mkpath()
+    .mkdir('p')
 
   function hash() {
     let key = url.pathname

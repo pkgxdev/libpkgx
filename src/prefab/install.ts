@@ -52,7 +52,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
   const shelf = tea_prefix.join(pkg.project)
 
   logger?.locking(pkg)
-  const { rid } = await Deno.open(shelf.mkpath().string)
+  const { rid } = await Deno.open(shelf.mkdir('p').string)
   await flock(rid, 'ex')
 
   try {
