@@ -209,7 +209,7 @@ export default class Path {
 
   static mktemp(opts?: { prefix?: string, dir?: Path }): Path {
     const {prefix, dir} = opts ?? {}
-    const rv = Deno.makeTempDirSync({prefix, dir: dir?.mkpath().string})
+    const rv = Deno.makeTempDirSync({prefix, dir: dir?.mkdir('p').string})
     return new Path(rv)
   }
 
@@ -284,14 +284,6 @@ export default class Path {
   isEmpty(): Path | undefined {
     for (const _ of Deno.readDirSync(this.string)) {
       return
-    }
-    return this
-  }
-
-  mkpath(): Path {
-    if (!(this.isSymlink() && this.isDirectory())) {
-      // if it's a symlink and a directory ensureDirSync fails
-      fs.ensureDirSync(this.string)
     }
     return this
   }

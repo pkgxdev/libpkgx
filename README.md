@@ -23,7 +23,7 @@ goal. libtea can install and provide sandboxed environments for packages that
 have no effect on the wider system without you or your user needing to install
 [tea/cli].
 
-## Importing libtea
+## Getting Started
 
 ```sh
 $ npm install @teaxyz/lib
@@ -41,7 +41,7 @@ import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 To install and utilize Python 3.10:
 
 ```ts
-import { prefab, semver, hooks } from "tea"
+import { prefab, semver, hooks } from "@teaxyz/lib"
 import { exec } from "node:child_process"
 const { install, hydrate, resolve } = prefab
 const { useSync, useShellEnv } = hooks

@@ -20,7 +20,7 @@ export default async function(logger?: Logger) {
 
   logger?.syncing(pantry_dir)
 
-  const { rid } = await Deno.open(pantry_dir.mkpath().string)
+  const { rid } = await Deno.open(pantry_dir.mkdir('p').string)
   await flock(rid, 'ex')
 
   try {
