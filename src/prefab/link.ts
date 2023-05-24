@@ -49,7 +49,7 @@ export default async function link(pkg: Package | Installation) {
         shelf.join(symname).rm().string,
         {type: 'dir'})
       } catch (err) {
-        if (err instanceof Deno.errors.AlreadyExists) {
+        if (err instanceof Deno.errors.AlreadyExists || err.code === 'EEXIST') {
           //FIXME race condition for installing the same pkg simultaneously
           // real fix is to lock around the entire download/untar/link process
           return
