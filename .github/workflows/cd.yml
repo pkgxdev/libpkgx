@@ -7,7 +7,6 @@ on:
       - edited
 
 permissions:
-  packages: write
   contents: read
 
 concurrency:
@@ -16,23 +15,24 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ github.event.release.prerelease }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0
 
-      - uses: actions/setup-node@v3
+      # if we don’t do this the npm publish step doesn’t work
+      - uses: actions/setup-node@v2
         with:
-          node-version: 16
-          registry-url: https://npm.pkg.github.com/
+          registry-url: https://registry.npmjs.org
 
       - name: build
         run: .github/deno-to-node.ts ${{ github.event.release.tag_name }}
 
-      - run: npm publish
+      - run: npm publish --access public
         working-directory: dist
         env:
-          NODE_AUTH_TOKEN: ${{github.token}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish:
     permissions:

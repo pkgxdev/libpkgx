@@ -48,7 +48,7 @@ await build({
   package: {
     name: "@teaxyz/lib",
     version,
-    description: "pkg primitives",
+    description: "pkging primitives",
     license: "Apache-2.0",
     repository: {
       type: "git",
@@ -63,9 +63,6 @@ await build({
     },
     devDependencies: {
       "@types/fs-ext": "^2"
-    },
-    publishConfig: {
-      registry: "https://npm.pkg.github.com"
     },
   },
   postBuild() {

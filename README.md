@@ -27,6 +27,7 @@ have no effect on the wider system without you or your user needing to install
 
 ```sh
 $ npm install @teaxyz/lib
+# ^^ https://npmjs.com/@teaxyz/lib
 ```
 
 Or with [Deno]:
