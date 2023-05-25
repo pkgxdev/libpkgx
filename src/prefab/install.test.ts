@@ -1,9 +1,10 @@
 import { useTestConfig as useTestConfigBase } from "../hooks/useConfig.test.ts"
-import { assert, assertEquals } from "deno/testing/asserts.ts"
-import install, { ConsoleLogger } from "./install.ts"
+import { assert, assertEquals, assertFalse } from "deno/testing/asserts.ts"
+import install, { ConsoleLogger, Logger } from "./install.ts"
 import { stub } from "deno/testing/mock.ts"
 import SemVer from "../utils/semver.ts"
-import { Package } from "../types.ts"
+import { Installation, Package } from "../types.ts"
+import Path from "../utils/Path.ts";
 
 Deno.test("install()", async runner => {
   const pkg: Package = {
@@ -41,7 +42,7 @@ Deno.test("install()", async runner => {
   })
 })
 
-Deno.test("install lock tests", async () => {
+Deno.test("install locks", async () => {
   const pkg: Package = {
     project: "tea.xyz/brewkit",
     version: new SemVer("0.30.0")
@@ -49,8 +50,17 @@ Deno.test("install lock tests", async () => {
 
   const conf = useTestConfig()
 
-  const installer1 = install(pkg)
-  const installer2 = install(pkg)
+  let unlocked_once = false
+  const logger: Logger = {
+    downloading: () => assertFalse(unlocked_once),
+    locking: () => {},
+    installed: () => {},
+    installing: () => assertFalse(unlocked_once),
+    unlocking: () => unlocked_once = true
+  }
+
+  const installer1 = install(pkg, logger)
+  const installer2 = install(pkg, logger)
 
   const [install1, install2] = await Promise.all([installer1, installer2])
 

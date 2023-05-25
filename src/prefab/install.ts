@@ -52,8 +52,8 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
   const shelf = tea_prefix.join(pkg.project)
 
   logger?.locking(pkg)
-  const { rid } = await Deno.open(shelf.mkdir('p').string)
-  await flock(rid, 'ex')
+  const { rid: fd } = await Deno.open(shelf.mkdir('p').string)
+  await flock(fd, 'ex')
 
   try {
     const already_installed = await cellar.has(pkg)
@@ -125,8 +125,8 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     throw err
   } finally {
     logger?.unlocking(pkg)
-    await flock(rid, 'un')
-    Deno.close(rid)  // docs aren't clear if we need to do this or not
+    await flock(fd, 'un')
+    Deno.close(fd)  // docs aren't clear if we need to do this or not
   }
 }
 

@@ -13,7 +13,7 @@ dependencies:
   npmjs.com: '*'
 ---*/
 
-import { build, emptyDir } from "https://deno.land/x/dnt@0.35.0/mod.ts";
+import { build, emptyDir } from "https://deno.land/x/dnt@0.36.0/mod.ts";
 import SemVer from "../src/utils/semver.ts";
 
 await emptyDir("./dist");
@@ -60,9 +60,6 @@ await build({
     dependencies: {
       "is-what": "^4",
       "outdent": "^0.8",
-    },
-    devDependencies: {
-      "@types/fs-ext": "^2"
     },
   },
   postBuild() {
