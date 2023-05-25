@@ -46,7 +46,7 @@ export default class Path {
     } else {
       this.string = sys.normalize(input)
       // ^^ seemingly doesn’t normalize trailing slashes away
-      while (this.string.endsWith("/")) {
+      if (this.string != "/") while (this.string.endsWith("/")) {
         this.string = this.string.slice(0, -1)
       }
     }

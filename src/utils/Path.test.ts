@@ -22,6 +22,9 @@ Deno.test("test Path", async test => {
     assert(child.string.startsWith(tmp.string))
     assertFalse(tmp.isEmpty())
     assertEquals(child.readlink(), child) // not a link
+
+
+    assertEquals(new Path("/").string, "/")
   })
 
   await test.step("write and read", async () => {
@@ -203,3 +206,10 @@ async function asyncIterToArray<T> (iter: AsyncIterable<T>){
   }
   return result;
 }
+
+Deno.test("ctor throws", () => {
+  assertThrows(() => new Path(""))
+  assertThrows(() => new Path("   "))
+  assertThrows(() => new Path("   \n    "))
+  assertThrows(() => new Path("    /   "))
+})
