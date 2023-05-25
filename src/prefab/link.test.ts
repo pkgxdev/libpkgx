@@ -5,7 +5,7 @@ import { Package } from "../types.ts"
 import install from "./install.ts"
 import link from "./link.ts";
 
-Deno.test("link()", async runner => {
+Deno.test("prefab.link", async runner => {
   const pkg: Package = {
     project: "tea.xyz/brewkit",
     version: new SemVer("0.30.0")
@@ -16,7 +16,7 @@ Deno.test("link()", async runner => {
 
     const installation = await install(pkg)
     await link(installation)
-    await link(installation)  // calling twice works
+    await link(installation)  // test that calling twice serially works
 
     /// test symlinks work
     assert(installation.path.parent().join("v*").isDirectory())

@@ -2,6 +2,7 @@ import SemVer, * as semver from "../utils/semver.ts"
 import { Package, Installation } from "../types.ts"
 import useCellar from "../hooks/useCellar.ts"
 import { panic } from "../utils/error.ts"
+import fs from "node:fs/promises"
 import Path from "../utils/Path.ts"
 
 export default async function link(pkg: Package | Installation) {
@@ -44,6 +45,19 @@ export default async function link(pkg: Package | Installation) {
 
   async function makeSymlink(symname: string) {
     try {
+      const what_we_make = shelf.join(symname)
+      if (what_we_make.isSymlink()) {
+        try {
+          // using this rather than rm due to bug in deno shims that
+          // tries to call rmdir on the symlink because the symlink points to a dir
+          await fs.unlink(what_we_make.string)
+        } catch (err) {
+          // we were deleted by another thing linking simultaneously
+          //FIXME our flock should surround the link step too
+          if (err.code != 'ENOENT') throw err
+        }
+      }
+
       await Deno.symlink(
         installation.path.basename(),  // makes it relative
         shelf.join(symname).rm().string,
