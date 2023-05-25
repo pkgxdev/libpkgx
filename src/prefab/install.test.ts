@@ -3,8 +3,7 @@ import { assert, assertEquals, assertFalse } from "deno/testing/asserts.ts"
 import install, { ConsoleLogger, Logger } from "./install.ts"
 import { stub } from "deno/testing/mock.ts"
 import SemVer from "../utils/semver.ts"
-import { Installation, Package } from "../types.ts"
-import Path from "../utils/Path.ts";
+import { Package } from "../types.ts"
 
 Deno.test("install()", async runner => {
   const pkg: Package = {
