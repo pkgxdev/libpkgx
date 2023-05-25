@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertFalse } from "deno/testing/asserts.ts"
+import { assert, assertEquals, assertFalse, assertThrows } from "deno/testing/asserts.ts"
 import useConfig, { _internals } from "./useConfig.ts"
 
 Deno.test("useConfig", () => {
@@ -18,6 +18,18 @@ Deno.test("useConfig", () => {
   assert(_internals.initialized())
 })
 
+Deno.test("useConfig empty TEA_PREFIX is ignored", () => {
+  assertEquals(ConfigDefault({ TEA_PREFIX: "" }).prefix, Path.home().join(".tea"))
+  assertEquals(ConfigDefault({ TEA_PREFIX: "   " }).prefix, Path.home().join(".tea"))
+  assertEquals(ConfigDefault({ TEA_PREFIX: " /  " }).prefix, Path.root)
+  assertThrows(() => ConfigDefault({ TEA_PREFIX: " foo  " }))
+  assertThrows(() => ConfigDefault({ TEA_PREFIX: "foo" }))
+})
+
+Deno.test("useConfig empty TEA_PANTRY_PATH is ignored", () => {
+  assertEquals(ConfigDefault({ TEA_PANTRY_PATH: "" }).pantries, [])
+  assertEquals(ConfigDefault({ TEA_PANTRY_PATH: "  : :" }).pantries, [])
+})
 
 import { ConfigDefault } from "./useConfig.ts"
 import Path from "../utils/Path.ts"
