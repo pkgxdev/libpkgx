@@ -62,7 +62,7 @@ await build({
       "outdent": "^0.8",
     },
     exports: {
-      "./semver": {
+      "./src/src/utils/semver": {
         import: "./src/src/utils/semver.ts"
       }
     }
