@@ -61,6 +61,11 @@ await build({
       "is-what": "^4",
       "outdent": "^0.8",
     },
+    exports: {
+      "./semver": {
+        import: "./src/src/utils/semver.ts"
+      }
+    }
   },
   postBuild() {
     Deno.copyFileSync("LICENSE.txt", "dist/LICENSE.txt");
