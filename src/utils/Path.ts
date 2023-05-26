@@ -214,7 +214,7 @@ export default class Path {
     dir ??= new Path(os.tmpdir())
     prefix ??= ""
     // not using deno.makeTempDirSync because it's bugg’d and the node shim doesn’t handler `dir`
-    const rv = mkdtempSync(dir.mkdir('p').string+prefix)
+    const rv = mkdtempSync(dir.mkdir('p').string.join(prefix).string)
     return new Path(rv)
   }
 
