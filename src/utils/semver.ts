@@ -84,8 +84,16 @@ export default class SemVer {
     return this.compare(that) > 0
   }
 
+  gte(that: SemVer): boolean {
+    return this.compare(that) >= 0
+  }
+
   lt(that: SemVer): boolean {
     return this.compare(that) < 0
+  }
+
+  lte(that: SemVer): boolean {
+    return this.compare(that) <= 0
   }
 
   compare(that: SemVer): number {
