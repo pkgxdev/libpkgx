@@ -18,8 +18,8 @@ export interface Config {
 }
 
 export function ConfigDefault(env = Deno.env.toObject()): Config {
-  const prefix = flatmap(env['TEA_PREFIX'], x => new Path(x)) ?? Path.home().join('.tea')
-  const pantries = env['TEA_PANTRY_PATH']?.split(":").map(x => Path.cwd().join(x)) ?? []
+  const prefix = flatmap(env['TEA_PREFIX']?.trim(), x => new Path(x)) ?? Path.home().join('.tea')
+  const pantries = env['TEA_PANTRY_PATH']?.split(":").compact(x => flatmap(x.trim(), x => Path.abs(x) ?? Path.cwd().join(x))) ?? []
   const cache = Path.abs(env['TEA_CACHE_DIR']) ?? prefix.join('tea.xyz/var/www')
   const isCI = boolize(env['CI']) ?? false
   const compression = !isCI && host().platform == 'darwin' ? 'xz' : 'gz'
@@ -35,14 +35,16 @@ export function ConfigDefault(env = Deno.env.toObject()): Config {
   }
 }
 
-export default function useConfig(input?: Config): Config {
-  if (!config || input) {
-    config = input ?? ConfigDefault()
-  }
-  return {...config}  // copy to prevent mutation
-}
+const gt = globalThis as unknown as {xyz_tea_config?: Config}
 
-let config: Config | undefined
+export default function useConfig(input?: Config): Config {
+  // storing on globalThis so our config is shared across
+  // potentially multiple versions of libtea being loaded in the same process
+  if (!gt.xyz_tea_config || input) {
+    gt.xyz_tea_config = input ?? ConfigDefault()
+  }
+  return {...gt.xyz_tea_config}  // copy to prevent mutation
+}
 
 function boolize(input: string | undefined): boolean | undefined {
   switch (input?.trim()?.toLowerCase()) {
@@ -58,11 +60,11 @@ function boolize(input: string | undefined): boolean | undefined {
 }
 
 function reset() {
-  return config = undefined
+  return delete gt.xyz_tea_config
 }
 
 function initialized() {
-  return config !== undefined
+  return gt.xyz_tea_config !== undefined
 }
 
 export const _internals = { reset, initialized, boolize }

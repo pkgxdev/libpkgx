@@ -175,7 +175,7 @@ export default function usePantry() {
     }
 
     if (rv.length == 0) {
-      throw new TeaError("not-found: pantry", {prefix})
+      throw new TeaError("not-found: pantry", {path: prefix})
     }
 
     return rv

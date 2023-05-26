@@ -50,5 +50,5 @@ jobs:
           curl -fX PATCH \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
-            -d '{"draft": false, "prerelease": false}' \
+            -d '{"draft": false, "prerelease": false, "make_latest": true}' \
             "https://api.github.com/repos/${{ github.repository }}/releases/${{ github.event.release.id }}"

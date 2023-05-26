@@ -49,7 +49,7 @@ function cache({ for: url }: {for: URL}): Path {
     .join(url.protocol.slice(0, -1))
     .join(url.hostname)
     .join(hash())
-    .mkpath()
+    .mkdir('p')
 
   function hash() {
     let key = url.pathname
