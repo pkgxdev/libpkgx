@@ -75,7 +75,7 @@ export default function useCellar() {
       throw new Error(`not-found:${pkgutils.str(pkg)}`)
     })()
     if (await vacant(installation.path)) {
-      throw new Error(`not-found:${pkgutils.str(installation.pkg)}`)
+      throw new Error(`not-found: ${pkgutils.str(installation.pkg)}`)
     }
     return installation
   }

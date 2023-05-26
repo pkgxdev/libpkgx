@@ -3,6 +3,8 @@ import { readLines } from "deno/io/read_lines.ts"
 import * as sys from "deno/path/mod.ts"
 import { PlainObject } from "is-what"
 import * as fs from "deno/fs/mod.ts"
+import { mkdtempSync } from "node:fs"
+import * as os from "node:os"
 
 // based on https://github.com/mxcl/Path.swift
 
@@ -208,8 +210,11 @@ export default class Path {
   }
 
   static mktemp(opts?: { prefix?: string, dir?: Path }): Path {
-    const {prefix, dir} = opts ?? {}
-    const rv = Deno.makeTempDirSync({prefix, dir: dir?.mkdir('p').string})
+    let {prefix, dir} = opts ?? {}
+    dir ??= new Path(os.tmpdir())
+    prefix ??= ""
+    // not using deno.makeTempDirSync because it's bugg’d and the node shim doesn’t handler `dir`
+    const rv = mkdtempSync(dir.mkdir('p').string+prefix)
     return new Path(rv)
   }
 

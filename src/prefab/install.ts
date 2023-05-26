@@ -44,8 +44,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
   const { project, version } = pkg
 
   const cellar = useCellar()
-  const { prefix: tea_prefix } = useConfig()
-  const { compression } = useConfig().options
+  const { prefix: tea_prefix, options: { compression } } = useConfig()
   const stowage = StowageNativeBottle({ pkg: { project, version }, compression })
   const url = useOffLicense('s3').url(stowage)
   const tarball = useCache().path(stowage)
@@ -67,8 +66,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     logger?.downloading({pkg})
 
     const tmpdir = Path.mktemp({
-      prefix: pkg.project.replaceAll("/", "_") + "_",
-      dir: tea_prefix.join("local/tmp")
+      dir: tea_prefix.join("local/tmp").join(pkg.project)
       //NOTE ^^ inside tea prefix to avoid TMPDIR is on a different volume problems
     })
     const tar_args = compression == 'xz' ? 'xJ' : 'xz'  // laughably confusing
