@@ -212,7 +212,7 @@ export default class Path {
   static mktemp(opts?: { prefix?: string, dir?: Path }): Path {
     let {prefix, dir} = opts ?? {}
     dir ??= new Path(os.tmpdir())
-    prefix ??= ""
+    prefix ??= "/"
     // not using deno.makeTempDirSync because it's bugg’d and the node shim doesn’t handler `dir`
     const rv = mkdtempSync(dir.mkdir('p').join(prefix).string)
     return new Path(rv)
