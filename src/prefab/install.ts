@@ -66,7 +66,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     logger?.downloading({pkg})
 
     const tmpdir = Path.mktemp({
-      dir: tea_prefix.join("local/tmp").join(pkg.project)
+      dir: tea_prefix.join("local/tmp").join(pkg.project),
       prefix: `v${pkg.version}.`
       //NOTE ^^ inside tea prefix to avoid TMPDIR is on a different volume problems
     })
