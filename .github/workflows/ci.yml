@@ -49,7 +49,7 @@ jobs:
           - [self-hosted, macOS, X64]
           - [self-hosted, linux, X64]
           - [self-hosted, macOS, ARM64]
-          - [self-hosted, macOS, ARM64]
+          - [self-hosted, linux, ARM64]
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0
