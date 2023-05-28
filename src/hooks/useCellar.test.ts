@@ -1,5 +1,5 @@
 import SemVer, * as semver from "../utils/semver.ts"
-import { useTestConfig } from "./useConfig.test.ts"
+import { useTestConfig } from "./useTestConfig.ts"
 import install from "../prefab/install.ts"
 import useCellar from "./useCellar.ts"
 

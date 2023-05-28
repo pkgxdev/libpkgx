@@ -1,5 +1,5 @@
 import { assertEquals } from "deno/testing/asserts.ts"
-import { useTestConfig } from "./useConfig.test.ts"
+import { useTestConfig } from "./useTestConfig.ts"
 import useMoustaches from "./useMoustaches.ts"
 import { Package } from "../types.ts"
 import SemVer from "../utils/semver.ts"

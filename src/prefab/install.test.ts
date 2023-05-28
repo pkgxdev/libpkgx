@@ -1,4 +1,4 @@
-import { useTestConfig as useTestConfigBase } from "../hooks/useConfig.test.ts"
+import { useTestConfig as useTestConfigBase } from "../hooks/useTestConfig.ts"
 import { assert, assertEquals, assertFalse } from "deno/testing/asserts.ts"
 import install, { ConsoleLogger, Logger } from "./install.ts"
 import { stub } from "deno/testing/mock.ts"
