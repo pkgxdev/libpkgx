@@ -5,6 +5,7 @@ import useShellEnv from "./useShellEnv.ts"
 import hydrate from "../prefab/hydrate.ts"
 import resolve from "../prefab/resolve.ts"
 import install from "../prefab/install.ts"
+import { execSync } from "node:child_process"
 
 Deno.test("useShellEnv", async () => {
   const { map, flatten } = useShellEnv()
@@ -23,14 +24,6 @@ Deno.test("useShellEnv", async () => {
 
   // test that we installed the correct platform binaries
   // ※ https://github.com/teaxyz/lib/pull/11/checks
-
-  // deno-lint-ignore no-deprecated-deno-api
-  const proc = await Deno.run({
-    cmd: ["python", "--version"],
-    env: flatten(env),
-  })
-  const { success } = await proc.status()
-  proc.close()
-
-  assert(success)
+  execSync("python --version", { env: flatten(env) })
+  //NOTE ^^ using execSync rather than Deno.run as the shim doesn’t behave consistently between deno and node
 })
