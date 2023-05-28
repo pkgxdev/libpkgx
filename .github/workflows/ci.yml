@@ -14,9 +14,10 @@ concurrency:
 
 jobs:
   tests:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.platform.os }}
     strategy:
       matrix:
+        platform:
         - os: [self-hosted, macOS, X64]
           id: macos-latest   # for historical correlation
         - os: [self-hosted, linux, X64]
@@ -36,7 +37,7 @@ jobs:
         with:
           path-to-lcov: cov_profile.lcov
           parallel: true
-          flag-name: ${{ matrix.id }}
+          flag-name: ${{ matrix.platform.id }}
 
   upload-coverage:
     needs: tests
