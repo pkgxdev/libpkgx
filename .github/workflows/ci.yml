@@ -14,18 +14,12 @@ concurrency:
 
 jobs:
   tests:
-    runs-on: ${{ matrix.platform.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        platform:
-        - os: [self-hosted, macOS, X64]
-          id: macos-latest   # for historical correlation
-        - os: [self-hosted, linux, X64]
-          id: ubuntu-latest  # for historical correlation
-        - os: [self-hosted, macOS, ARM64]
-          id: darwin+aarch64
-        - os: [self-hosted, macOS, ARM64]
-          id: linux+aarch64
+        os:
+          - macos-latest
+          - ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0
@@ -48,7 +42,14 @@ jobs:
         parallel-finished: true
 
   dnt:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - [self-hosted, macOS, X64]
+          - [self-hosted, linux, X64]
+          - [self-hosted, macOS, ARM64]
+          - [self-hosted, macOS, ARM64]
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0
