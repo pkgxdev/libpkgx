@@ -43,7 +43,7 @@ Deno.test("host()", async () => {
 
 Deno.test("host().windows.arm64", () => {
   const s1 = stub(_internals, "platform", () => "windows" as SupportedPlatform)
-  const s2 = stub(_internals, "arch", () => "aarch64" as "aarch64" | "x86_64")
+  const s2 = stub(_internals, "arch", () => "arm64" as "arm64" | "x64")
   try {
     const { platform, arch } = host()
     assertEquals(platform, "windows")
@@ -65,7 +65,7 @@ Deno.test("host().aix.x", () => {
 })
 
 Deno.test("host().x.foo", () => {
-  const s1 = stub(_internals, "arch", () => "foo" as "aarch64" | "x86_64")
+  const s1 = stub(_internals, "arch", () => "foo" as "arm64" | "x64")
   try {
     assertThrows(host)
   } finally {
