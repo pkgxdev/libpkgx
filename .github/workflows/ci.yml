@@ -17,11 +17,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os:
-          - [self-hosted, macOS, X64]
-          - [self-hosted, linux, X64]
-          - [self-hosted, macOS, ARM64]
-          - [self-hosted, linux, ARM64]
+        - os: [self-hosted, macOS, X64]
+          id: macos-latest   # for historical correlation
+        - os: [self-hosted, linux, X64]
+          id: ubuntu-latest  # for historical correlation
+        - os: [self-hosted, macOS, ARM64]
+          id: darwin+aarch64
+        - os: [self-hosted, macOS, ARM64]
+          id: linux+aarch64
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0
@@ -33,7 +36,7 @@ jobs:
         with:
           path-to-lcov: cov_profile.lcov
           parallel: true
-          flag-name: ${{ matrix.os }}
+          flag-name: ${{ matrix.id }}
 
   upload-coverage:
     needs: tests
