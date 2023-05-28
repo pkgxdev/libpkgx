@@ -1,11 +1,10 @@
 import { useTestConfig } from "./useTestConfig.ts"
-import { assert } from "deno/testing/asserts.ts"
+import { execSync } from "node:child_process"
 import * as semver from "../utils/semver.ts"
 import useShellEnv from "./useShellEnv.ts"
 import hydrate from "../prefab/hydrate.ts"
 import resolve from "../prefab/resolve.ts"
 import install from "../prefab/install.ts"
-import { execSync } from "node:child_process"
 
 Deno.test("useShellEnv", async () => {
   const { map, flatten } = useShellEnv()
