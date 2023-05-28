@@ -1,4 +1,4 @@
-import { useTestConfig } from "../hooks/useConfig.test.ts"
+import { useTestConfig } from "../hooks/useTestConfig.ts"
 import { assert } from "deno/testing/asserts.ts"
 import SemVer from "../utils/semver.ts"
 import { Package } from "../types.ts"

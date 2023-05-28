@@ -1,4 +1,4 @@
-import { useTestConfig } from "./useConfig.test.ts"
+import { useTestConfig } from "./useTestConfig.ts"
 import { assert } from "deno/testing/asserts.ts"
 import useDownload from "./useDownload.ts"
 

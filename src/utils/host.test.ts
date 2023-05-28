@@ -1,27 +1,49 @@
-import { assertEquals, assertThrows } from "deno/testing/asserts.ts"
+import { assert, assertEquals, assertThrows, fail } from "deno/testing/asserts.ts"
 import { SupportedPlatform } from "../types.ts"
 import host, { _internals } from "./host.ts"
 import { stub } from "deno/testing/mock.ts"
 
-Deno.test("host()", () => {
-  const { platform, arch } = host()
-  assertEquals(platform, Deno.build.os)
+Deno.test("host()", async () => {
+  const uname = [await run("uname"), await run("uname -m")]
 
-  switch (Deno.build.arch) {
+  const { platform, arch } = host()
+  switch (uname[0]) {
+  case "Darwin":
+    assertEquals(platform, "darwin")
+    break
+  case "Linux":
+    assertEquals(platform, "linux")
+    break
+  default:
+    fail()
+  }
+
+  switch (uname[1]) {
   case "aarch64":
+  case "arm64":
     assertEquals(arch, "aarch64")
     break
   case "x86_64":
     assertEquals(arch, "x86-64")
     break
   default:
-    throw new Error()
+    fail()
+  }
+
+  async function run(cmd: string) {
+    // deno’s shims don’t support Deno.Command yet
+    // deno-lint-ignore no-deprecated-deno-api
+    const proc = Deno.run({ cmd: cmd.split(" "), stdout: "piped" })
+    assert((await proc.status()).success)
+    const out = await proc.output()
+    proc.close()
+    return new TextDecoder().decode(out).trim()
   }
 })
 
 Deno.test("host().windows.arm64", () => {
   const s1 = stub(_internals, "platform", () => "windows" as SupportedPlatform)
-  const s2 = stub(_internals, "arch", () => "aarch64" as "aarch64" | "x86_64")
+  const s2 = stub(_internals, "arch", () => "arm64" as "arm64" | "x64")
   try {
     const { platform, arch } = host()
     assertEquals(platform, "windows")
@@ -43,7 +65,7 @@ Deno.test("host().aix.x", () => {
 })
 
 Deno.test("host().x.foo", () => {
-  const s1 = stub(_internals, "arch", () => "foo" as "aarch64" | "x86_64")
+  const s1 = stub(_internals, "arch", () => "foo" as "arm64" | "x64")
   try {
     assertThrows(host)
   } finally {

@@ -1,4 +1,5 @@
 import { SupportedPlatform, SupportedArchitecture } from "../types.ts"
+import process from "node:process"
 
 interface HostReturnValue {
   platform: SupportedPlatform
@@ -16,19 +17,19 @@ export default function host(): HostReturnValue {
     case "windows":
       return platform
     default:
-      console.warn("assuming linux mode for:", Deno.build.os)
+      console.warn(`operating incognito as linux (${platform})`)
       return 'linux'
   }})()
 
   const arch = (() => {
-    switch (_internals.arch()) {
-    case "aarch64":
+    const arch = _internals.arch()
+    switch (arch) {
+    case "arm64":
       return "aarch64"
-    case "x86_64":
+    case "x64":
       return "x86-64"
-      // ^^ ∵ https://en.wikipedia.org/wiki/X86-64 and semver.org prohibits underscores
     default:
-      throw new Error(`unsupported-arch: ${Deno.build.arch}`)
+      throw new Error(`unsupported-arch: ${arch}`)
   }})()
 
   const { target } = Deno.build
@@ -42,7 +43,7 @@ export default function host(): HostReturnValue {
 }
 
 const _internals = {
-  arch: () => Deno.build.arch,
+  arch: () => process.arch,
   platform: () => Deno.build.os
 }
 

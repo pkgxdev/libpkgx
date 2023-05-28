@@ -1,11 +1,11 @@
 import { Installation, Package, PackageRequirement } from "../types.ts"
 import { assert, assertEquals, fail } from "deno/testing/asserts.ts"
-import { useTestConfig } from "../hooks/useConfig.test.ts"
+import { useTestConfig } from "../hooks/useTestConfig.ts"
 import resolve, { _internals } from "./resolve.ts"
+import useCellar from "../hooks/useCellar.ts"
 import { stub } from "deno/testing/mock.ts"
 import SemVer from "../utils/semver.ts"
 import Path from "../utils/Path.ts"
-import useCellar from "../hooks/useCellar.ts";
 
 Deno.test("resolve cellar.has", async runner => {
   const prefix = useTestConfig().prefix
