@@ -9,12 +9,6 @@ import useConfig from "./useConfig.ts"
 import host from "../utils/host.ts"
 import Path from "../utils/Path.ts"
 
-interface Entry {
-  dir: Path
-  yaml: () => Promise<PlainObject>
-  versions: Path
-}
-
 export interface Interpreter {
   project: string // FIXME: should probably be a stronger type
   args: string[]
@@ -155,13 +149,23 @@ export default function usePantry() {
     return undefined
   }
 
+  const missing = () => !prefix.exists()
+
+  const neglected = () => {
+    const stat = Deno.statSync(prefix.string)
+    if (!stat.mtime) return true
+    return (Date.now() - stat.mtime.getMilliseconds()) > 24 * 60 * 60 * 1000
+  }
+
   return {
     prefix,
     which,
     ls,
     project,
     parse_pkgs_node,
-    expand_env_obj
+    expand_env_obj,
+    missing,
+    neglected
   }
 
   function pantry_paths(): Path[] {

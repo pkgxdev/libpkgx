@@ -38,42 +38,16 @@ import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 
 ## Usage
 
-To install and utilize Python 3.10:
+To use [whisper.cpp] to transcribe a file
 
 ```ts
-import { prefab, semver, hooks } from "@teaxyz/lib"
-import { exec } from "node:child_process"
-const { install, hydrate, resolve } = prefab
-const { useSync, useShellEnv } = hooks
+const { prefab: { run: exec } } = require("@teaxyz/lib")
+const exec = require('util').promisify(exec)
 
-// ensure pantry exists and is up-to-date
-await useSync()
+const { stdout } = await exec(`whisper.cpp ${wav_file_to_transcribe}`)
+// ^^ installs whisper.cpp and its deps into ~/.tea, then runs it
 
-// define the pkg(s) you want
-// see https://devhints.io/semver for semver syntax (~, ^, etc)
-const pkg = { project: 'python.org', constraint: semver.Range("~3.10") }
-// hydrate the full dependency tree
-const { pkgs: tree } = await hydrate(pkg)
-// resolve the tree of constraints to specific package versions
-const { installed, pending } = await resolve(tree)
-
-for (const pkg of pending) {
-  const installation = await install(pkg)
-  // ^^ install packages that aren’t yet installed
-  // ^^ takes a logger parameter so you can show progress to the user
-  // ^^ you could do these in parallel to speed things up
-  // ^^ by default, versioned installs go to ~/.tea, separated from the user’s system. The install location can be customized, see next section.
-  await link(installation)
-  // ^^ creates v*, vx, vx.y symlinks ∵ some packages depend on this
-  installed.push(installation)
-}
-
-const { map, flatten } = useShellEnv()
-const env = flatten(map(installed))
-
-exec("python -c 'print(\"Hello, World!\")'", { env })
-
-// the above is quite verbose, but we’ll provide a façade pattern soon
+console.log("transcription:", stdout)
 ```
 
 All of tea’s packages are relocatable so you can configure libtea to install
@@ -118,6 +92,10 @@ There is minimal magic, [tea/cli] has magic because the end-user appreciates
 it but libraries need well defined behavior. We will provide a façade patterns
 to make life easier, but the primitives of libtea require you to read the
 docs to use them effectively.
+
+libtea almost certainly will not work in a browser. Potentially its possible.
+The first step would be compiling our bottles to WASM. We could use your help
+here…
 
 ## What Packages are Available?
 

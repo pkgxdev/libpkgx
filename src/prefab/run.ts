@@ -1,4 +1,4 @@
-import { spawn as node_spawn, SpawnOptions } from "node:child_process"
+import node, { SpawnOptions, ExecOptions } from "node:child_process"
 import useShellEnv from '../hooks/useShellEnv.ts'
 import usePantry from '../hooks/usePantry.ts'
 import * as semver from "../utils/semver.ts"
@@ -9,11 +9,11 @@ import resolve from "./resolve.ts"
 import install from "./install.ts"
 import link from "./link.ts"
 
-export async function spawn(cmd: string, args: (string | Path)[] = [], opts?: SpawnOptions) {
+async function setup(cmd: string, env: Record<string, string | undefined> | undefined) {
   const pantry = usePantry()
   const sh = useShellEnv()
 
-  if (pantry.needsUpdate()) {
+  if (pantry.missing() || pantry.neglected()) {
     useSync()
   }
 
@@ -36,25 +36,39 @@ export async function spawn(cmd: string, args: (string | Path)[] = [], opts?: Sp
     installed.push(installation)
   }
 
-  const env = await sh.map({ installations: installed })
+  const pkgenv = await sh.map({ installations: installed })
 
-  if (opts?.env) for (const [key, value] of Object.entries(opts.env)) {
+  if (env) for (const [key, value] of Object.entries(env)) {
     if (!value) {
       continue
     } else if (env[key]) {
-      env[key].push(value)
+      pkgenv[key].push(value)
     } else {
-      env[key] = [value]
+      pkgenv[key] = [value]
     }
   }
 
-  opts ??= {}
-  opts.env = sh.flatten(env)
-
-  return node_spawn(cmd[0], args.map(x=>x.toString()), opts)
+  return sh.flatten(pkgenv)
 }
 
-export default { spawn }
+export async function spawn(cmd: string, args: (string | Path)[] = [], opts?: SpawnOptions) {
+  const env = await setup(cmd, opts?.env)
+  opts ??= {}
+  opts.env = env
+  return node.spawn(cmd[0], args.map(x=>x.toString()), opts)
+}
+
+export async function exec(cmd: string, opts?: ExecOptions) {
+  cmd = cmd.trim()
+  const pivot = cmd.indexOf(' ')
+  const arg0 = cmd.slice(0, pivot)
+  const env = await setup(arg0, opts?.env)
+  opts ??= {}
+  opts.env = env
+  return node.exec(arg0, opts)
+}
+
+export default { spawn, exec }
 
 
 
