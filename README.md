@@ -60,7 +60,7 @@ const { useConfig } = hooks
 useConfig({ prefix: Path.home().join(".local/share/my-app") })
 // ^^ must be done before any other libtea calls
 
-// now if you install python you’ll get:
+// now if you install, eg, python you’ll get:
 //     /home/you/.local/share/my-app/python.org/v3.10.11/bin/python
 ```
 
