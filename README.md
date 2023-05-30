@@ -127,6 +127,9 @@ the scope *tight*. Probably we would prefer to have one repo per language.
 tea has sensible rules for how packages are defined and installed so writing
 a port should be simple.
 
+We would love to explore how possible writing this in rust and then compiling
+to WASM for all other languages would be. Can you help?
+
 Open a [discussion] to start.
 
 [discussion]: https://github.com/orgs/teaxyz/discussions
