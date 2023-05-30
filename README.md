@@ -41,24 +41,32 @@ import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 To use [whisper.cpp] to transcribe a file
 
 ```ts
-const { porcelain: { run: exec } } = require("@teaxyz/lib")
-const exec = require('util').promisify(exec)
+const https = require('https');
+const fs = require('fs');
 
-const { stdout } = await exec(`whisper.cpp ${wav_file_to_transcribe}`)
+const url = 'https://github.com/ggerganov/whisper.cpp/raw/master/samples/jfk.wav';
+https.get(url, rsp => rsp.pipe(fs.createWriteStream('jfk.wav')));
+
+const { porcelain: { run: exec } } = require("@teaxyz/lib");
+
+const { stdout } = await exec(`whisper.cpp jfk.wav`);
 // ^^ installs whisper.cpp and its deps into ~/.tea, then runs it
 
-console.log("transcription:", stdout)
+console.log("transcription:", stdout);
 ```
 
 All of tea’s packages are relocatable so you can configure libtea to install
 wherever you want:
 
 ```ts
-import { hooks, Path } from "tea"
+import { hooks, Path, porcelain } from "tea"
+const { install } = porcelain
 const { useConfig } = hooks
 
 useConfig({ prefix: Path.home().join(".local/share/my-app") })
 // ^^ must be done before any other libtea calls
+
+await install("python.org")
 
 // now if you install, eg, python you’ll get:
 //     /home/you/.local/share/my-app/python.org/v3.10.11/bin/python
