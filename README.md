@@ -41,7 +41,7 @@ import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 To use [whisper.cpp] to transcribe a file
 
 ```ts
-const { prefab: { run: exec } } = require("@teaxyz/lib")
+const { porcelain: { run: exec } } = require("@teaxyz/lib")
 const exec = require('util').promisify(exec)
 
 const { stdout } = await exec(`whisper.cpp ${wav_file_to_transcribe}`)
@@ -95,7 +95,7 @@ docs to use them effectively.
 
 libtea almost certainly will not work in a browser. Potentially its possible.
 The first step would be compiling our bottles to WASM. We could use your help
-here…
+with that…
 
 ## What Packages are Available?
 
@@ -140,6 +140,8 @@ Open a [discussion] to start.
 
 # Tasks
 
+Run eg. `xc coverage` or `xc bump patch`.
+
 ## Coverage
 
 ```sh
@@ -148,13 +150,6 @@ deno coverage cov_profile --lcov --output=cov_profile.lcov
 tea genhtml -o cov_profile/html cov_profile.lcov
 open cov_profile/html/index.html
 ```
-
-
-&nbsp;
-
-# Tasks
-
-Run eg. `xc bump patch`.
 
 ## Bump
 

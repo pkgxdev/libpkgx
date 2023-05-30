@@ -1,6 +1,6 @@
 import SemVer, * as semver from "../utils/semver.ts"
 import { useTestConfig } from "./useTestConfig.ts"
-import install from "../prefab/install.ts"
+import install from "../plumbing/install.ts"
 import useCellar from "./useCellar.ts"
 
 Deno.test("resolve()", async () => {

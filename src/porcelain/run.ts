@@ -2,12 +2,12 @@ import node, { SpawnOptions, ExecOptions } from "node:child_process"
 import useShellEnv from '../hooks/useShellEnv.ts'
 import usePantry from '../hooks/usePantry.ts'
 import * as semver from "../utils/semver.ts"
+import hydrate from "../plumbing/hydrate.ts"
+import resolve from "../plumbing/resolve.ts"
+import install from "../plumbing/install.ts"
 import useSync from "../hooks/useSync.ts"
 import Path from "../utils/Path.ts"
-import hydrate from "./hydrate.ts"
-import resolve from "./resolve.ts"
-import install from "./install.ts"
-import link from "./link.ts"
+import link from "../plumbing/link.ts"
 
 async function setup(cmd: string, env: Record<string, string | undefined> | undefined) {
   const pantry = usePantry()
