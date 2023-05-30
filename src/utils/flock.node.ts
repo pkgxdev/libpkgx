@@ -2,7 +2,7 @@ import koffi from 'npm:koffi@2'
 import * as util from "node:util"
 import host from "./host.ts"
 
-const filename = host().platform == 'darwin' ? 'libSystem.dylib' : 'libc.so.6'
+const filename = host().platform == 'darwin' ? '/usr/lib/libSystem.dylib' : 'libc.so.6'
 const libc = koffi.load(filename)
 
 const LOCK_EX = 2;
