@@ -24,6 +24,5 @@ Deno.test("porcelain.spawn", async () => {
     })
   })
 
-
   assertEquals(stdout.trim(), "1")
 })

@@ -1,16 +1,16 @@
 import node, { SpawnOptions, ExecOptions } from "node:child_process"
+import install, { Logger } from "../plumbing/install.ts"
 import useShellEnv from '../hooks/useShellEnv.ts'
 import usePantry from '../hooks/usePantry.ts'
 import * as semver from "../utils/semver.ts"
 import hydrate from "../plumbing/hydrate.ts"
 import resolve from "../plumbing/resolve.ts"
-import install from "../plumbing/install.ts"
 import useSync from "../hooks/useSync.ts"
 import link from "../plumbing/link.ts"
 import { promisify } from "node:util"
 import Path from "../utils/Path.ts"
 
-async function setup(cmd: string, env: Record<string, string | undefined> | undefined) {
+async function setup(cmd: string, env: Record<string, string | undefined> | undefined, logger: Logger | undefined) {
   const pantry = usePantry()
   const sh = useShellEnv()
 
@@ -32,14 +32,16 @@ async function setup(cmd: string, env: Record<string, string | undefined> | unde
   const { pkgs } = await hydrate({ project, constraint: new semver.Range('*') })
   const { pending, installed } = await resolve(pkgs)
   for (const pkg of pending) {
-    const installation = await install(pkg)
+    const installation = await install(pkg, logger)
     await link(installation)
     installed.push(installation)
   }
 
   const pkgenv = await sh.map({ installations: installed })
 
-  if (env) for (const [key, value] of Object.entries(env)) {
+  env ??= Deno.env.toObject()
+
+  for (const [key, value] of Object.entries(env)) {
     if (!value) {
       continue
     } else if (pkgenv[key]) {
@@ -52,19 +54,19 @@ async function setup(cmd: string, env: Record<string, string | undefined> | unde
   return sh.flatten(pkgenv)
 }
 
-export async function spawn(cmd: string, args: (string | Path)[] = [], opts?: SpawnOptions) {
+export async function spawn(cmd: string, args: (string | Path)[] = [], opts?: SpawnOptions, logger?: Logger) {
   opts ??= {}
-  opts.env = await setup(cmd, opts.env)
+  opts.env = await setup(cmd, opts.env, logger)
   return node.spawn(cmd, args.map(x => x.toString()), opts)
 }
 
-export async function exec(cmd: string, opts?: ExecOptions): Promise<{stdout: string, stderr: string }> {
+export async function exec(cmd: string, opts?: ExecOptions, logger?: Logger): Promise<{stdout: string, stderr: string }> {
   cmd = cmd.trim()
   opts ??= {}
 
   const pivot = cmd.indexOf(' ')
   const arg0 = cmd.slice(0, pivot)
-  opts.env = await setup(arg0, opts.env)
+  opts.env = await setup(arg0, opts.env, logger)
 
   return promisify(node.exec)(cmd, opts)
 }

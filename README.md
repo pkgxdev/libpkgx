@@ -38,21 +38,20 @@ import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 
 ## Usage
 
-To use [whisper.cpp] to transcribe a file
-
 ```ts
-const https = require('https');
-const fs = require('fs');
+import { porcelain } from "@teaxyz/lib";
+const { run: { exec } } = porcelain;
 
-const url = 'https://github.com/ggerganov/whisper.cpp/raw/master/samples/jfk.wav';
-https.get(url, rsp => rsp.pipe(fs.createWriteStream('jfk.wav')));
+const { stdout } = await exec(`python -c '
+import sys
 
-const { porcelain: { run: exec } } = require("@teaxyz/lib");
+print(sys.version)
+`);
+// ^^ installs python and its deps into ~/.tea, then runs it
+// we take the same options as node:child_process.exec and should behave the
+// same, if not they it’s a bug please report it!
 
-const { stdout } = await exec(`whisper.cpp jfk.wav`);
-// ^^ installs whisper.cpp and its deps into ~/.tea, then runs it
-
-console.log("transcription:", stdout);
+console.log("python:", stdout);
 ```
 
 All of tea’s packages are relocatable so you can configure libtea to install
@@ -67,9 +66,24 @@ useConfig({ prefix: Path.home().join(".local/share/my-app") })
 // ^^ must be done before any other libtea calls
 
 await install("python.org")
+// ^^ /home/you/.local/share/my-app/python.org/v3.11/bin/python
+```
 
-// now if you install, eg, python you’ll get:
-//     /home/you/.local/share/my-app/python.org/v3.10.11/bin/python
+### Logging
+
+Most functions take an optional `logger` parameter so you can output logging
+information if you so choose. `tea/cli` has a fairly sophisticated logger, so
+go check that out if you want. For our porcelain functions we provide a simple
+debug-friendly logger (`ConsoleLogger`) that will output everything via
+`console.error`:
+
+```ts
+import { porcelain } from "tea"
+import { ConsoleLogger } from "tea/src/plumbing/install"
+const { exec } = porcelain.run
+
+const logger = ConsoleLogger()
+await exec("youtube-dl youtu.be/xiq5euezOEQ", logger)
 ```
 
 ### Advanced Usage

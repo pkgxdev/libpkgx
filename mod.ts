@@ -24,6 +24,8 @@ import install from "./src/plumbing/install.ts"
 import resolve from "./src/plumbing/resolve.ts"
 import { validatePackageRequirement } from "./src/utils/hacks.ts"
 import useSync from "./src/hooks/useSync.ts"
+import run from "./src/porcelain/run.ts"
+import porcelain_install from "./src/porcelain/install.ts"
 
 const utils = {
   pkg, host, flatmap, validate, panic
@@ -50,11 +52,16 @@ const plumbing = {
   resolve
 }
 
+const porcelain = {
+  install: porcelain_install,
+  run
+}
+
 const hacks = {
   validatePackageRequirement
 }
 
-export { utils, hooks, plumbing, hacks, semver }
+export { utils, hooks, plumbing, porcelain, hacks, semver }
 
 /// export types
 // we cannot add these to the above objects or they cannot be used as types
