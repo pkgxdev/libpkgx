@@ -6,8 +6,9 @@ import hydrate from "../plumbing/hydrate.ts"
 import resolve from "../plumbing/resolve.ts"
 import install from "../plumbing/install.ts"
 import useSync from "../hooks/useSync.ts"
-import Path from "../utils/Path.ts"
 import link from "../plumbing/link.ts"
+import { promisify } from "node:util"
+import Path from "../utils/Path.ts"
 
 async function setup(cmd: string, env: Record<string, string | undefined> | undefined) {
   const pantry = usePantry()
@@ -41,7 +42,7 @@ async function setup(cmd: string, env: Record<string, string | undefined> | unde
   if (env) for (const [key, value] of Object.entries(env)) {
     if (!value) {
       continue
-    } else if (env[key]) {
+    } else if (pkgenv[key]) {
       pkgenv[key].push(value)
     } else {
       pkgenv[key] = [value]
@@ -52,20 +53,20 @@ async function setup(cmd: string, env: Record<string, string | undefined> | unde
 }
 
 export async function spawn(cmd: string, args: (string | Path)[] = [], opts?: SpawnOptions) {
-  const env = await setup(cmd, opts?.env)
   opts ??= {}
-  opts.env = env
-  return node.spawn(cmd[0], args.map(x=>x.toString()), opts)
+  opts.env = await setup(cmd, opts.env)
+  return node.spawn(cmd, args.map(x => x.toString()), opts)
 }
 
-export async function exec(cmd: string, opts?: ExecOptions) {
+export async function exec(cmd: string, opts?: ExecOptions): Promise<{stdout: string, stderr: string }> {
   cmd = cmd.trim()
+  opts ??= {}
+
   const pivot = cmd.indexOf(' ')
   const arg0 = cmd.slice(0, pivot)
-  const env = await setup(arg0, opts?.env)
-  opts ??= {}
-  opts.env = env
-  return node.exec(arg0, opts)
+  opts.env = await setup(arg0, opts.env)
+
+  return promisify(node.exec)(cmd, opts)
 }
 
 export default { spawn, exec }

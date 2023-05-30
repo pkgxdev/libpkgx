@@ -64,6 +64,15 @@ useConfig({ prefix: Path.home().join(".local/share/my-app") })
 //     /home/you/.local/share/my-app/python.org/v3.10.11/bin/python
 ```
 
+### Advanced Usage
+
+The library is split into plumbing and porcelain (copying git’s lead).
+The porcelain is what most people need, but if you need more control, dive
+into the porcelain sources to see how to use the plumbing primitives to get
+precisely what you need.
+
+Perhaps what you create should go into the porcelain? If so, please open a PR.
+
 ### Notes
 
 We use a hook-like pattern because it is great. This library is not itself
