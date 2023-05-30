@@ -148,3 +148,33 @@ deno coverage cov_profile --lcov --output=cov_profile.lcov
 tea genhtml -o cov_profile/html cov_profile.lcov
 open cov_profile/html/index.html
 ```
+
+
+&nbsp;
+
+# Tasks
+
+Run eg. `xc bump patch`.
+
+## Bump
+
+Bumps version by creating a pre-release which then engages the deployment
+infra in GitHub Actions.
+
+```sh
+if ! git diff-index --quiet HEAD --; then
+  echo "error: dirty working tree" >&2
+  exit 1
+fi
+
+if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
+  echo "error: requires main branch" >&2
+  exit 1
+fi
+
+V=$(git describe --tags --abbrev=0 --match "v[0-9]*.[0-9]*.[0-9]*")
+V=$(tea semverator bump $V $PRIORITY)
+
+git push origin main
+tea gh release create "v$V" --prerelease --generate-notes --title
+```
