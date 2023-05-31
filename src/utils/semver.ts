@@ -115,6 +115,11 @@ export function parse(input: string) {
   }
 }
 
+/// determines if the input is in fact a valid semantic version
+export function isValid(input: string) {
+  return parse(input) !== undefined
+}
+
 /// we don’t support as much as node-semver but we refuse to do so because it is badness
 export class Range {
   // contract [0, 1] where 0 != 1 and 0 < 1

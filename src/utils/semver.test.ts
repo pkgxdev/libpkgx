@@ -34,6 +34,15 @@ Deno.test("semver", async test => {
     assertEquals(semver.parse("1")?.toString(), "1.0.0")
   })
 
+  await test.step("isValidSemVer", () => {
+    assert(semver.isValid("1.2.3.4.5"))
+    assert(semver.isValid("1a"))
+    assert(semver.isValid("20.4"))
+    assert(semver.isValid("2023.05.10"))
+    assertFalse(semver.isValid("a"))
+    assertFalse(semver.isValid("!#!@#!@#"))
+  })
+
   await test.step("satisfies", () => {
     assertEquals(new semver.Range("=3.1.0").max([new SemVer("3.1.0")]), new SemVer("3.1.0"))
   })
