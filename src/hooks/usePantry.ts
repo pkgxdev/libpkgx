@@ -154,7 +154,7 @@ export default function usePantry() {
   const neglected = () => {
     const stat = Deno.statSync(prefix.string)
     if (!stat.mtime) return true
-    return (Date.now() - stat.mtime.getMilliseconds()) > 24 * 60 * 60 * 1000
+    return (Date.now() - stat.mtime.getTime()) > 24 * 60 * 60 * 1000
   }
 
   return {
