@@ -3,3 +3,7 @@
 /dist
 /cov_profile
 /cov_profile.lcov
+/examples/jfk.wav*
+/examples/node_modules
+/examples/package.json
+/examples/package-lock.json
