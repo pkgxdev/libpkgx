@@ -42,25 +42,23 @@ import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 import { porcelain } from "@teaxyz/lib";
 const { run } = porcelain;
 
-await run(`python -c '
+const py = `
 import sys
 
 print(sys.version)
-`).exec();
-// • installs python and its deps (into ~/.tea/python.org/v3.x.y)
-// • runs the command (via /bin/sh)
-// • output goes to the terminal
-// • throws on execution error or non-zero exit code
+`;
 
-const { code, stdout } = await run(`python -c '
-import sys
+await run(`python -c '${py}'`).exec();
+// ^^ installs python and its deps (into ~/.tea/python.org/v3.x.y)
+// ^^ runs the command (via /bin/sh)
+// ^^ output goes to the terminal
+// ^^ throws on execution error or non-zero exit code
 
-print(sys.version)
-`).capture("stdout").exec();
-// • installs python and its deps
-// • runs the command (via /bin/sh)
-// • captures stdout, stderr goes to the shell
-// • doesn’t throw if there’s a non-zero exit code, returns code instead
+const { code, stdout } = await run(`python -c '${py}'`).capture("stdout").exec();
+// ^^ installs python and its deps
+// ^^ runs the command (via /bin/sh)
+// ^^ captures stdout, stderr goes to the shell
+// ^^ doesn’t throw if there’s a non-zero exit code, returns code instead
 
 console.log("python:", code, stdout);
 ```
