@@ -70,9 +70,9 @@ await build({
         import: "./esm/src/utils/semver.js",
         require: "./script/src/utils/semver.js"
       },
-      "./porcelain/install": {
-        import: "./esm/src/porcelain/install.js",
-        require: "./script/src/porcelain/install.js"
+      "./plumbing/install": {
+        import: "./esm/src/plumbing/install.js",
+        require: "./script/src/plumbing/install.js"
       }
     }
   },
