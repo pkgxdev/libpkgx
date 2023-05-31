@@ -24,7 +24,7 @@ Deno.test("porcelain.runx", async runner => {
 
   await runner.step(async function stdout() {
     useTestConfig()
-    const { stdout } = await run(['python', '-c', "import os; os.getenv('FOO')"], { stdout: true, env: { FOO: "FOO" } })
+    const { stdout } = await run(['python', '-c', "import os; print(os.getenv('FOO'))"], { stdout: true, env: { FOO: "FOO" } })
     assertEquals(stdout, "FOO\n")
   })
 
