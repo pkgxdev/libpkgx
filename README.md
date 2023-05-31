@@ -230,6 +230,8 @@ open cov_profile/html/index.html
 Bumps version by creating a pre-release which then engages the deployment
 infra in GitHub Actions.
 
+Inputs: LEVEL
+
 ```sh
 if ! git diff-index --quiet HEAD --; then
   echo "error: dirty working tree" >&2
@@ -242,8 +244,8 @@ if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
 fi
 
 V=$(git describe --tags --abbrev=0 --match "v[0-9]*.[0-9]*.[0-9]*")
-V=$(tea semverator bump $V $PRIORITY)
+V=$(tea semverator bump $V $LEVEL)
 
 git push origin main
-tea gh release create "v$V" --prerelease --generate-notes --title
+tea gh release create "v$V" --prerelease --generate-notes --title "v$V"
 ```

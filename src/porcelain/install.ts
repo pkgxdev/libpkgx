@@ -17,7 +17,7 @@ export default async function(pkgs: PackageSpecification[] | string[] | string, 
   const pantry = usePantry()
 
   if (pantry.missing() || pantry.neglected()) {
-    useSync()
+    await useSync()
   }
 
   //TODO parallelize!

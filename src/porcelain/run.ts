@@ -81,7 +81,7 @@ async function setup(cmd: string, env: Record<string, string | undefined>, logge
   const sh = useShellEnv()
 
   if (pantry.missing() || pantry.neglected()) {
-    useSync()
+    await useSync()
   }
 
   const project = await (async () => {
