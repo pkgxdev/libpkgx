@@ -5,7 +5,7 @@ import { Package } from "../types.ts"
 import install from "./install.ts"
 import link from "./link.ts";
 
-Deno.test("prefab.link", async runner => {
+Deno.test("plumbing.link", async runner => {
   const pkg: Package = {
     project: "tea.xyz/brewkit",
     version: new SemVer("0.30.0")

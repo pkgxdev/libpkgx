@@ -63,7 +63,16 @@ await build({
     },
     exports: {
       "./src/src/utils/semver": {
+        //TODO remove when gui is updated to use `@teaxyz/lib/semver`
         import: "./src/src/utils/semver.ts"
+      },
+      "./semver": {
+        import: "./esm/src/utils/semver.js",
+        require: "./script/src/utils/semver.js"
+      },
+      "./porcelain/install": {
+        import: "./esm/src/porcelain/install.js",
+        require: "./script/src/porcelain/install.js"
       }
     }
   },

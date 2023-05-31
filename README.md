@@ -38,69 +38,103 @@ import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 
 ## Usage
 
-To install and utilize Python 3.10:
+```ts
+import { porcelain } from "@teaxyz/lib";
+const { run } = porcelain;
+
+await run(`python -c 'print("Hello, World!")'`).exec();
+// ^^ installs python and its deps (into ~/.tea/python.org/v3.x.y)
+// ^^ runs the command
+// ^^ output goes to the terminal
+// ^^ throws on execution error or non-zero exit code
+// ^^ executes via `/bin/sh` (so quoting and that work as expected)
+```
+
+Capturing stdout is easy:
 
 ```ts
-import { prefab, semver, hooks } from "@teaxyz/lib"
-import { exec } from "node:child_process"
-const { install, hydrate, resolve } = prefab
-const { useSync, useShellEnv } = hooks
-
-// ensure pantry exists and is up-to-date
-await useSync()
-
-// define the pkg(s) you want
-// see https://devhints.io/semver for semver syntax (~, ^, etc)
-const pkg = { project: 'python.org', constraint: semver.Range("~3.10") }
-// hydrate the full dependency tree
-const { pkgs: tree } = await hydrate(pkg)
-// resolve the tree of constraints to specific package versions
-const { installed, pending } = await resolve(tree)
-
-for (const pkg of pending) {
-  const installation = await install(pkg)
-  // ^^ install packages that aren’t yet installed
-  // ^^ takes a logger parameter so you can show progress to the user
-  // ^^ you could do these in parallel to speed things up
-  // ^^ by default, versioned installs go to ~/.tea, separated from the user’s system. The install location can be customized, see next section.
-  await link(installation)
-  // ^^ creates v*, vx, vx.y symlinks ∵ some packages depend on this
-  installed.push(installation)
-}
-
-const { map, flatten } = useShellEnv()
-const env = flatten(map(installed))
-
-exec("python -c 'print(\"Hello, World!\")'", { env })
-
-// the above is quite verbose, but we’ll provide a façade pattern soon
+const { stdout } = await run(`ruby -e 'puts ", World!"'`, { stdout: true });
+console.log("Hello,", code);
 ```
+
+> `{ stderr: true }` also works.
+
+If there’s a non-zero exit code, we `throw`. However, when you need to,
+you can capture it instead:
+
+```ts
+const { status } = await run(`perl -e 'exit(7)'`, { status: true });
+assert(status == 7);  // ^^ didn’t throw!
+```
+
+> The run function’s options also takes `env` if you need to supplement or
+> replace the inherited environment (which is passed by default).
+
+Need a specific version of something? [tea][tea/cli] can install any version
+of any package:
+
+```ts
+const { install, run } = porcelain;
+
+const node16 = await install("nodejs.org^16.18");  // ※ https://devhints.io/semver
+
+await run(['node', '-e', 'console.log(process.version)']);
+// => v16.18.1
+```
+
+> Notice we passed args as `string[]`. This is also supported and is often
+> preferable since shell quoting rules can be tricky. If you pass `string[]`
+> we execute the command directly rather than via `/bin/sh`.
 
 All of tea’s packages are relocatable so you can configure libtea to install
 wherever you want:
 
 ```ts
-import { hooks, Path } from "tea"
-const { useConfig } = hooks
+import { hooks, Path, porcelain } from "tea";
+const { install } = porcelain;
+const { useConfig } = hooks;
 
-useConfig({ prefix: Path.home().join(".local/share/my-app") })
-// ^^ must be done before any other libtea calls
+useConfig({ prefix: Path.home().join(".local/share/my-app") });
+// ^^ must be done **before** any other libtea calls
 
-// now if you install python you’ll get:
-//     /home/you/.local/share/my-app/python.org/v3.10.11/bin/python
+const go = await install("go.dev");
+// ^^ /home/you/.local/share/my-app/go.dev/v1.20.4
 ```
 
-### Notes
+### Designed for Composibility
 
-We use a hook-like pattern because it is great. This library is not itself
-designed for React.
+The library is split into [plumbing] and [porcelain] (copying git’s lead).
+The porcelain is what most people need, but if you need more control, dive
+into the porcelain sources to see how to use the plumbing primitives to get
+precisely what you need.
+
+For example if you want to run a command with node’s `spawn` instead it is
+simple enough to first use our porcelain `install` function then grab the
+`env` you’ll need to pass to `spawn` using our `useShellEnv` hook.
+
+Perhaps what you create should go into the porcelain? If so, please open a PR.
+
+### Logging
+
+Most functions take an optional `logger` parameter so you can output logging
+information if you so choose. `tea/cli` has a fairly sophisticated logger, so
+go check that out if you want. For our porcelain functions we provide a simple
+debug-friendly logger (`ConsoleLogger`) that will output everything via
+`console.error`:
+
+```ts
+import { porcelain, plumbing, utils } from "tea"
+const { ConsoleLogger } = utils
+const { run } = porcelain
+
+const logger = ConsoleLogger()
+await run("youtube-dl youtu.be/xiq5euezOEQ", logger).exec()
+```
 
 ### Caveats
 
-If the user has no existing tea/cli or you use your own prefix then the
-pantry must be sync’d with `useSync()` at least once. `useSync` requires
-either `git` or `tar` to be in `PATH`. We’ll remove this requirement with
-time.
+We use a hook-like pattern because it is great. This library is not itself
+designed for React.
 
 We have our own implementation of semver because open source has existed for
 decades and Semantic Versioning is much newer than that. Our implementation is
@@ -114,10 +148,15 @@ before any other calls might happen. We call it explicitly in our code so you
 will need to call it yourself in such a case. This is not ideal and we’d
 appreciate your help in fixing it.
 
-There is minimal magic, [tea/cli] has magic because the end-user appreciates
-it but libraries need well defined behavior. We will provide a façade patterns
-to make life easier, but the primitives of libtea require you to read the
-docs to use them effectively.
+The plumbing has no magic. Libraries need well defined behavior.
+You’ll need to read the docs to use them effectively.
+
+libtea almost certainly will not work in a browser. Potentially its possible.
+The first step would be compiling our bottles to WASM. We could use your help
+with that…
+
+Windows is not yet supported, but we otherwise support everything tea/cli
+does.
 
 ## What Packages are Available?
 
@@ -126,6 +165,9 @@ We can install anything in the [pantry].
 If something you need is not there, adding to the pantry has been designed to
 be an easy and enjoyable process. Your contribution is both welcome and
 desired!
+
+To see what is available refer to the [pantry] docs or you can run:
+`tea pkg search foo`.
 
 &nbsp;
 
@@ -139,7 +181,12 @@ We would be thrilled to hear your ideas† or receive your pull requests.
 ## Anatomy
 
 The code is written with Deno (just like [tea/cli]) but is compiled to a
-node package for wider accessibility (and ∵ [tea/gui] is node/electron)
+node package for wider accessibility (and ∵ [tea/gui] is node/electron).
+
+The library is architected into hooks, plumbing and porcelain. Where the hooks
+represent the low level primitives of pkging, the plumbing glues those
+primitives together into useful components and the porcelain is a user
+friendly *façade* pattern for the plumbing.
 
 ## Supporting Other Languages
 
@@ -149,6 +196,9 @@ the scope *tight*. Probably we would prefer to have one repo per language.
 tea has sensible rules for how packages are defined and installed so writing
 a port should be simple.
 
+We would love to explore how possible writing this in rust and then compiling
+to WASM for all other languages would be. Can you help?
+
 Open a [discussion] to start.
 
 [discussion]: https://github.com/orgs/teaxyz/discussions
@@ -156,11 +206,15 @@ Open a [discussion] to start.
 [tea/gui]: https://github.com/teaxyz/gui
 [Deno]: https://deno.land
 [pantry]: https://github.com/teaxyz/pantry
+[plumbing]: ./plumbing/
+[porcelain]: ./porcelain/
 
 &nbsp;
 
 
 # Tasks
+
+Run eg. `xc coverage` or `xc bump patch`.
 
 ## Coverage
 
@@ -169,4 +223,27 @@ deno task test --coverage=cov_profile
 deno coverage cov_profile --lcov --output=cov_profile.lcov
 tea genhtml -o cov_profile/html cov_profile.lcov
 open cov_profile/html/index.html
+```
+
+## Bump
+
+Bumps version by creating a pre-release which then engages the deployment
+infra in GitHub Actions.
+
+```sh
+if ! git diff-index --quiet HEAD --; then
+  echo "error: dirty working tree" >&2
+  exit 1
+fi
+
+if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
+  echo "error: requires main branch" >&2
+  exit 1
+fi
+
+V=$(git describe --tags --abbrev=0 --match "v[0-9]*.[0-9]*.[0-9]*")
+V=$(tea semverator bump $V $PRIORITY)
+
+git push origin main
+tea gh release create "v$V" --prerelease --generate-notes --title
 ```

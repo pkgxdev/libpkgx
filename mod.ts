@@ -18,15 +18,17 @@ import useFetch from "./src/hooks/useFetch.ts"
 import useDownload from "./src/hooks/useDownload.ts"
 import useShellEnv from "./src/hooks/useShellEnv.ts"
 import useInventory from "./src/hooks/useInventory.ts"
-import hydrate from "./src/prefab/hydrate.ts"
-import link from "./src/prefab/link.ts"
-import install from "./src/prefab/install.ts"
-import resolve from "./src/prefab/resolve.ts"
+import hydrate from "./src/plumbing/hydrate.ts"
+import link from "./src/plumbing/link.ts"
+import install, { ConsoleLogger } from "./src/plumbing/install.ts"
+import resolve from "./src/plumbing/resolve.ts"
 import { validatePackageRequirement } from "./src/utils/hacks.ts"
 import useSync from "./src/hooks/useSync.ts"
+import run from "./src/porcelain/run.ts"
+import porcelain_install from "./src/porcelain/install.ts"
 
 const utils = {
-  pkg, host, flatmap, validate, panic
+  pkg, host, flatmap, validate, panic, ConsoleLogger
 }
 
 const hooks = {
@@ -43,18 +45,23 @@ const hooks = {
   useSync,
 }
 
-const prefab = {
+const plumbing = {
   hydrate,
   link,
   install,
   resolve
 }
 
+const porcelain = {
+  install: porcelain_install,
+  run
+}
+
 const hacks = {
   validatePackageRequirement
 }
 
-export { utils, hooks, prefab, hacks, semver }
+export { utils, hooks, plumbing, porcelain, hacks, semver }
 
 /// export types
 // we cannot add these to the above objects or they cannot be used as types

@@ -13,33 +13,6 @@ import useCache from "../hooks/useCache.ts"
 import useFetch from "../hooks/useFetch.ts"
 import Path from "../utils/Path.ts"
 
-
-export interface Logger {
-  locking(pkg: Package): void
-  /// raw http info
-  downloading(info: {pkg: Package, src?: URL, dst?: Path, rcvd?: number, total?: number}): void
-  /// we are simultaneously downloading and untarring the bottle
-  /// the install progress here is proper and tied to download progress
-  /// progress is a either a fraction between 0 and 1 or the number of bytes that have been untarred
-  /// we try to give you the fraction as soon as possible, but you will need to deal with both formats
-  installing(info: {pkg: Package, progress: number | undefined}): void
-  unlocking(pkg: Package): void
-  installed(installation: Installation): void
-}
-
-// deno-lint-ignore no-explicit-any
-export function ConsoleLogger(prefix?: any): Logger {
-  prefix = prefix ? `${prefix}: ` : ""
-  return {
-    locking: function() { console.error(`${prefix}locking`, ...arguments) },
-    downloading: function() { console.error(`${prefix}downloading`, ...arguments) },
-    installing: function() { console.error(`${prefix}installing`, ...arguments) },
-    unlocking: function() { console.error(`${prefix}unlocking`, ...arguments) },
-    installed: function() { console.error(`${prefix}installed`, ...arguments) }
-  }
-}
-
-
 export default async function install(pkg: Package, logger?: Logger): Promise<Installation> {
   const { project, version } = pkg
 
@@ -134,4 +107,30 @@ async function remote_SHA(url: URL) {
   if (!rsp.ok) throw rsp
   const txt = await rsp.text()
   return txt.split(' ')[0]
+}
+
+
+export interface Logger {
+  locking(pkg: Package): void
+  /// raw http info
+  downloading(info: {pkg: Package, src?: URL, dst?: Path, rcvd?: number, total?: number}): void
+  /// we are simultaneously downloading and untarring the bottle
+  /// the install progress here is proper and tied to download progress
+  /// progress is a either a fraction between 0 and 1 or the number of bytes that have been untarred
+  /// we try to give you the fraction as soon as possible, but you will need to deal with both formats
+  installing(info: {pkg: Package, progress: number | undefined}): void
+  unlocking(pkg: Package): void
+  installed(installation: Installation): void
+}
+
+// deno-lint-ignore no-explicit-any
+export function ConsoleLogger(prefix?: any): Logger {
+  prefix = prefix ? `${prefix}: ` : ""
+  return {
+    locking: function() { console.error(`${prefix}locking`, ...arguments) },
+    downloading: function() { console.error(`${prefix}downloading`, ...arguments) },
+    installing: function() { console.error(`${prefix}installing`, ...arguments) },
+    unlocking: function() { console.error(`${prefix}unlocking`, ...arguments) },
+    installed: function() { console.error(`${prefix}installed`, ...arguments) }
+  }
 }

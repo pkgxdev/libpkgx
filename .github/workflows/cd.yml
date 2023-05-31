@@ -14,7 +14,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  check:
+    uses: ./.github/workflows/ci.yml
+
   build:
+    needs: [check]
     if: ${{ github.event.release.prerelease }}
     runs-on: ubuntu-latest
     steps:
