@@ -40,18 +40,29 @@ import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 
 ```ts
 import { porcelain } from "@teaxyz/lib";
-const { run: { exec } } = porcelain;
+const { run } = porcelain;
 
-const { stdout } = await exec(`python -c '
+await run(`python -c '
 import sys
 
 print(sys.version)
-`);
-// ^^ installs python and its deps into ~/.tea, then runs it
-// we take the same options as node:child_process.exec and should behave the
-// same, if not they it’s a bug please report it!
+`).exec();
+// • installs python and its deps (into ~/.tea/python.org/v3.x.y)
+// • runs the command (via /bin/sh)
+// • output goes to the terminal
+// • throws on execution error or non-zero exit code
 
-console.log("python:", stdout);
+const { code, stdout } = await run(`python -c '
+import sys
+
+print(sys.version)
+`).capture("stdout").exec();
+// • installs python and its deps
+// • runs the command (via /bin/sh)
+// • captures stdout, stderr goes to the shell
+// • doesn’t throw if there’s a non-zero exit code, returns code instead
+
+console.log("python:", code, stdout);
 ```
 
 All of tea’s packages are relocatable so you can configure libtea to install
@@ -69,6 +80,19 @@ await install("python.org")
 // ^^ /home/you/.local/share/my-app/python.org/v3.11/bin/python
 ```
 
+### Designed for Composibility
+
+The library is split into plumbing and porcelain (copying git’s lead).
+The porcelain is what most people need, but if you need more control, dive
+into the porcelain sources to see how to use the plumbing primitives to get
+precisely what you need.
+
+For example if you want to run a command with node’s `spawn` instead it is
+simple enough to first use our porcelain `install` function then grab the
+`env` you’ll need to pass to `spawn` using our `useShellEnv` hook.
+
+Perhaps what you create should go into the porcelain? If so, please open a PR.
+
 ### Logging
 
 Most functions take an optional `logger` parameter so you can output logging
@@ -78,34 +102,18 @@ debug-friendly logger (`ConsoleLogger`) that will output everything via
 `console.error`:
 
 ```ts
-import { porcelain } from "tea"
-import { ConsoleLogger } from "tea/src/plumbing/install"
-const { exec } = porcelain.run
+import { porcelain, plumbing } from "tea"
+const { ConsoleLogger } = plumbing.install
+const { run } = porcelain
 
 const logger = ConsoleLogger()
-await exec("youtube-dl youtu.be/xiq5euezOEQ", logger)
+await run("youtube-dl youtu.be/xiq5euezOEQ", logger).exec()
 ```
-
-### Advanced Usage
-
-The library is split into plumbing and porcelain (copying git’s lead).
-The porcelain is what most people need, but if you need more control, dive
-into the porcelain sources to see how to use the plumbing primitives to get
-precisely what you need.
-
-Perhaps what you create should go into the porcelain? If so, please open a PR.
-
-### Notes
-
-We use a hook-like pattern because it is great. This library is not itself
-designed for React.
 
 ### Caveats
 
-If the user has no existing tea/cli or you use your own prefix then the
-pantry must be sync’d with `useSync()` at least once. `useSync` requires
-either `git` or `tar` to be in `PATH`. We’ll remove this requirement with
-time.
+We use a hook-like pattern because it is great. This library is not itself
+designed for React.
 
 We have our own implementation of semver because open source has existed for
 decades and Semantic Versioning is much newer than that. Our implementation is
@@ -119,14 +127,15 @@ before any other calls might happen. We call it explicitly in our code so you
 will need to call it yourself in such a case. This is not ideal and we’d
 appreciate your help in fixing it.
 
-There is minimal magic, [tea/cli] has magic because the end-user appreciates
-it but libraries need well defined behavior. We will provide a façade patterns
-to make life easier, but the primitives of libtea require you to read the
-docs to use them effectively.
+The plumbing has no magic. Libraries need well defined behavior.
+You’ll need to read the docs to use them effectively.
 
 libtea almost certainly will not work in a browser. Potentially its possible.
 The first step would be compiling our bottles to WASM. We could use your help
 with that…
+
+Windows is not yet supported, but we otherwise support everything tea/cli
+does.
 
 ## What Packages are Available?
 
