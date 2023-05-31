@@ -42,7 +42,7 @@ import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 import { porcelain } from "@teaxyz/lib";
 const { run } = porcelain;
 
-await run(`python -c 'print("Hello, World!")'`).exec();
+await run(`python -c 'print("Hello, World!")'`);
 // ^^ installs python and its deps (into ~/.tea/python.org/v3.x.y)
 // ^^ runs the command
 // ^^ output goes to the terminal
@@ -98,7 +98,7 @@ useConfig({ prefix: Path.home().join(".local/share/my-app") });
 // ^^ must be done **before** any other libtea calls
 
 const go = await install("go.dev");
-// ^^ /home/you/.local/share/my-app/go.dev/v1.20.4
+// ^^ go.path = /home/you/.local/share/my-app/go.dev/v1.20.4
 ```
 
 ### Designed for Composibility
@@ -128,13 +128,10 @@ const { ConsoleLogger } = utils
 const { run } = porcelain
 
 const logger = ConsoleLogger()
-await run("youtube-dl youtu.be/xiq5euezOEQ", logger).exec()
+await run("youtube-dl youtu.be/xiq5euezOEQ", { logger }).exec()
 ```
 
 ### Caveats
-
-We use a hook-like pattern because it is great. This library is not itself
-designed for React.
 
 We have our own implementation of semver because open source has existed for
 decades and Semantic Versioning is much newer than that. Our implementation is
@@ -155,8 +152,10 @@ libtea almost certainly will not work in a browser. Potentially its possible.
 The first step would be compiling our bottles to WASM. We could use your help
 with that…
 
-Windows is not yet supported, but we otherwise support everything tea/cli
-does.
+We use a hook-like pattern because it is great. This library is not itself
+designed for React.
+
+We support the same platforms as [tea/cli].
 
 ## What Packages are Available?
 
