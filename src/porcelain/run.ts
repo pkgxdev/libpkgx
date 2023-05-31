@@ -22,27 +22,29 @@ import { isArray } from "is-what"
 //   return new RunPromise(args.shift()!, args, opts)
 // }
 
-interface Options {
+interface OptsEx {
   env?: Record<string, string | undefined>
   logger?: Logger
+}
 
+type Options = {
   stdout?: boolean
   stderr?: boolean
   status?: boolean
-}
+} & OptsEx
 
 type Cmd = string | (string | Path)[]
 
 /// if you pass a single string we call that string via /bin/sh
 /// if you don’t want that pass an array of args
 export default async function run(cmd: Cmd): Promise<void>;
-export default async function run(cmd: Cmd, opts: {stdout: true}): Promise<{ stdout: string }>;
-export default async function run(cmd: Cmd, opts: {stderr: true}): Promise<{ stderr: string }>;
-export default async function run(cmd: Cmd, opts: {status: true}): Promise<{ status: number }>;
-export default async function run(cmd: Cmd, opts: {stdout: true, stderr: true}): Promise<{ stdout: string, stderr: string }>;
-export default async function run(cmd: Cmd, opts: {stdout: true, status: true}): Promise<{ stdout: string, status: number }>;
-export default async function run(cmd: Cmd, opts: {stderr: true, status: true}): Promise<{ stderr: string, status: number }>;
-export default async function run(cmd: Cmd, opts: {stdout: true, stderr: true, status: true }): Promise<{ stdout: string, stderr: string, status: number }>;
+export default async function run(cmd: Cmd, opts: {stdout: true} & OptsEx): Promise<{ stdout: string }>;
+export default async function run(cmd: Cmd, opts: {stderr: true} & OptsEx): Promise<{ stderr: string }>;
+export default async function run(cmd: Cmd, opts: {status: true} & OptsEx): Promise<{ status: number }>;
+export default async function run(cmd: Cmd, opts: {stdout: true, stderr: true} & OptsEx): Promise<{ stdout: string, stderr: string }>;
+export default async function run(cmd: Cmd, opts: {stdout: true, status: true} & OptsEx): Promise<{ stdout: string, status: number }>;
+export default async function run(cmd: Cmd, opts: {stderr: true, status: true} & OptsEx): Promise<{ stderr: string, status: number }>;
+export default async function run(cmd: Cmd, opts: {stdout: true, stderr: true, status: true } & OptsEx): Promise<{ stdout: string, stderr: string, status: number }>;
 export default async function run(cmd: Cmd, opts?: Options): Promise<void|{ stdout?: string|undefined; stderr?: string|undefined; status?: number|undefined; }> {
   const [arg0, [spawn0, args]] = (() => {
     if (isArray(cmd)) {
@@ -128,76 +130,76 @@ async function setup(cmd: string, env: Record<string, string | undefined>, logge
   return sh.flatten(pkgenv)
 }
 
-interface Options {
-  env?: Record<string, string | undefined>
-  logger?: Logger
-}
+// interface Options {
+//   env?: Record<string, string | undefined>
+//   logger?: Logger
+// }
 
-class RunPromise<T> implements PromiseLike<T> {
-  private stdout: 'pipe' | 'inherit' = 'inherit'
-  private stderr: 'pipe' | 'inherit' = 'inherit'
-  private spawned = false
-  private promise: Promise<{stdout: string, stderr: string, status: number}>
+// class RunPromise<T> implements PromiseLike<T> {
+//   private stdout: 'pipe' | 'inherit' = 'inherit'
+//   private stderr: 'pipe' | 'inherit' = 'inherit'
+//   private spawned = false
+//   private promise: Promise<{stdout: string, stderr: string, status: number}>
 
-  capture(wut: 'stdout' | 'stderr'): RunPromise<{ stdout: string, status: number }> {
-    if (this.spawned) {
-      console.warn('tea: capture() called after proc spawned; capture will be empty')
-    }
-    if (wut == 'stdout') {
-      this.stdout = 'pipe'
-    } else {
-      this.stderr = 'pipe'
-    }
-    return this as RunPromise<{ stdout: string, status: number }>
-  }
+//   capture(wut: 'stdout' | 'stderr'): RunPromise<{ stdout: string, status: number }> {
+//     if (this.spawned) {
+//       console.warn('tea: capture() called after proc spawned; capture will be empty')
+//     }
+//     if (wut == 'stdout') {
+//       this.stdout = 'pipe'
+//     } else {
+//       this.stderr = 'pipe'
+//     }
+//     return this as RunPromise<{ stdout: string, status: number }>
+//   }
 
-  async status(): Promise<number> {
-    try {
-      const { status } = await this as { status: number }
-      return status
-    } catch (err) {
-      if (err instanceof RunError && err.code == 'EIO') {
-        return err.cause as number
-      } else {
-        throw err
-      }
-    }
-  }
+//   async status(): Promise<number> {
+//     try {
+//       const { status } = await this as { status: number }
+//       return status
+//     } catch (err) {
+//       if (err instanceof RunError && err.code == 'EIO') {
+//         return err.cause as number
+//       } else {
+//         throw err
+//       }
+//     }
+//   }
 
-  constructor(cmd: string, args: string[], opts?: Options) {
-    this.promise = new Promise((resolve, reject) => {
-      setup(cmd, opts?.env ?? Deno.env.toObject(), opts?.logger).then(env => {
-        const proc = spawn(cmd, args, { env, stdio: ["pipe", this.stdout, this.stderr] })
+//   constructor(cmd: string, args: string[], opts?: Options) {
+//     this.promise = new Promise((resolve, reject) => {
+//       setup(cmd, opts?.env ?? Deno.env.toObject(), opts?.logger).then(env => {
+//         const proc = spawn(cmd, args, { env, stdio: ["pipe", this.stdout, this.stderr] })
 
-        this.spawned = true
+//         this.spawned = true
 
-        let stdout = '', stderr = ''
-        proc.stdout?.on('data', data => stdout += data)
-        proc.stderr?.on('data', data => stderr += data)
-        proc.on('close', status => {
-          if (status && (this.stdout == 'inherit' || this.stderr == 'inherit')) {
-            const err = new RunError('EIO', `${cmd} exited with: ${status}`)
-            err.cause = status
-            reject(err)
-          } else {
-            const fulfill = resolve as ({}) => void
-            fulfill({ stdout, stderr, status })
-          }
-        })
-      }, reject)
-    })
-  }
+//         let stdout = '', stderr = ''
+//         proc.stdout?.on('data', data => stdout += data)
+//         proc.stderr?.on('data', data => stderr += data)
+//         proc.on('close', status => {
+//           if (status && (this.stdout == 'inherit' || this.stderr == 'inherit')) {
+//             const err = new RunError('EIO', `${cmd} exited with: ${status}`)
+//             err.cause = status
+//             reject(err)
+//           } else {
+//             const fulfill = resolve as ({}) => void
+//             fulfill({ stdout, stderr, status })
+//           }
+//         })
+//       }, reject)
+//     })
+//   }
 
-  then<TResult1 = T, TResult2 = never>(
-    onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
-    // deno-lint-ignore no-explicit-any
-    onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
-  ): PromiseLike<TResult1 | TResult2>
-  {
-    // deno-lint-ignore no-explicit-any
-    return this.promise.then(onFulfilled as any, onRejected);
-  }
-}
+//   then<TResult1 = T, TResult2 = never>(
+//     onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+//     // deno-lint-ignore no-explicit-any
+//     onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+//   ): PromiseLike<TResult1 | TResult2>
+//   {
+//     // deno-lint-ignore no-explicit-any
+//     return this.promise.then(onFulfilled as any, onRejected);
+//   }
+// }
 
 
 type RunErrorCode = 'ENOENT' | 'EUSAGE' | 'EIO'
@@ -211,46 +213,46 @@ class RunError extends Error {
   }
 }
 
-function split(str: string): string[] {
-  const args = [];
-  let currentArg = '';
+// function split(str: string): string[] {
+//   const args = [];
+//   let currentArg = '';
 
-  let insideQuotes = false;
-  let escapeNext = false;
+//   let insideQuotes = false;
+//   let escapeNext = false;
 
-  for (let i = 0; i < str.length; i++) {
-    const char = str[i];
+//   for (let i = 0; i < str.length; i++) {
+//     const char = str[i];
 
-    if (escapeNext) {
-      currentArg += char;
-      escapeNext = false;
-      continue;
-    }
+//     if (escapeNext) {
+//       currentArg += char;
+//       escapeNext = false;
+//       continue;
+//     }
 
-    if (char === '\\') {
-      escapeNext = true;
-      continue;
-    }
+//     if (char === '\\') {
+//       escapeNext = true;
+//       continue;
+//     }
 
-    if (char === '"') {
-      insideQuotes = !insideQuotes;
-      continue;
-    }
+//     if (char === '"') {
+//       insideQuotes = !insideQuotes;
+//       continue;
+//     }
 
-    if (char === ' ' && !insideQuotes) {
-      if (currentArg !== '') {
-        args.push(currentArg);
-        currentArg = '';
-      }
-      continue;
-    }
+//     if (char === ' ' && !insideQuotes) {
+//       if (currentArg !== '') {
+//         args.push(currentArg);
+//         currentArg = '';
+//       }
+//       continue;
+//     }
 
-    currentArg += char;
-  }
+//     currentArg += char;
+//   }
 
-  if (currentArg !== '') {
-    args.push(currentArg);
-  }
+//   if (currentArg !== '') {
+//     args.push(currentArg);
+//   }
 
-  return args;
-}
+//   return args;
+// }

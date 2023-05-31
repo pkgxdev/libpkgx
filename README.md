@@ -42,40 +42,44 @@ import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 import { porcelain } from "@teaxyz/lib";
 const { run } = porcelain;
 
-const py = `
-import sys
-
-print(sys.version)
-`;
-
-await run(`python -c '${py}'`).exec();
+await run(`python -c 'print("Hello, World!")'`).exec();
 // ^^ installs python and its deps (into ~/.tea/python.org/v3.x.y)
 // ^^ runs the command (via /bin/sh)
 // ^^ output goes to the terminal
 // ^^ throws on execution error or non-zero exit code
+// ^^ executes via `/bin/sh`, so ensure you adhere to POSIX shell syntax
+```
 
-const { code, stdout } = await run(`python -c '${py}'`).capture("stdout").exec();
-// ^^ installs python and its deps
-// ^^ runs the command (via /bin/sh)
-// ^^ captures stdout, stderr goes to the shell
-// ^^ doesn’t throw if there’s a non-zero exit code, returns code instead
+Capturing stdout is easy:
 
-console.log("python:", code, stdout);
+> Just add `{ stderr: true }` to get that too/instead
+
+```ts
+const { stdout } = await run(`ruby -e 'puts ", World!"'`, { stdout: true });
+console.log("Hello,", code);
+```
+
+We throw if there’s a non-zero exit code by default, but you can capture it
+instead:
+
+```ts
+const { status } = await run(`perl -e 'exit(7)'`, { status: true });
+assert(status == 7);
 ```
 
 All of tea’s packages are relocatable so you can configure libtea to install
 wherever you want:
 
 ```ts
-import { hooks, Path, porcelain } from "tea"
-const { install } = porcelain
-const { useConfig } = hooks
+import { hooks, Path, porcelain } from "tea";
+const { install } = porcelain;
+const { useConfig } = hooks;
 
-useConfig({ prefix: Path.home().join(".local/share/my-app") })
-// ^^ must be done before any other libtea calls
+useConfig({ prefix: Path.home().join(".local/share/my-app") });
+// ^^ must be done **before** any other libtea calls
 
-await install("python.org")
-// ^^ /home/you/.local/share/my-app/python.org/v3.11/bin/python
+const go = await install("go.dev");
+// ^^ /home/you/.local/share/my-app/go.dev/v1.20.4
 ```
 
 ### Designed for Composibility

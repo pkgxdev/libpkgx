@@ -21,6 +21,12 @@ Deno.test("porcelain.runx", async runner => {
     useTestConfig()
     await assertRejects(() => run(`python -c 'import sys; sys.exit(7)'`))
   })
+
+  await runner.step(async function stdout() {
+    useTestConfig()
+    const { stdout } = await run(['python', '-c', "import os; os.getenv('FOO')"], { stdout: true, env: { FOO: "FOO" } })
+    assertEquals(stdout, "FOO")
+  })
 })
 
 // Deno.test("porcelain.spawn", async () => {
