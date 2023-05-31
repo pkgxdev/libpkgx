@@ -275,7 +275,15 @@ export default class Path {
 
   rm({recursive} = {recursive: false}) {
     if (this.exists()) {
-      Deno.removeSync(this.string, { recursive })
+      try {
+        Deno.removeSync(this.string, { recursive })
+      } catch (err) {
+        if (this.exists()) {
+          throw err
+        } else {
+          // this is what we wanted, so noop
+        }
+      }
     }
     return this  // may seem weird but I've had cases where I wanted to chain
   }

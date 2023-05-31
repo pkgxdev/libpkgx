@@ -44,10 +44,10 @@ const { run } = porcelain;
 
 await run(`python -c 'print("Hello, World!")'`).exec();
 // ^^ installs python and its deps (into ~/.tea/python.org/v3.x.y)
-// ^^ runs the command (via /bin/sh)
+// ^^ runs the command
 // ^^ output goes to the terminal
 // ^^ throws on execution error or non-zero exit code
-// ^^ executes via `/bin/sh`, so ensure you adhere to POSIX shell syntax
+// ^^ executes via `/bin/sh` (so quoting and that work as expected)
 ```
 
 Capturing stdout is easy:
@@ -64,23 +64,27 @@ you can capture it instead:
 
 ```ts
 const { status } = await run(`perl -e 'exit(7)'`, { status: true });
-assert(status == 7);
+assert(status == 7);  // ^^ didn’t throw!
 ```
 
 > The run function’s options also takes `env` if you need to supplement or
 > replace the inherited environment (which is passed by default).
 
-Need a specific version of something? tea can install any version of any
-package:
+Need a specific version of something? [tea][tea/cli] can install any version
+of any package:
 
 ```ts
 const { install, run } = porcelain;
 
 const node16 = await install("nodejs.org^16.18");  // ※ https://devhints.io/semver
 
-await run(`node -e 'console.log(process.version)'`);
+await run(['node', '-e', 'console.log(process.version)']);
 // => v16.18.1
 ```
+
+> Notice we passed args as `string[]`. This is also supported and is often
+> preferable since shell quoting rules can be tricky. If you pass `string[]`
+> we execute the command directly rather than via `/bin/sh`.
 
 All of tea’s packages are relocatable so you can configure libtea to install
 wherever you want:
@@ -99,7 +103,7 @@ const go = await install("go.dev");
 
 ### Designed for Composibility
 
-The library is split into plumbing and porcelain (copying git’s lead).
+The library is split into [plumbing] and [porcelain] (copying git’s lead).
 The porcelain is what most people need, but if you need more control, dive
 into the porcelain sources to see how to use the plumbing primitives to get
 precisely what you need.
@@ -197,6 +201,8 @@ Open a [discussion] to start.
 [tea/gui]: https://github.com/teaxyz/gui
 [Deno]: https://deno.land
 [pantry]: https://github.com/teaxyz/pantry
+[plumbing]: ./plumbing/
+[porcelain]: ./porcelain/
 
 &nbsp;
 
