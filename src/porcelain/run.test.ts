@@ -27,23 +27,18 @@ Deno.test("porcelain.runx", async runner => {
     const { stdout } = await run(['python', '-c', "import os; os.getenv('FOO')"], { stdout: true, env: { FOO: "FOO" } })
     assertEquals(stdout, "FOO")
   })
+
+  await runner.step(async function stderr() {
+    useTestConfig()
+    const { stderr } = await run(['node', '-e', "console.error(process.env.FOO)"], { stderr: true, env: { FOO: "BAR" } })
+    assertEquals(stderr, "BAR")
+  })
+
+  await runner.step(async function captureAll() {
+    useTestConfig()
+    const { stderr, stdout, status } = await run(['node', '-e', "console.error(1); console.log(2); process.exit(3"], { stderr: true, stdout: true, status: true })
+    assertEquals(stderr, "1\n")
+    assertEquals(stdout, "2\n")
+    assertEquals(status, 3)
+  })
 })
-
-// Deno.test("porcelain.spawn", async () => {
-//   useTestConfig()
-//   const proc = await run(['node', '-e', 'console.log(process.env.FOO)'], { env: { FOO: "1" } })
-
-//   const stdout = await new Promise<string>((resolve, reject) => {
-//     let output = ''
-//     proc.stdout!.on('data', data => output += data)
-//     proc.on('close', code => {
-//       if (code !== 0) {
-//         reject(code)
-//       } else {
-//         resolve(output)
-//       }
-//     })
-//   })
-
-//   assertEquals(stdout.trim(), "1")
-// })
