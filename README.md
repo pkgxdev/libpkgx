@@ -52,19 +52,34 @@ await run(`python -c 'print("Hello, World!")'`).exec();
 
 Capturing stdout is easy:
 
-> Just add `{ stderr: true }` to get that too/instead
-
 ```ts
 const { stdout } = await run(`ruby -e 'puts ", World!"'`, { stdout: true });
 console.log("Hello,", code);
 ```
 
-We throw if there’s a non-zero exit code by default, but you can capture it
-instead:
+> `{ stderr: true }` also works.
+
+If there’s a non-zero exit code, we `throw`. However, when you need to,
+you can capture it instead:
 
 ```ts
 const { status } = await run(`perl -e 'exit(7)'`, { status: true });
 assert(status == 7);
+```
+
+> The run function’s options also takes `env` if you need to supplement or
+> replace the inherited environment (which is passed by default).
+
+Need a specific version of something? tea can install any version of any
+package:
+
+```ts
+const { install, run } = porcelain;
+
+const node16 = await install("nodejs.org^16.18");  // ※ https://devhints.io/semver
+
+await run(`node -e 'console.log(process.version)'`);
+// => v16.18.1
 ```
 
 All of tea’s packages are relocatable so you can configure libtea to install
@@ -146,6 +161,9 @@ We can install anything in the [pantry].
 If something you need is not there, adding to the pantry has been designed to
 be an easy and enjoyable process. Your contribution is both welcome and
 desired!
+
+To see what is available refer to the [pantry] docs or you can run:
+`tea pkg search foo`.
 
 &nbsp;
 
