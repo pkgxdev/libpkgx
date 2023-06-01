@@ -6,7 +6,7 @@ import TeaError from "../utils/error.ts"
 /// NOTE resolves to bottles
 /// NOTE contract there are no duplicate projects in input
 
-interface RT {
+export interface Resolution {
   /// fully resolved list (includes both installed and pending)
   pkgs: Package[]
 
@@ -22,10 +22,10 @@ interface RT {
 /// that resolve so if we are resolving `node>=12`, node 13 is installed, but
 /// node 19 is the latest we return node 13. if `update` is true we return node
 /// 19 and *you will need to install it*.
-export default async function resolve(reqs: (Package | PackageRequirement)[], {update}: {update: boolean} = {update: false}): Promise<RT> {
+export default async function resolve(reqs: (Package | PackageRequirement)[], {update}: {update: boolean} = {update: false}): Promise<Resolution> {
   const inventory = _internals.useInventory()
   const cellar = _internals.useCellar()
-  const rv: RT = { pkgs: [], installed: [], pending: [] }
+  const rv: Resolution = { pkgs: [], installed: [], pending: [] }
   let installation: Installation | undefined
   for (const req of reqs) {
     if (!update && (installation = await cellar.has(req))) {

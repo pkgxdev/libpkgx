@@ -12,6 +12,7 @@ import { flock } from "../utils/flock.deno.ts"
 import useCache from "../hooks/useCache.ts"
 import useFetch from "../hooks/useFetch.ts"
 import Path from "../utils/Path.ts"
+import type { Resolution } from "./resolve.ts"
 
 export default async function install(pkg: Package, logger?: Logger): Promise<Installation> {
   const { project, version } = pkg
@@ -23,7 +24,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
   const tarball = useCache().path(stowage)
   const shelf = tea_prefix.join(pkg.project)
 
-  logger?.locking(pkg)
+  logger?.locking?.(pkg)
   const { rid: fd } = await Deno.open(shelf.mkdir('p').string)
   await flock(fd, 'ex')
 
@@ -32,11 +33,11 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     if (already_installed) {
       // some other tea instance installed us while we were waiting for the lock
       // or potentially we were already installed and the caller is naughty
-      logger?.installed(already_installed)
+      logger?.installed?.(already_installed)
       return already_installed
     }
 
-    logger?.downloading({pkg})
+    logger?.downloading?.({pkg})
 
     const tmpdir = Path.mktemp({
       dir: tea_prefix.join("local/tmp").join(pkg.project),
@@ -58,13 +59,13 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
       src: url,
       dst: tarball,
       logger: info => {
-        logger?.downloading({ pkg, ...info })
+        logger?.downloading?.({ pkg, ...info })
         total ??= info.total
       }
     }, blob => {
       n += blob.length
       hasher.update(blob)
-      logger?.installing({ pkg, progress: total ? n / total : total })
+      logger?.installing?.({ pkg, progress: total ? n / total : total })
       return writeAll(untar.stdin, blob)
     })
 
@@ -89,14 +90,14 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     const path = tmpdir.mv({ to: shelf.join(`v${pkg.version}`) })
     const install = { pkg, path }
 
-    logger?.installed(install)
+    logger?.installed?.(install)
 
     return install
   } catch (err) {
     tarball.rm()  //FIXME resumable downloads!
     throw err
   } finally {
-    logger?.unlocking(pkg)
+    logger?.unlocking?.(pkg)
     await flock(fd, 'un')
     Deno.close(fd)  // docs aren't clear if we need to do this or not
   }
@@ -111,22 +112,24 @@ async function remote_SHA(url: URL) {
 
 
 export interface Logger {
-  locking(pkg: Package): void
+  resolved?(resolution: Resolution): void
+  locking?(pkg: Package): void
   /// raw http info
-  downloading(info: {pkg: Package, src?: URL, dst?: Path, rcvd?: number, total?: number}): void
+  downloading?(info: {pkg: Package, src?: URL, dst?: Path, rcvd?: number, total?: number}): void
   /// we are simultaneously downloading and untarring the bottle
   /// the install progress here is proper and tied to download progress
   /// progress is a either a fraction between 0 and 1 or the number of bytes that have been untarred
   /// we try to give you the fraction as soon as possible, but you will need to deal with both formats
-  installing(info: {pkg: Package, progress: number | undefined}): void
-  unlocking(pkg: Package): void
-  installed(installation: Installation): void
+  installing?(info: {pkg: Package, progress: number | undefined}): void
+  unlocking?(pkg: Package): void
+  installed?(installation: Installation): void
 }
 
 // deno-lint-ignore no-explicit-any
 export function ConsoleLogger(prefix?: any): Logger {
   prefix = prefix ? `${prefix}: ` : ""
   return {
+    resolved: function() { console.error(`${prefix}resolved`, ...arguments) },
     locking: function() { console.error(`${prefix}locking`, ...arguments) },
     downloading: function() { console.error(`${prefix}downloading`, ...arguments) },
     installing: function() { console.error(`${prefix}installing`, ...arguments) },

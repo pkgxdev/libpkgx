@@ -23,7 +23,10 @@ export default async function(pkgs: PackageSpecification[] | string[] | string, 
   //TODO parallelize!
 
   pkgs = (await hydrate(pkgs)).pkgs
-  const { pending, installed } = await resolve(pkgs)
+  const resolved = await resolve(pkgs)
+  logger?.resolved?.(resolved)
+
+  const { pending, installed} = resolved
   for (const pkg of pending) {
     const installation = await install(pkg, logger)
     await link(installation)

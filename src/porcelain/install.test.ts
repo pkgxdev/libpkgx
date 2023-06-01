@@ -1,5 +1,8 @@
 import { useTestConfig } from "../hooks/useTestConfig.ts"
-import { assert } from "deno/testing/asserts.ts"
+import { assert, assertArrayIncludes } from "deno/testing/asserts.ts"
+import { ConsoleLogger } from "../plumbing/install.ts"
+import type { Package } from "../types.ts";
+import type { Resolution } from "../plumbing/resolve.ts";
 import * as semver from "../utils/semver.ts"
 import install from "./install.ts"
 
@@ -26,4 +29,19 @@ Deno.test("porcelain.install.3", async () => {
 Deno.test("porcelain.install.4", async () => {
   useTestConfig()
     await install([{ project: 'tea.xyz/brewkit', constraint: new semver.Range("^0.31") }])
+})
+
+Deno.test("porcelain.install.resolved", async () => {
+  useTestConfig()
+
+  let resolution: Resolution = { pkgs: [] as Package[] } as Resolution
+  const logger = {
+    ...ConsoleLogger(),
+    resolved: (r: Resolution) => resolution = r
+  }
+
+  await install("tea.xyz/brewkit^0.32", logger)
+
+  const resolvedProjects = resolution.pkgs.map((p: Package) => p.project)
+  assertArrayIncludes(resolvedProjects, [ "deno.land", "gnu.org/bash", "tea.xyz", "tea.xyz/brewkit"])
 })
