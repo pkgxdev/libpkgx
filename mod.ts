@@ -19,6 +19,7 @@ import useDownload from "./src/hooks/useDownload.ts"
 import useShellEnv from "./src/hooks/useShellEnv.ts"
 import useInventory from "./src/hooks/useInventory.ts"
 import hydrate from "./src/plumbing/hydrate.ts"
+import which from "./src/plumbing/which.ts"
 import link from "./src/plumbing/link.ts"
 import install, { ConsoleLogger } from "./src/plumbing/install.ts"
 import resolve from "./src/plumbing/resolve.ts"
@@ -49,7 +50,8 @@ const plumbing = {
   hydrate,
   link,
   install,
-  resolve
+  resolve,
+  which
 }
 
 const porcelain = {

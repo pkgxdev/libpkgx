@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "deno/testing/asserts.ts"
+import { assertEquals, assertMatch, assertRejects } from "deno/testing/asserts.ts"
 import { useTestConfig } from "../hooks/useTestConfig.ts"
 import run from "./run.ts"
 
@@ -9,6 +9,19 @@ Deno.test("porcelain.run", async runner => {
     assertEquals(stdout, "")
     assertEquals(stderr, "")
     assertEquals(status, 0)
+  })
+
+  await runner.step("node^16", async runner => {
+    useTestConfig()
+    await runner.step("string", async () => {
+      const { stdout } = await run('node^16 --version', { stdout: true })
+      assertMatch(stdout, /^v16\./)
+    })
+
+    await runner.step("array", async () => {
+      const { stdout } = await run(['node^16', '--version'], { stdout: true })
+      assertMatch(stdout, /^v16\./)
+    })
   })
 
   await runner.step("env", async () => {

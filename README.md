@@ -74,11 +74,7 @@ Need a specific version of something? [tea][tea/cli] can install any version
 of any package:
 
 ```ts
-const { install, run } = porcelain;
-
-const node16 = await install("nodejs.org^16.18");  // ※ https://devhints.io/semver
-
-await run(['node', '-e', 'console.log(process.version)']);
+await run("node^16 -e 'console.log(process.version)'");
 // => v16.18.1
 ```
 
