@@ -1,12 +1,12 @@
-import { Installation, PackageSpecification } from "../types.ts"
 import install, { Logger as InstallLogger } from "../plumbing/install.ts"
+import { Installation, PackageSpecification } from "../types.ts"
+import resolve, { Resolution } from "../plumbing/resolve.ts"
 import usePantry from "../hooks/usePantry.ts"
 import hydrate from "../plumbing/hydrate.ts"
-import resolve, { Resolution } from "../plumbing/resolve.ts"
-import { isArray, isString } from "is-what"
+import useSync from "../hooks/useSync.ts"
 import { parse } from "../utils/pkg.ts"
 import link from "../plumbing/link.ts"
-import useSync from "../hooks/useSync.ts";
+import { isString } from "is-what"
 
 export interface Logger extends InstallLogger {
   resolved?(resolution: Resolution): void
@@ -15,7 +15,7 @@ export interface Logger extends InstallLogger {
 /// eg. install("python.org~3.10")
 export default async function(pkgs: PackageSpecification[] | string[] | string, logger?: Logger): Promise<Installation[]> {
 
-  if (!isArray(pkgs)) pkgs = [pkgs]
+  if (isString(pkgs)) pkgs = pkgs.split(/\s+/)
   pkgs = pkgs.map(pkg => isString(pkg) ? parse(pkg) : pkg)
 
   const pantry = usePantry()

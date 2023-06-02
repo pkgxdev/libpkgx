@@ -1,11 +1,11 @@
 import install, { Logger } from "../plumbing/install.ts"
 import useShellEnv from '../hooks/useShellEnv.ts'
 import usePantry from '../hooks/usePantry.ts'
-import * as semver from "../utils/semver.ts"
 import hydrate from "../plumbing/hydrate.ts"
 import resolve from "../plumbing/resolve.ts"
 import { spawn } from "node:child_process"
 import useSync from "../hooks/useSync.ts"
+import which from "../plumbing/which.ts"
 import link from "../plumbing/link.ts"
 import Path from "../utils/Path.ts"
 import { isArray } from "is-what"
@@ -34,24 +34,33 @@ export default async function run(cmd: Cmd, opts: {stdout: true, status: true} &
 export default async function run(cmd: Cmd, opts: {stderr: true, status: true} & OptsEx): Promise<{ stderr: string, status: number }>;
 export default async function run(cmd: Cmd, opts: {stdout: true, stderr: true, status: true } & OptsEx): Promise<{ stdout: string, stderr: string, status: number }>;
 export default async function run(cmd: Cmd, opts?: Options): Promise<void|{ stdout?: string|undefined; stderr?: string|undefined; status?: number|undefined; }> {
-  const [arg0, [spawn0, args]] = (() => {
-    if (isArray(cmd)) {
-      if (cmd.length == 0) {
-        throw new RunError('EUSAGE', `\`cmd\` evaluated empty: ${cmd}`)
-      }
-      const arg0 = cmd.shift()!.toString()
-      return [arg0, [arg0, cmd.map(x => x.toString())]]
-    } else {
+
+  const { usesh, arg0: whom } = (() => {
+    if (!isArray(cmd)) {
       const s = cmd.trim()
       const i = s.indexOf(' ')
-      return [s.slice(0, i), ['/bin/sh', ['-c', cmd]]]
+      const usesh = i >= 0
+      const arg0 = s.slice(0, i)
+      cmd = s.slice(i + 1)
+      return { usesh, arg0 }
+    } else if (cmd.length == 0) {
+      throw new RunError('EUSAGE', `\`cmd\` evaluated empty: ${cmd}`)
+    } else {
+      return {
+        usesh: false,
+        arg0: cmd.shift()!.toString().trim()
+      }
     }
   })()
 
-  const env = await setup(arg0, opts?.env ?? Deno.env.toObject(), opts?.logger)
+  const { env, shebang } = await setup(whom, opts?.env ?? Deno.env.toObject(), opts?.logger)
+  const arg0 = usesh ? '/bin/sh' : shebang.shift()!
+  const args = usesh
+    ? ['-c', `${shebang.join(' ')} ${cmd}`]
+    : [...shebang, ...(cmd as (string | Path)[]).map(x => x.toString())]
 
   return new Promise((resolve, reject) => {
-    const proc = spawn(spawn0, args, {
+    const proc = spawn(arg0, args, {
       env,
       stdio: [
         "pipe",
@@ -84,18 +93,10 @@ async function setup(cmd: string, env: Record<string, string | undefined>, logge
     await useSync()
   }
 
-  const project = await (async () => {
-    for await (const { project } of pantry.ls()) {
-      const provides = await pantry.project(project).provides()
-      //TODO handle eg. node^16 here
-      if (provides.includes(cmd)) {
-        return project
-      }
-    }
-    throw new RunError('ENOENT', `No project in pantry provides ${cmd}`)
-  })()
+  const wut = await which(cmd)
+  if (!wut) throw new RunError('ENOENT', `No project in pantry provides ${cmd}`)
 
-  const { pkgs } = await hydrate({ project, constraint: new semver.Range('*') })
+  const { pkgs } = await hydrate(wut)
   const { pending, installed } = await resolve(pkgs)
   for (const pkg of pending) {
     const installation = await install(pkg, logger)
@@ -115,7 +116,7 @@ async function setup(cmd: string, env: Record<string, string | undefined>, logge
     }
   }
 
-  return sh.flatten(pkgenv)
+  return { env: sh.flatten(pkgenv), shebang: wut.shebang }
 }
 
 
