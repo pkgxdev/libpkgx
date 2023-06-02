@@ -1,15 +1,14 @@
 import install, { Logger } from "../plumbing/install.ts"
 import useShellEnv from '../hooks/useShellEnv.ts'
 import usePantry from '../hooks/usePantry.ts'
-import * as semver from "../utils/semver.ts"
 import hydrate from "../plumbing/hydrate.ts"
 import resolve from "../plumbing/resolve.ts"
 import { spawn } from "node:child_process"
 import useSync from "../hooks/useSync.ts"
+import which from "../plumbing/which.ts"
 import link from "../plumbing/link.ts"
 import Path from "../utils/Path.ts"
 import { isArray } from "is-what"
-import which from "../plumbing/which.ts";
 
 interface OptsEx {
   env?: Record<string, string | undefined>
