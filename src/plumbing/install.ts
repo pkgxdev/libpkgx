@@ -12,7 +12,6 @@ import { flock } from "../utils/flock.deno.ts"
 import useCache from "../hooks/useCache.ts"
 import useFetch from "../hooks/useFetch.ts"
 import Path from "../utils/Path.ts"
-import type { Resolution } from "./resolve.ts"
 
 export default async function install(pkg: Package, logger?: Logger): Promise<Installation> {
   const { project, version } = pkg
@@ -112,7 +111,6 @@ async function remote_SHA(url: URL) {
 
 
 export interface Logger {
-  resolved?(resolution: Resolution): void
   locking?(pkg: Package): void
   /// raw http info
   downloading?(info: {pkg: Package, src?: URL, dst?: Path, rcvd?: number, total?: number}): void
@@ -129,7 +127,6 @@ export interface Logger {
 export function ConsoleLogger(prefix?: any): Logger {
   prefix = prefix ? `${prefix}: ` : ""
   return {
-    resolved: function() { console.error(`${prefix}resolved`, ...arguments) },
     locking: function() { console.error(`${prefix}locking`, ...arguments) },
     downloading: function() { console.error(`${prefix}downloading`, ...arguments) },
     installing: function() { console.error(`${prefix}installing`, ...arguments) },

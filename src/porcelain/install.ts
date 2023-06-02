@@ -1,12 +1,16 @@
 import { Installation, PackageSpecification } from "../types.ts"
-import install, { Logger } from "../plumbing/install.ts"
+import install, { Logger as InstallLogger } from "../plumbing/install.ts"
 import usePantry from "../hooks/usePantry.ts"
 import hydrate from "../plumbing/hydrate.ts"
-import resolve from "../plumbing/resolve.ts"
+import resolve, { Resolution } from "../plumbing/resolve.ts"
 import { isArray, isString } from "is-what"
 import { parse } from "../utils/pkg.ts"
 import link from "../plumbing/link.ts"
 import useSync from "../hooks/useSync.ts";
+
+export interface Logger extends InstallLogger {
+  resolved?(resolution: Resolution): void
+}
 
 /// eg. install("python.org~3.10")
 export default async function(pkgs: PackageSpecification[] | string[] | string, logger?: Logger): Promise<Installation[]> {
@@ -23,10 +27,10 @@ export default async function(pkgs: PackageSpecification[] | string[] | string, 
   //TODO parallelize!
 
   pkgs = (await hydrate(pkgs)).pkgs
-  const resolved = await resolve(pkgs)
-  logger?.resolved?.(resolved)
+  const resolution = await resolve(pkgs)
+  logger?.resolved?.(resolution)
 
-  const { pending, installed} = resolved
+  const { pending, installed} = resolution
   for (const pkg of pending) {
     const installation = await install(pkg, logger)
     await link(installation)
