@@ -1,5 +1,5 @@
+import { flatmap } from "../utils/misc.ts"
 import host from "../utils/host.ts"
-import { flatmap } from "../utils/misc.ts";
 import Path from "../utils/Path.ts"
 
 export interface Config {

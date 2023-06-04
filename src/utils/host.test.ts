@@ -1,6 +1,5 @@
 import { assert, assertEquals, assertThrows, fail } from "deno/testing/asserts.ts"
-import { SupportedPlatform } from "../types.ts"
-import host, { _internals } from "./host.ts"
+import host, { _internals, SupportedPlatform } from "./host.ts"
 import { stub } from "deno/testing/mock.ts"
 
 Deno.test("host()", async () => {

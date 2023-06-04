@@ -1,5 +1,6 @@
 import { PackageRequirement } from "../types.ts"
-import { isString, isNumber } from "is-what"
+import { is_what } from "../deps.ts"
+const { isString, isNumber } = is_what
 import * as semver from "./semver.ts"
 import host from "./host.ts"
 

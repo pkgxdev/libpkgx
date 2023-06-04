@@ -1,5 +1,12 @@
-import { SupportedPlatform, SupportedArchitecture } from "../types.ts"
 import process from "node:process"
+
+// when we support more variants of these that require specification
+// we will tuple a version in with each eg. 'darwin' | ['windows', 10 | 11 | '*']
+export const SupportedPlatforms = ["darwin" , "linux" , "windows"] as const
+export type SupportedPlatform = typeof SupportedPlatforms[number]
+
+export const SupportedArchitectures = ["x86-64", "aarch64"] as const
+export type SupportedArchitecture = typeof SupportedArchitectures[number]
 
 interface HostReturnValue {
   platform: SupportedPlatform

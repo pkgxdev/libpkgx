@@ -6,7 +6,8 @@ import hydrate from "../plumbing/hydrate.ts"
 import useSync from "../hooks/useSync.ts"
 import { parse } from "../utils/pkg.ts"
 import link from "../plumbing/link.ts"
-import { isString } from "is-what"
+import { is_what } from "../deps.ts"
+const { isString } = is_what
 
 export interface Logger extends InstallLogger {
   resolved?(resolution: Resolution): void

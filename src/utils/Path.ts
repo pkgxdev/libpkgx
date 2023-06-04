@@ -1,12 +1,11 @@
-import { parse as parseYaml } from "https://deno.land/std@0.182.0/encoding/yaml.ts"
-import { readLines } from "deno/io/read_lines.ts"
-import * as sys from "deno/path/mod.ts"
-import { PlainObject } from "is-what"
-import * as fs from "deno/fs/mod.ts"
+import { deno, PlainObject } from "../deps.ts"
 import { mkdtempSync } from "node:fs"
+import * as sys from "node:path"
 import * as os from "node:os"
 
-// based on https://github.com/mxcl/Path.swift
+const { io: { readLines }, fs, parseYaml } = deno
+
+// modeled after https://github.com/mxcl/Path.swift
 
 // everything is Sync because TypeScript will unfortunately not
 // cascade `await`, meaning our chainable syntax would become:
@@ -339,7 +338,7 @@ export default class Path {
   async readYAML(): Promise<unknown> {
     try {
       const txt = await this.read()
-      return parseYaml(txt)
+      return parseYaml(txt, { filename: this.string /*improves err msgs*/ })
     } catch (err) {
       err.cause = this.string
       throw err

@@ -1,6 +1,7 @@
-import { PlainObject, isPlainObject, isRegExp, isString } from "is-what"
+import { is_what, outdent, PlainObject } from "../deps.ts"
+const { isPlainObject, isRegExp, isString } = is_what
+const undent = outdent.default
 import * as pkg from "./pkg.ts"
-import undent from "outdent"
 
 type ID =
   'not-found: tea -X: arg0' |

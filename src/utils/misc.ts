@@ -1,6 +1,7 @@
 //CONTRACT you can’t use anything from hooks
 
-import { isPlainObject, isArray, PlainObject } from "is-what"
+import { is_what, PlainObject } from "../deps.ts"
+const { isPlainObject, isArray } = is_what
 
 function validate_str(input: unknown): string {
   if (typeof input == 'boolean') return input ? 'true' : 'false'
