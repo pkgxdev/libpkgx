@@ -1,4 +1,5 @@
-import { isArray, isString } from "is-what"
+import { is_what } from "../deps.ts"
+const { isArray, isString } = is_what
 
 /**
  * we have our own implementation because open source is full of weird

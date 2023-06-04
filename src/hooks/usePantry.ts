@@ -1,4 +1,5 @@
-import { isNumber, isPlainObject, isString, isArray, isPrimitive, PlainObject, isBoolean } from "is-what"
+import { is_what, PlainObject } from "../deps.ts"
+const { isNumber, isPlainObject, isString, isArray, isPrimitive, isBoolean } = is_what
 import { validatePackageRequirement } from "../utils/hacks.ts"
 import { Package, Installation } from "../types.ts"
 import useMoustaches from "./useMoustaches.ts"

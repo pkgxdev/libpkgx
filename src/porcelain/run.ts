@@ -8,7 +8,8 @@ import useSync from "../hooks/useSync.ts"
 import which from "../plumbing/which.ts"
 import link from "../plumbing/link.ts"
 import Path from "../utils/Path.ts"
-import { isArray } from "is-what"
+import { is_what } from "../deps.ts"
+const { isArray } = is_what
 
 interface OptsEx {
   env?: Record<string, string | undefined>

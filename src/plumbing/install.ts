@@ -4,7 +4,8 @@
 import { createHash } from "https://deno.land/std@0.177.0/node/crypto.ts"
 import { Package, Installation, StowageNativeBottle } from "../types.ts"
 import useOffLicense from "../hooks/useOffLicense.ts"
-import { writeAll } from "deno/streams/write_all.ts"
+import { deno } from "../deps.ts"
+const { streams: { writeAll } } = deno
 import useDownload from "../hooks/useDownload.ts"
 import useConfig from "../hooks/useConfig.ts"
 import useCellar from "../hooks/useCellar.ts"

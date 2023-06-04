@@ -1,7 +1,8 @@
 import { PackageRequirement, Package } from "../types.ts"
 import * as semver from "../utils/semver.ts"
 import usePantry from "../hooks/usePantry.ts"
-import { isArray } from "is-what"
+import { is_what } from "../deps.ts"
+const { isArray } = is_what
 
 
 //TODO linktime cyclic dependencies cannot be allowed

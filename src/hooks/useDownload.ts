@@ -1,5 +1,6 @@
-import { crypto, toHashString } from "deno/crypto/mod.ts"
-import { writeAll } from "deno/streams/write_all.ts"
+import { deno } from "../deps.ts"
+const { crypto: crypto_, streams: { writeAll } } = deno
+const { toHashString, crypto } = crypto_
 import TeaError, { panic } from "../utils/error.ts"
 import useConfig from "./useConfig.ts"
 import useFetch from "./useFetch.ts"

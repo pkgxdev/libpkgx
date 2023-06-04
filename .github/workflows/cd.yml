@@ -15,33 +15,50 @@ concurrency:
 
 jobs:
   check:
+    if: ${{ github.event.release.prerelease }}
     uses: ./.github/workflows/ci.yml
 
-  build:
+  dnt:
     needs: [check]
-    if: ${{ github.event.release.prerelease }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - [self-hosted, macOS, X64]
+          - ubuntu-latest  # ∵ resilience: PRs verify dnt with this env
+          - [self-hosted, macOS, ARM64]
+          - [self-hosted, linux, ARM64]
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0
+      - run: deno task dnt ${{ github.event.release.tag_name }}
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        with:
+          path: dist
+
+  publish-npm:
+    needs: [dnt]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
 
       # if we don’t do this the npm publish step doesn’t work
       - uses: actions/setup-node@v2
         with:
           registry-url: https://registry.npmjs.org
 
-      - name: build
-        run: .github/deno-to-node.ts ${{ github.event.release.tag_name }}
-
       - run: npm publish --access public
         working-directory: dist
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  publish:
+  publish-github:
     permissions:
       contents: write
-    needs: [build]
+    needs: [publish-npm]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

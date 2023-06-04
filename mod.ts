@@ -1,12 +1,13 @@
-import host from "./src/utils/host.ts"
-import SemVer, * as semver from "./src/utils/semver.ts"
-import Path from "./src/utils/Path.ts"
-export * as types from "./src/types.ts"
-
 import "./src/utils/misc.ts"
 import { flatmap, validate } from "./src/utils/misc.ts"
 
+import host from "./src/utils/host.ts"
+import SemVer, * as semver from "./src/utils/semver.ts"
+import Path from "./src/utils/Path.ts"
+
+export * as types from "./src/types.ts"
 import * as pkg from "./src/utils/pkg.ts"
+
 import TeaError, { panic } from "./src/utils/error.ts"
 import useConfig from "./src/hooks/useConfig.ts"
 import useOffLicense  from "./src/hooks/useOffLicense.ts"

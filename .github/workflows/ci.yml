@@ -24,17 +24,24 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0
-      - run: deno cache $(find . -name \*.ts)
-      - run: deno task test --coverage=cov_profile --no-check
-      # ^^ no check as we have a separate type-checking step and it’s noise here
+      - run: deno cache mod.ts
+
+      - run: deno task test
+          --coverage=cov_profile
+          --no-check # ⬆signal∶noise & ∵ we have `jobs.typecheck`
+
       - run: deno coverage cov_profile --lcov --exclude=tests/ --output=cov_profile.lcov
+        if: ${{ github.event_name != 'workflow_call' }}
+
       - uses: coverallsapp/github-action@v1
+        if: ${{ github.event_name != 'workflow_call' }}
         with:
           path-to-lcov: cov_profile.lcov
           parallel: true
           flag-name: ${{ matrix.platform.id }}
 
   upload-coverage:
+    if: ${{ github.event_name != 'workflow_call' }}
     needs: tests
     runs-on: ubuntu-latest
     steps:
@@ -42,16 +49,20 @@ jobs:
       with:
         parallel-finished: true
 
+  verify-usage-as-deno-lib:
+    # we’re checking no import-map type imports snuck in
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_call' }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: src
+      - uses: denoland/setup-deno@v1
+      - run: deno run --no-config --unstable src/mod.ts
+
   dnt:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - [self-hosted, macOS, X64]
-          - [self-hosted, linux, X64]
-          - [self-hosted, macOS, ARM64]
-          - [self-hosted, linux, ARM64]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_call' }}
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0
