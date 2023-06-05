@@ -1,10 +1,9 @@
-import { useTestConfig } from "../hooks/useTestConfig.ts"
 import { assert, assertArrayIncludes } from "deno/testing/asserts.ts"
-import { ConsoleLogger } from "../plumbing/install.ts"
-import type { Package } from "../types.ts";
-import type { Resolution } from "../plumbing/resolve.ts";
+import { useTestConfig } from "../hooks/useTestConfig.ts"
+import type { Resolution } from "../plumbing/resolve.ts"
+import install, { ConsoleLogger } from "./install.ts"
 import * as semver from "../utils/semver.ts"
-import install from "./install.ts"
+import type { Package } from "../types.ts"
 
 Deno.test("porcelain.install.1", async () => {
   useTestConfig()
