@@ -31,17 +31,17 @@ jobs:
           --no-check # ⬆signal∶noise & ∵ we have `jobs.typecheck`
 
       - run: deno coverage cov_profile --lcov --exclude=tests/ --output=cov_profile.lcov
-        if: ${{ github.event_name != 'workflow_call' }}
+        if: ${{ github.event_name != 'release' }}
 
       - uses: coverallsapp/github-action@v1
-        if: ${{ github.event_name != 'workflow_call' }}
+        if: ${{ github.event_name != 'release' }}
         with:
           path-to-lcov: cov_profile.lcov
           parallel: true
           flag-name: ${{ matrix.platform.id }}
 
   upload-coverage:
-    if: ${{ github.event_name != 'workflow_call' }}
+    if: ${{ github.event_name != 'release' }}
     needs: tests
     runs-on: ubuntu-latest
     steps:
@@ -52,7 +52,6 @@ jobs:
   verify-usage-as-deno-lib:
     # we’re checking no import-map type imports snuck in
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'workflow_call' }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -62,7 +61,7 @@ jobs:
 
   dnt:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'workflow_call' }}
+    if: ${{ github.event_name != 'release' }}
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0

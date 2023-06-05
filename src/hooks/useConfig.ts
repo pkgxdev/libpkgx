@@ -22,6 +22,7 @@ export function ConfigDefault(env = Deno.env.toObject()): Config {
   const pantries = env['TEA_PANTRY_PATH']?.split(":").compact(x => flatmap(x.trim(), x => Path.abs(x) ?? Path.cwd().join(x))) ?? []
   const cache = Path.abs(env['TEA_CACHE_DIR']) ?? prefix.join('tea.xyz/var/www')
   const isCI = boolize(env['CI']) ?? false
+  //TODO prefer 'xz' on Linux (as well) if supported
   const compression = !isCI && host().platform == 'darwin' ? 'xz' : 'gz'
   return {
     prefix,
