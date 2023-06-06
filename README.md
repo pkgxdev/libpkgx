@@ -166,6 +166,17 @@ To see what is available refer to the [pantry] docs or you can run:
 
 &nbsp;
 
+# Interesting Uses
+
+* You can grab cURL’s CA certificates which we pkg and keep up to date
+  (`curl.se/ca-certs`). These are commonly needed across ecosystems but not
+  always easily accessible.
+* grab libraries that wrappers need like openssl or sqlite
+* run a real database (like postgres) easily
+* load local AI models and their engines
+* load libraries and then use ffi to load symbols
+
+&nbsp;
 
 # Contributing
 

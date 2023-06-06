@@ -1,5 +1,5 @@
-import { is_what } from "../deps.ts"
-const { isArray, isString } = is_what
+//HEY YOU! DO NOT CHANGE THIS TO USE deps.ts since it breaks tea/gui
+import { isArray, isString } from "https://deno.land/x/is_what@v4.1.13/src/index.ts"
 
 /**
  * we have our own implementation because open source is full of weird
