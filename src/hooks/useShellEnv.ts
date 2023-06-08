@@ -80,7 +80,7 @@ async function map({installations}: Options): Promise<Record<string, string[]>> 
     }
 
     // pantry configured runtime environment
-    const runtime = await usePantry().project(installation.pkg).runtime.env(installation.pkg.version)
+    const runtime = await usePantry().project(installation.pkg).runtime.env(installation.pkg.version, installations)
     for (const key in runtime) {
       rv[key] ??= []
       rv[key].push(runtime[key])

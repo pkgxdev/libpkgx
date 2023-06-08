@@ -51,10 +51,10 @@ export default function usePantry() {
 
     const companions = async () => parse_pkgs_node((await yaml())["companions"])
 
-    const runtime_env = async (version: SemVer) => {
+    const runtime_env = async (version: SemVer, deps: Installation[]) => {
       const yml = await yaml()
       const obj = validate.obj(yml["runtime"]?.["env"] ?? {})
-      return expand_env_obj(obj, { project, version }, [])
+      return expand_env_obj(obj, { project, version }, deps)
     }
 
     const available = async (): Promise<boolean> => {

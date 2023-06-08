@@ -1,0 +1,6 @@
+runtime:
+  env:
+    BAZ: ${{deps.bar.com.prefix}}/baz
+
+dependencies:
+  bar.com: ^1
