@@ -265,7 +265,8 @@ export default class Path {
     }
   }
 
-  ///FIXME operates in ”force” mode
+  //FIXME operates in ”force” mode
+  //TODO needs a recursive option
   cp({into}: {into: Path}): Path {
     const dst = into.join(this.basename())
     Deno.copyFileSync(this.string, dst.string)
