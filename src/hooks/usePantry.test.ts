@@ -5,6 +5,7 @@ import { stub } from "deno/testing/mock.ts"
 import SemVer from "../utils/semver.ts"
 import usePantry from "./usePantry.ts"
 import Path from "../utils/Path.ts"
+import { _internals as _config_internals } from "./useConfig.ts"
 
 Deno.test("provides()", async () => {
   const exenames = await usePantry().project("python.org").provides()
@@ -29,7 +30,7 @@ Deno.test("available()", async () => {
 })
 
 Deno.test("runtime.env", async () => {
-  const TEA_PANTRY_PATH = new Path(new URL(import.meta.url).pathname).parent().parent().parent().join("fixtures").string
+  const TEA_PANTRY_PATH = new Path(Deno.env.get("SRCROOT")!).join("fixtures").string
   const { prefix } = useTestConfig({ TEA_PANTRY_PATH  })
 
   const deps = [{
@@ -43,4 +44,6 @@ Deno.test("runtime.env", async () => {
   const env = await usePantry().project("foo.com").runtime.env(new SemVer("2.3.4"), deps)
 
   assertEquals(env.BAZ, prefix.join("bar.com/v1.2.3/baz").string)
+
+  _config_internals.reset()
 })

@@ -78,7 +78,7 @@ export interface RunOptions {
 
 async function run(opts: RunOptions) {
   const cmd = opts.cmd.map(x => `${x}`)
-  const proc = Deno.run({ ...opts, cmd, stdout: 'null' })
+  const proc = Deno.run({ ...opts, cmd, stdout: 'null', clearEnv: true })
   try {
     const exit = await proc.status()
     if (!exit.success) throw new Error(`run.exit(${exit.code})`)
