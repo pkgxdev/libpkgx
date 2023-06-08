@@ -15,7 +15,7 @@ export interface Inventory {
 }
 
 const select = async (rq: PackageRequirement | Package) => {
-  const versions = await get(rq)
+  const versions = await _internals.get(rq)
 
   if ("constraint" in rq) {
     return rq.constraint.max(versions)
@@ -57,3 +57,5 @@ export default function useInventory() {
     get
   }
 }
+
+export const _internals = { get }
