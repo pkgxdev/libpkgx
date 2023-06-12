@@ -50,11 +50,11 @@ await run(`python -c 'print("Hello, World!")'`);
 // ^^ executes via `/bin/sh` (so quoting and that work as expected)
 ```
 
-Capturing stdout is easy:
+Capture stdout easily:
 
 ```ts
 const { stdout } = await run(`ruby -e 'puts ", World!"'`, { stdout: true });
-console.log("Hello,", code);
+console.log("Hello,", stdout);
 ```
 
 > `{ stderr: true }` also works.
@@ -74,7 +74,7 @@ Need a specific version of something? [tea][tea/cli] can install any version
 of any package:
 
 ```ts
-await run("node^16 -e 'console.log(process.version)'");
+await run(["node^16", "-e", "console.log(process.version)"]);
 // => v16.18.1
 ```
 
