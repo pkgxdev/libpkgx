@@ -15,6 +15,8 @@ interface DownloadOptions {
   logger?: (info: {src: URL, dst: Path, rcvd?: number, total?: number }) => void
 }
 
+const tmpname = (dst: Path) => dst.parent().join(dst.basename() + ".incomplete")
+
 async function download(opts: DownloadOptions, chunk?: (blob: Uint8Array) => Promise<void>): Promise<Path> {
   try {
     const [dst, stream] = await the_meat(opts)
@@ -25,7 +27,7 @@ async function download(opts: DownloadOptions, chunk?: (blob: Uint8Array) => Pro
       const writer = await (() => {
         if (stream) {
           dst.parent().mkdir('p')
-          return Deno.open(dst.string, {write: true, create: true, truncate: true})
+          return Deno.open(tmpname(dst).string, {write: true, create: true, truncate: true})
         }
       })()
 
@@ -35,8 +37,14 @@ async function download(opts: DownloadOptions, chunk?: (blob: Uint8Array) => Pro
         if (chunk) pp.push(chunk(blob))
         await Promise.all(pp)
       }
-      if (reader instanceof fs.ReadStream) reader.close()
-      writer?.close()
+
+      if (reader instanceof fs.ReadStream) {
+        reader.close()
+      }
+      if (writer) {
+        writer.close()
+        tmpname(dst).mv({ to: dst })
+      }
     }
 
     return dst
