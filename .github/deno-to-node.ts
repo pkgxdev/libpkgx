@@ -41,7 +41,7 @@ await build({
   },
   importMap: "deno.json",
   mappings: {
-    "https://deno.land/x/is_what@v4.1.13/src/index.ts": "is-what",
+    "https://deno.land/x/is_what@v4.1.15/src/index.ts": "is-what",
     "https://deno.land/x/outdent@v0.8.0/mod.ts": "outdent",
     "./src/utils/flock.deno.ts": "./src/utils/flock.node.ts"
   },
