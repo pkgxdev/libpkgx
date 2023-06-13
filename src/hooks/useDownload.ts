@@ -43,7 +43,7 @@ async function download(opts: DownloadOptions, chunk?: (blob: Uint8Array) => Pro
       }
       if (writer) {
         writer.close()
-        tmpname(dst).mv({ to: dst })
+        tmpname(dst).mv({ to: dst, force: true })
       }
     }
 
