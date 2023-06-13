@@ -87,7 +87,7 @@ function git(_prefix: Path, PATH?: string): Path | undefined {
     //FIXME test! but this is hard to test without docker images or something!
     if (host().platform == 'darwin') {
       if (new Path("/Library/Developer/CommandLineTools/usr/bin/git").isExecutableFile()) return rv
-      if (new Path("/Application/Xcode.app").isDirectory()) return rv
+      if (new Path("/Applications/Xcode.app").isDirectory()) return rv
       return  // don’t use `git`
     }
 
