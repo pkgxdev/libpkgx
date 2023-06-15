@@ -22,17 +22,31 @@ export function ConfigDefault(env = Deno.env.toObject()): Config {
   const pantries = env['TEA_PANTRY_PATH']?.split(":").compact(x => flatmap(x.trim(), x => Path.abs(x) ?? Path.cwd().join(x))) ?? []
   const cache = Path.abs(env['TEA_CACHE_DIR']) ?? prefix.join('tea.xyz/var/www')
   const isCI = boolize(env['CI']) ?? false
+  const UserAgent = flatmap(getv(), v => `tea.lib/${v}`) ?? 'tea.lib'
+
   //TODO prefer 'xz' on Linux (as well) if supported
   const compression = !isCI && host().platform == 'darwin' ? 'xz' : 'gz'
+
   return {
     prefix,
     pantries,
     cache,
-    UserAgent: `tea.lib/0.1.0`, //FIXME version
+    UserAgent,
     options: {
       compression,
     },
     git: git(prefix, env.PATH)
+  }
+}
+
+function getv(): string | undefined {
+  if (typeof Deno === 'undefined') {
+    const url = new URL(import.meta.url)
+    const path = new Path(url.pathname).parent().parent().parent().join("package.json")
+    const blob = Deno.readFileSync(path.string)
+    const txt = new TextDecoder().decode(blob)
+    const { version } = JSON.parse(txt)
+    return typeof version == 'string' ? version : undefined
   }
 }
 
