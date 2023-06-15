@@ -1,18 +1,19 @@
 // deno-lint-ignore-file no-deprecated-deno-api
 // ^^ dnt doesn’t support Deno.Command yet so we’re stuck with the deprecated Deno.run for now
 
-import { createHash } from "https://deno.land/std@0.177.0/node/crypto.ts"
 import { Package, Installation, StowageNativeBottle } from "../types.ts"
 import useOffLicense from "../hooks/useOffLicense.ts"
-import { deno } from "../deps.ts"
-const { streams: { writeAll } } = deno
 import useDownload from "../hooks/useDownload.ts"
+import { flock } from "../utils/flock.deno.ts"
 import useConfig from "../hooks/useConfig.ts"
 import useCellar from "../hooks/useCellar.ts"
-import { flock } from "../utils/flock.deno.ts"
 import useCache from "../hooks/useCache.ts"
 import useFetch from "../hooks/useFetch.ts"
+import { createHash } from "node:crypto"
 import Path from "../utils/Path.ts"
+import { deno } from "../deps.ts"
+
+const { streams: { writeAll } } = deno
 
 export default async function install(pkg: Package, logger?: Logger): Promise<Installation> {
   const { project, version } = pkg
