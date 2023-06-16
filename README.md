@@ -33,7 +33,7 @@ $ npm install @teaxyz/lib
 Or with [Deno]:
 
 ```ts
-import * as tea from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
+import * as tea from "https://deno.land/x/libtea/mod.ts"
 ```
 
 ## Usage
