@@ -227,6 +227,7 @@ export class Range {
 
   /// tolerant to stuff in the wild that hasn’t semver specifiers
   static parse(input: string | number): Range | undefined {
+    if (!input) return
     input = input.toString()
     try {
       return new Range(input)
