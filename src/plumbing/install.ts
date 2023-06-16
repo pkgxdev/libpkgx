@@ -50,6 +50,8 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
       cmd: ["tar", tar_args, "--strip-components", (pkg.project.split("/").length + 1).toString()],
       stdin: 'piped', stdout: "inherit", stderr: "inherit",
       cwd: tmpdir.string,
+      /// hard coding path to ensure we don’t deadlock trying to use ourselves to untar ourselves
+      env: { PATH: "/usr/bin:/bin" }
     })
     const hasher = createHash("sha256")
     const remote_SHA_promise = remote_SHA(new URL(`${url}.sha256sum`))
