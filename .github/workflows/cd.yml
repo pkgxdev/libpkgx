@@ -26,9 +26,10 @@ jobs:
       matrix:
         os:
           - [self-hosted, macOS, X64]
-          - ubuntu-latest  # ∵ resilience: PRs verify dnt with this env
+          - [self-hosted, linux, X64]
           - [self-hosted, macOS, ARM64]
           - [self-hosted, linux, ARM64]
+          - ubuntu-latest  # ∵ resilience: PRs verify dnt with this env
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0

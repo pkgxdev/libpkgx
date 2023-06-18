@@ -21,6 +21,7 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0
