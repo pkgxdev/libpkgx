@@ -142,7 +142,7 @@ export class Range {
           const v1 = new SemVer(match[1])
           const v2 = match[3] ? new SemVer(match[4])! : new SemVer([Infinity, Infinity, Infinity])
           return [v1, v2]
-        } else if ((match = input.match(/^([~=<^])(.+)$/))) {
+        } else if ((match = input.match(/^([~=<^@])(.+)$/))) {
           let v1: SemVer | undefined, v2: SemVer | undefined
           switch (match[1]) {
           // deno-lint-ignore no-case-declarations
@@ -174,7 +174,17 @@ export class Range {
             return [v1, v2]
           case "=":
             return new SemVer(match[2])
-          }
+          case "@": {
+            // @ is not a valid semver operator, but people expect it to work like so:
+            // @5 => latest 5.x (ie ^5)
+            // @5.1 => latest 5.1.x (ie. ~5.1)
+            // @5.1.0 => latest 5.1.0 (usually 5.1.0 since most stuff hasn't got more digits)
+            const parts = match[2].split(".").map(x => parseInt(x))
+            v1 = new SemVer(parts)
+            const last = parts.pop()!
+            v2 = new SemVer([...parts, last + 1])
+            return [v1, v2]
+          }}
         }
         throw err()
       })
