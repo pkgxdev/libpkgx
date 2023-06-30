@@ -8,7 +8,7 @@ import Path from "./src/utils/Path.ts"
 export * as types from "./src/types.ts"
 import * as pkg from "./src/utils/pkg.ts"
 
-import { panic } from "./src/utils/error.ts"
+import { panic, TeaError } from "./src/utils/error.ts"
 import useConfig from "./src/hooks/useConfig.ts"
 import useOffLicense  from "./src/hooks/useOffLicense.ts"
 import useCache from "./src/hooks/useCache.ts"
@@ -23,10 +23,10 @@ import hydrate from "./src/plumbing/hydrate.ts"
 import which from "./src/plumbing/which.ts"
 import link from "./src/plumbing/link.ts"
 import install, { ConsoleLogger } from "./src/plumbing/install.ts"
-import resolve from "./src/plumbing/resolve.ts"
+import resolve, { ResolveError } from "./src/plumbing/resolve.ts"
 import { validatePackageRequirement } from "./src/utils/hacks.ts"
 import useSync from "./src/hooks/useSync.ts"
-import run from "./src/porcelain/run.ts"
+import run, { RunError } from "./src/porcelain/run.ts"
 import porcelain_install from "./src/porcelain/install.ts"
 
 const utils = {
@@ -64,7 +64,7 @@ const hacks = {
   validatePackageRequirement
 }
 
-export { utils, hooks, plumbing, porcelain, hacks, semver, PantryError, InstallationNotFoundError, DownloadError }
+export { utils, hooks, plumbing, porcelain, hacks, semver, TeaError, RunError, ResolveError, PantryError, InstallationNotFoundError, DownloadError }
 
 /// export types
 // we cannot add these to the above objects or they cannot be used as types

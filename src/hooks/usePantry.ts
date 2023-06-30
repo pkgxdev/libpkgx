@@ -3,6 +3,7 @@ const { isNumber, isPlainObject, isString, isArray, isPrimitive, isBoolean } = i
 import { validatePackageRequirement } from "../utils/hacks.ts"
 import { Package, Installation } from "../types.ts"
 import useMoustaches from "./useMoustaches.ts"
+import { TeaError } from "../utils/error.ts"
 import { validate } from "../utils/misc.ts"
 import SemVer from "../utils/semver.ts"
 import useConfig from "./useConfig.ts"
@@ -16,7 +17,7 @@ export interface Interpreter {
 
 type PantryErrorCode = 'not-found' | 'parse-error'
 
-export class PantryError extends Error {
+export class PantryError extends TeaError {
   code: PantryErrorCode
 
   // deno-lint-ignore no-explicit-any

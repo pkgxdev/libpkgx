@@ -15,3 +15,6 @@ Promise.prototype.swallow = function(gristle?: (e: unknown) => boolean) {
     }
   })
 }
+
+export class TeaError extends Error
+{}

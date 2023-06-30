@@ -1,10 +1,11 @@
 import { Package, PackageRequirement, Installation } from "../types.ts"
+import { TeaError } from "../utils/error.ts"
 import * as pkgutils from "../utils/pkg.ts"
 import SemVer from "../utils/semver.ts"
 import useConfig from "./useConfig.ts"
 import Path from "../utils/Path.ts"
 
-export class InstallationNotFoundError extends Error {
+export class InstallationNotFoundError extends TeaError {
   pkg: Package | PackageRequirement
 
   constructor(pkg: Package | PackageRequirement) {
