@@ -1,7 +1,7 @@
 import { Package, PackageRequirement, Installation } from "../types.ts"
 import useInventory from "../hooks/useInventory.ts"
+import { str as pkgstr } from "../utils/pkg.ts"
 import useCellar from "../hooks/useCellar.ts"
-import TeaError from "../utils/error.ts"
 
 /// NOTE resolves to bottles
 /// NOTE contract there are no duplicate projects in input
@@ -15,6 +15,15 @@ export interface Resolution {
 
   /// these are the pkgs that aren’t yet installed
   pending: Package[]
+}
+
+class ResolveError extends Error {
+  pkg: Package | PackageRequirement
+
+  constructor(pkg: Package | PackageRequirement) {
+    super(`not-found: pkg: ${pkgstr(pkg)}`)
+    this.pkg = pkg
+  }
 }
 
 /// resolves a list of package specifications based on what is available in
@@ -35,7 +44,7 @@ export default async function resolve(reqs: (Package | PackageRequirement)[], {u
     } else {
       const version = await inventory.select(req)
       if (!version) {
-        throw new TeaError("not-found: pkg.version", {pkg: req})
+        throw new ResolveError(req)
       }
       const pkg = { version, project: req.project }
       rv.pkgs.push(pkg)

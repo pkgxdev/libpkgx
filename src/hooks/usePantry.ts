@@ -4,7 +4,6 @@ import { validatePackageRequirement } from "../utils/hacks.ts"
 import { Package, Installation } from "../types.ts"
 import useMoustaches from "./useMoustaches.ts"
 import { validate } from "../utils/misc.ts"
-import TeaError from "../utils/error.ts"
 import SemVer from "../utils/semver.ts"
 import useConfig from "./useConfig.ts"
 import host from "../utils/host.ts"
@@ -13,6 +12,32 @@ import Path from "../utils/Path.ts"
 export interface Interpreter {
   project: string // FIXME: should probably be a stronger type
   args: string[]
+}
+
+type PantryErrorCode = 'not-found' | 'parse-error'
+
+export class PantryError extends Error {
+  code: PantryErrorCode
+
+  // deno-lint-ignore no-explicit-any
+  constructor(code: PantryErrorCode, ctx: any) {
+    let msg: string
+
+    switch (code) {
+    case 'not-found':
+      if (ctx instanceof Path) {
+        msg = `pantry not found: ${ctx}`
+      } else {
+        msg = `pkg not found: ${ctx}`
+      }
+      break
+    case 'parse-error':
+      msg = `package.yml parse error: ${ctx.filename || ctx.project || ctx}`
+    }
+    super(msg)
+    this.code = code
+    this.cause = ctx.cause
+  }
 }
 
 export default function usePantry() {
@@ -35,7 +60,7 @@ export default function usePantry() {
 
     const yaml = (() => {
       for (const prefix of pantry_paths()) {
-        if (!prefix.exists()) throw new TeaError('not-found: pantry', { path: prefix.parent() })
+        if (!prefix.exists()) throw new PantryError('not-found', prefix.parent())
         const dir = prefix.join(project)
         const filename = dir.join("package.yml")
         if (!filename.exists()) continue
@@ -44,9 +69,9 @@ export default function usePantry() {
 
         return () => memo ?? (memo = filename.readYAML()
           .then(validate.obj)
-          .catch(cause => { throw new TeaError('parser: pantry: package.yml', {cause, project, filename}) }))
+          .catch(cause => { throw new PantryError('parse-error', {cause, project, filename}) }))
       }
-      throw new TeaError('not-found: pantry: package.yml', {project}, )
+      throw new PantryError('not-found', project)
     })()
 
     const companions = async () => parse_pkgs_node((await yaml())["companions"])
@@ -61,7 +86,7 @@ export default function usePantry() {
       let { platforms } = await yaml()
       if (!platforms) return true
       if (isString(platforms)) platforms = [platforms]
-      if (!isArray(platforms)) throw new Error("bad-yaml")
+      if (!isArray(platforms)) throw new PantryError("parse-error", {project})
       return platforms.includes(host().platform) ||platforms.includes(`${host().platform}/${host().arch}`)
     }
 
@@ -73,7 +98,7 @@ export default function usePantry() {
       if (isPlainObject(node)) {
         node = node[host().platform]
       }
-      if (!isArray(node)) throw new Error("bad-yaml")
+      if (!isArray(node)) throw new PantryError("parse-error", project)
 
       return node.compact(x => {
         if (isPlainObject(x)) {
@@ -180,7 +205,7 @@ export default function usePantry() {
     }
 
     if (rv.length == 0) {
-      throw new TeaError("not-found: pantry", {path: prefix})
+      throw new PantryError("not-found", prefix)
     }
 
     return rv
@@ -253,7 +278,7 @@ export function expand_env_obj(env_: PlainObject, pkg: Package, deps: Installati
 
   // deno-lint-ignore no-explicit-any
   function transform(value: any): string {
-    if (!isPrimitive(value)) throw new Error(`invalid-env-value: ${JSON.stringify(value)}`)
+    if (!isPrimitive(value)) throw new PantryError('parse-error', JSON.stringify(value))
 
     if (isBoolean(value)) {
       return value ? "1" : "0"
@@ -271,7 +296,7 @@ export function expand_env_obj(env_: PlainObject, pkg: Package, deps: Installati
     } else if (isNumber(value)) {
       return value.toString()
     }
-    throw new Error("unexpected-error")
+    throw new Error("unexpected error", {cause: value})
   }
 }
 
@@ -281,7 +306,7 @@ interface LsEntry {
 }
 
 async function* _ls_pantry(dir: Path): AsyncGenerator<Path> {
-  if (!dir.isDirectory()) throw new TeaError('not-found: pantry', { path: dir })
+  if (!dir.isDirectory()) throw new PantryError('not-found', dir)
 
   for await (const [path, { name, isDirectory }] of dir.ls()) {
     if (isDirectory) {

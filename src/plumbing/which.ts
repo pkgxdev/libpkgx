@@ -1,5 +1,5 @@
 import { PackageRequirement } from "../types.ts"
-import usePantry from "../hooks/usePantry.ts"
+import usePantry, { PantryError } from "../hooks/usePantry.ts"
 import * as semver from "../utils/semver.ts"
 
 export type WhichResult = PackageRequirement & {
@@ -50,7 +50,7 @@ export default async function(arg0: string, opts = { providers: true }): Promise
           }
         }
       }
-    }).swallow(/^parser: pantry: package.yml/)
+    }).swallow((e: unknown) => e instanceof PantryError)
     promises.push(p)
 
     if (opts.providers) {
