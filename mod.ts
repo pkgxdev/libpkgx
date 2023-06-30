@@ -8,15 +8,15 @@ import Path from "./src/utils/Path.ts"
 export * as types from "./src/types.ts"
 import * as pkg from "./src/utils/pkg.ts"
 
-import TeaError, { panic } from "./src/utils/error.ts"
+import { panic } from "./src/utils/error.ts"
 import useConfig from "./src/hooks/useConfig.ts"
 import useOffLicense  from "./src/hooks/useOffLicense.ts"
 import useCache from "./src/hooks/useCache.ts"
-import useCellar from "./src/hooks/useCellar.ts"
+import useCellar, { InstallationNotFoundError} from "./src/hooks/useCellar.ts"
 import useMoustaches from "./src/hooks/useMoustaches.ts"
-import usePantry from "./src/hooks/usePantry.ts"
+import usePantry, { PantryError } from "./src/hooks/usePantry.ts"
 import useFetch from "./src/hooks/useFetch.ts"
-import useDownload from "./src/hooks/useDownload.ts"
+import useDownload, { DownloadError } from "./src/hooks/useDownload.ts"
 import useShellEnv from "./src/hooks/useShellEnv.ts"
 import useInventory from "./src/hooks/useInventory.ts"
 import hydrate from "./src/plumbing/hydrate.ts"
@@ -64,10 +64,10 @@ const hacks = {
   validatePackageRequirement
 }
 
-export { utils, hooks, plumbing, porcelain, hacks, semver }
+export { utils, hooks, plumbing, porcelain, hacks, semver, PantryError, InstallationNotFoundError, DownloadError }
 
 /// export types
 // we cannot add these to the above objects or they cannot be used as types
-export { TeaError, Path, SemVer }
+export { Path, SemVer }
 export * from "./src/types.ts"
 export type { SupportedArchitecture, SupportedPlatform }

@@ -4,7 +4,7 @@ import SemVer from "../utils/semver.ts"
 import useConfig from "./useConfig.ts"
 import Path from "../utils/Path.ts"
 
-class InstallationNotFoundError extends Error {
+export class InstallationNotFoundError extends Error {
   pkg: Package | PackageRequirement
 
   constructor(pkg: Package | PackageRequirement) {
