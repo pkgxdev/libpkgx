@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "deno/testing/asserts.ts"
+import { assertEquals } from "deno/testing/asserts.ts"
 import SemVer, * as semver from "../utils/semver.ts"
 import { useTestConfig } from "./useTestConfig.ts"
 import install from "../plumbing/install.ts"
