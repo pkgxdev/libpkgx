@@ -50,7 +50,7 @@ export default async function(arg0: string, opts = { providers: true }): Promise
           }
         }
       }
-    }).swallow((e: unknown) => e instanceof PantryError)
+    }).swallow(PantryError)
     promises.push(p)
 
     if (opts.providers) {

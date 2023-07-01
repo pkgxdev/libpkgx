@@ -24,9 +24,7 @@ export default function useCellar() {
   const keg = (pkg: Package) => shelf(pkg.project).join(`v${pkg.version}`)
 
   /// returns the `Installation` if the pkg is installed
-  const has = (pkg: Package | PackageRequirement | Path) =>
-    resolve(pkg)
-      .swallow((e: unknown) => e instanceof InstallationNotFoundError)
+  const has = (pkg: Package | PackageRequirement | Path) => resolve(pkg).swallow(InstallationNotFoundError)
 
   return {
     has,
