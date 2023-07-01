@@ -15,29 +15,32 @@ export interface Interpreter {
   args: string[]
 }
 
-type PantryErrorCode = 'not-found' | 'parse-error'
+export class PantryError extends TeaError
+{}
 
-export class PantryError extends TeaError {
-  code: PantryErrorCode
+export class PantryParseError extends PantryError {
+  project: string
+  path?: Path
 
-  // deno-lint-ignore no-explicit-any
-  constructor(code: PantryErrorCode, ctx: any) {
-    let msg: string
+  constructor(project: string, path?: Path, cause?: unknown) {
+    super(`package.yml parse error: ${path ?? project}`)
+    this.project = project
+    this.path = path
+    this.cause = cause
+  }
+}
 
-    switch (code) {
-    case 'not-found':
-      if (ctx instanceof Path) {
-        msg = `pantry not found: ${ctx}`
-      } else {
-        msg = `pkg not found: ${ctx}`
-      }
-      break
-    case 'parse-error':
-      msg = `package.yml parse error: ${ctx.filename || ctx.project || ctx}`
-    }
-    super(msg)
-    this.code = code
-    this.cause = ctx.cause
+export class PackageNotFoundError extends PantryError {
+  project: string
+  constructor(project: string) {
+    super(`pkg not found: ${project}`)
+    this.project = project
+  }
+}
+
+export class PantryNotFoundError extends PantryError {
+  constructor(path: Path) {
+    super(`pantry not found: ${path}`)
   }
 }
 
@@ -61,7 +64,7 @@ export default function usePantry() {
 
     const yaml = (() => {
       for (const prefix of pantry_paths()) {
-        if (!prefix.exists()) throw new PantryError('not-found', prefix.parent())
+        if (!prefix.exists()) throw new PantryNotFoundError(prefix.parent())
         const dir = prefix.join(project)
         const filename = dir.join("package.yml")
         if (!filename.exists()) continue
@@ -70,9 +73,9 @@ export default function usePantry() {
 
         return () => memo ?? (memo = filename.readYAML()
           .then(validate.obj)
-          .catch(cause => { throw new PantryError('parse-error', {cause, project, filename}) }))
+          .catch(cause => { throw new PantryParseError(project, filename, cause) }))
       }
-      throw new PantryError('not-found', project)
+      throw new PackageNotFoundError(project)
     })()
 
     const companions = async () => parse_pkgs_node((await yaml())["companions"])
@@ -87,7 +90,7 @@ export default function usePantry() {
       let { platforms } = await yaml()
       if (!platforms) return true
       if (isString(platforms)) platforms = [platforms]
-      if (!isArray(platforms)) throw new PantryError("parse-error", {project})
+      if (!isArray(platforms)) throw new PantryParseError(project)
       return platforms.includes(host().platform) ||platforms.includes(`${host().platform}/${host().arch}`)
     }
 
@@ -99,7 +102,7 @@ export default function usePantry() {
       if (isPlainObject(node)) {
         node = node[host().platform]
       }
-      if (!isArray(node)) throw new PantryError("parse-error", project)
+      if (!isArray(node)) throw new PantryParseError(project)
 
       return node.compact(x => {
         if (isPlainObject(x)) {
@@ -206,7 +209,7 @@ export default function usePantry() {
     }
 
     if (rv.length == 0) {
-      throw new PantryError("not-found", prefix)
+      throw new PantryNotFoundError(prefix)
     }
 
     return rv
@@ -279,7 +282,7 @@ export function expand_env_obj(env_: PlainObject, pkg: Package, deps: Installati
 
   // deno-lint-ignore no-explicit-any
   function transform(value: any): string {
-    if (!isPrimitive(value)) throw new PantryError('parse-error', JSON.stringify(value))
+    if (!isPrimitive(value)) throw new PantryParseError(pkg.project, undefined, JSON.stringify(value))
 
     if (isBoolean(value)) {
       return value ? "1" : "0"
@@ -297,7 +300,10 @@ export function expand_env_obj(env_: PlainObject, pkg: Package, deps: Installati
     } else if (isNumber(value)) {
       return value.toString()
     }
-    throw new Error("unexpected error", {cause: value})
+
+    const e = new Error("unexpected error")
+    e.cause = value
+    throw e
   }
 }
 
@@ -307,7 +313,7 @@ interface LsEntry {
 }
 
 async function* _ls_pantry(dir: Path): AsyncGenerator<Path> {
-  if (!dir.isDirectory()) throw new PantryError('not-found', dir)
+  if (!dir.isDirectory()) throw new PantryNotFoundError(dir)
 
   for await (const [path, { name, isDirectory }] of dir.ls()) {
     if (isDirectory) {
