@@ -1,8 +1,18 @@
 import { Package, PackageRequirement, Installation } from "../types.ts"
+import { TeaError } from "../utils/error.ts"
 import * as pkgutils from "../utils/pkg.ts"
 import SemVer from "../utils/semver.ts"
 import useConfig from "./useConfig.ts"
 import Path from "../utils/Path.ts"
+
+export class InstallationNotFoundError extends TeaError {
+  pkg: Package | PackageRequirement
+
+  constructor(pkg: Package | PackageRequirement) {
+    super(`not found: ${pkgutils.str(pkg)}`)
+    this.pkg = pkg
+  }
+}
 
 export default function useCellar() {
   const config = useConfig()
@@ -14,7 +24,7 @@ export default function useCellar() {
   const keg = (pkg: Package) => shelf(pkg.project).join(`v${pkg.version}`)
 
   /// returns the `Installation` if the pkg is installed
-  const has = (pkg: Package | PackageRequirement | Path) => resolve(pkg).swallow(/^not-found:/)
+  const has = (pkg: Package | PackageRequirement | Path) => resolve(pkg).swallow(InstallationNotFoundError)
 
   return {
     has,
@@ -70,12 +80,13 @@ export default function useCellar() {
         if (version) {
           const path = installations.find(({pkg: {version: v}}) => v.eq(version))!.path
           return { path, pkg: { project: pkg.project, version } }
+        } else {
+          throw new InstallationNotFoundError(pkg)
         }
       }
-      throw new Error(`not-found:${pkgutils.str(pkg)}`)
     })()
     if (await vacant(installation.path)) {
-      throw new Error(`not-found: ${pkgutils.str(installation.pkg)}`)
+      throw new InstallationNotFoundError(installation.pkg)
     }
     return installation
   }

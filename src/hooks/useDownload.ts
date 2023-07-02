@@ -1,7 +1,7 @@
 import { deno } from "../deps.ts"
 const { crypto: crypto_, streams: { writeAll } } = deno
 const { toHashString, crypto } = crypto_
-import TeaError, { panic } from "../utils/error.ts"
+import { TeaError, panic } from "../utils/error.ts"
 import useConfig from "./useConfig.ts"
 import useFetch from "./useFetch.ts"
 import Path from "../utils/Path.ts"
@@ -15,42 +15,52 @@ interface DownloadOptions {
   logger?: (info: {src: URL, dst: Path, rcvd?: number, total?: number }) => void
 }
 
+export class DownloadError extends TeaError {
+  status: number
+  src: URL
+  headers?: Record<string, string>
+
+  constructor(status: number, opts: { src: URL, headers?: Record<string, string>}) {
+    super(`http: ${status}: ${opts.src}`)
+    this.name = 'DownloadError'
+    this.status = status
+    this.src = opts.src
+    this.headers = opts.headers
+  }
+}
+
 const tmpname = (dst: Path) => dst.parent().join(dst.basename() + ".incomplete")
 
 async function download(opts: DownloadOptions, chunk?: (blob: Uint8Array) => Promise<void>): Promise<Path> {
-  try {
-    const [dst, stream] = await the_meat(opts)
+  const [dst, stream] = await the_meat(opts)
 
-    if (stream || chunk) {
-      const reader = stream ?? fs.createReadStream(dst.string)
+  if (stream || chunk) {
+    const reader = stream ?? fs.createReadStream(dst.string)
 
-      const writer = await (() => {
-        if (stream) {
-          dst.parent().mkdir('p')
-          return Deno.open(tmpname(dst).string, {write: true, create: true, truncate: true})
-        }
-      })()
-
-      for await (const blob of reader) {
-        const pp: Promise<void>[] = []
-        if (writer) pp.push(writeAll(writer, blob))
-        if (chunk) pp.push(chunk(blob))
-        await Promise.all(pp)
+    const writer = await (() => {
+      if (stream) {
+        dst.parent().mkdir('p')
+        return Deno.open(tmpname(dst).string, {write: true, create: true, truncate: true})
       }
+    })()
 
-      if (reader instanceof fs.ReadStream) {
-        reader.close()
-      }
-      if (writer) {
-        writer.close()
-        tmpname(dst).mv({ to: dst, force: true })
-      }
+    for await (const blob of reader) {
+      const pp: Promise<void>[] = []
+      if (writer) pp.push(writeAll(writer, blob))
+      if (chunk) pp.push(chunk(blob))
+      await Promise.all(pp)
     }
 
-    return dst
-  } catch (cause) {
-    throw new TeaError('http', {cause, ...opts})
+    if (reader instanceof fs.ReadStream) {
+      reader.close()
+    }
+    if (writer) {
+      writer.close()
+      tmpname(dst).mv({ to: dst, force: true })
+    }
   }
+
+  return dst
 }
 
 function cache({ for: url }: {for: URL}): Path {
@@ -79,7 +89,7 @@ export default function useDownload() {
 
 /// internal
 
-async function the_meat<T>({ src, headers, logger, dst }: DownloadOptions): Promise<[Path, ReadableStream<Uint8Array> | undefined, number | undefined]>
+async function the_meat<T>({ src, logger, headers, dst }: DownloadOptions): Promise<[Path, ReadableStream<Uint8Array> | undefined, number | undefined]>
 {
   const hash = cache({ for: src })
   const mtime_entry = hash.join("mtime")
@@ -136,6 +146,6 @@ async function the_meat<T>({ src, headers, logger, dst }: DownloadOptions): Prom
     return [dst, undefined, sz]
   }
   default:
-    throw new Error(`${rsp.status}: ${src}`)
+    throw new DownloadError(rsp.status, { src, headers })
   }
 }

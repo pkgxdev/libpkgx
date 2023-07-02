@@ -3,6 +3,7 @@ import useShellEnv from '../hooks/useShellEnv.ts'
 import usePantry from '../hooks/usePantry.ts'
 import hydrate from "../plumbing/hydrate.ts"
 import resolve from "../plumbing/resolve.ts"
+import { TeaError } from "../utils/error.ts"
 import { spawn } from "node:child_process"
 import useSync from "../hooks/useSync.ts"
 import which from "../plumbing/which.ts"
@@ -123,7 +124,7 @@ async function setup(cmd: string, env: Record<string, string | undefined>, logge
 
 type RunErrorCode = 'ENOENT' | 'EUSAGE' | 'EIO'
 
-class RunError extends Error {
+export class RunError extends TeaError {
   code: RunErrorCode
 
   constructor(code: RunErrorCode, message: string) {

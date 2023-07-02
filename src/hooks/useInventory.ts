@@ -1,5 +1,5 @@
 import { Package, PackageRequirement } from "../types.ts"
-import TeaError, * as error from "../utils/error.ts"
+import { DownloadError } from "./useDownload.ts"
 import SemVer from "../utils/semver.ts"
 import useFetch from "./useFetch.ts"
 import host from "../utils/host.ts"
@@ -33,8 +33,7 @@ const get = async (rq: PackageRequirement | Package) => {
   const rsp = await useFetch(url)
 
   if (!rsp.ok) {
-    const cause = new Error(`${rsp.status}: ${url}`)
-    throw new TeaError('http', {cause})
+    throw new DownloadError(rsp.status, {src: url})
   }
 
   const releases = await rsp.text()
@@ -52,10 +51,7 @@ const get = async (rq: PackageRequirement | Package) => {
 }
 
 export default function useInventory() {
-  return {
-    select: error.wrap(select, 'http'),
-    get
-  }
+  return { select, get }
 }
 
 export const _internals = { get }
