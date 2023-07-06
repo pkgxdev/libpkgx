@@ -70,9 +70,13 @@ await build({
         import: "./esm/src/utils/semver.js",
         require: "./script/src/utils/semver.js"
       },
-      "./plumbing/install": {
-        import: "./esm/src/plumbing/install.js",
-        require: "./script/src/plumbing/install.js"
+      "./plumbing/*": {
+        "import": "./esm/src/plumbing/*.js",
+        "require": "./script/src/plumbing/*.js"
+      },
+      "./hooks/*": {
+        "import": "./esm/src/hooks/*.js",
+        "require": "./script/src/hooks/*.js"
       }
     }
   },

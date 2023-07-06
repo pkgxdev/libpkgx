@@ -68,6 +68,12 @@ jobs:
       - uses: teaxyz/setup@v0
       - run: deno task dnt
 
+      - run: |
+          npm i
+          npm start
+        working-directory:
+          fixtures/npm-integration-test
+
   lint:
     runs-on: ubuntu-latest
     steps:
