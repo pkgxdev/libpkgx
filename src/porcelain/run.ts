@@ -40,10 +40,14 @@ export default async function run(cmd: Cmd, opts?: Options): Promise<void|{ stdo
     if (!isArray(cmd)) {
       const s = cmd.trim()
       const i = s.indexOf(' ')
-      const usesh = i >= 0
-      const arg0 = s.slice(0, i)
-      cmd = s.slice(i + 1)
-      return { usesh, arg0 }
+      if (i == -1) {
+        cmd = []
+        return { usesh: false, arg0: s }
+      } else {
+        const arg0 = s.slice(0, i)
+        cmd = s.slice(i + 1)
+        return { usesh: true, arg0 }
+      }
     } else if (cmd.length == 0) {
       throw new RunError('EUSAGE', `\`cmd\` evaluated empty: ${cmd}`)
     } else {
