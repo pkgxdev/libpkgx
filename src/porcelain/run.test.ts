@@ -5,7 +5,18 @@ import run from "./run.ts"
 Deno.test("porcelain.run", async runner => {
   await runner.step("std", async () => {
     useTestConfig()
-    const { stdout, stderr, status } = await run(`python -c 'print(1)'`) as unknown as { stdout: string, stderr: string, status: number }
+    const { stdout, stderr, status } = await run(`python -c 'print(1)'`) as unknown as
+      { stdout: string, stderr: string, status: number }
+      // ^^ type system hack to ensure we don’t actually capture the stdout/stderr
+    assertEquals(stdout, "")
+    assertEquals(stderr, "")
+    assertEquals(status, 0)
+  })
+
+  // we had a scenario where no args would truncate the cmd-name
+  await runner.step("no args works", async () => {
+    useTestConfig()
+    const { stdout, stderr, status } = await run(`ls`) as unknown as { stdout: string, stderr: string, status: number }
     assertEquals(stdout, "")
     assertEquals(stderr, "")
     assertEquals(status, 0)
