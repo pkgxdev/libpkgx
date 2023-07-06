@@ -1,0 +1,12 @@
+{
+  "name": "npm-integration-test",
+  "version": "1.0.0",
+  "description": "used in ci/cd to verify our npm library imports without errors",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@teaxyz/lib": "file:../../dist"
+  }
+}
