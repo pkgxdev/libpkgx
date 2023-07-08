@@ -13,7 +13,7 @@ dependencies:
   npmjs.com: '*'
 ---*/
 
-import { build, emptyDir } from "https://deno.land/x/dnt@0.36.0/mod.ts";
+import { build, emptyDir } from "https://deno.land/x/dnt@0.37.0/mod.ts";
 import SemVer from "../src/utils/semver.ts";
 
 await emptyDir("./dist");
