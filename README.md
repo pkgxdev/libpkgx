@@ -253,5 +253,5 @@ V=$(git describe --tags --abbrev=0 --match "v[0-9]*.[0-9]*.[0-9]*")
 V=$(tea semverator bump $V $LEVEL)
 
 git push origin main
-tea gh release create "v$V" --prerelease --generate-notes --title "v$V"
+tea gh release create "v$V"-rc --prerelease --generate-notes --title "v$V"
 ```
