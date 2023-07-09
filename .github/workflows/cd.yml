@@ -84,7 +84,9 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/releases/${{ github.event.release.id }}"
 
       # delete pre-release tag
-      - run: git push origin :${{ github.event.release.tag_name }}
+      - run: |
+          git push origin :${{ github.event.release.tag_name }}
+          git tag -d ${{ github.event.release.tag_name }}
 
       # we need the new tag for the next step
       - run: git fetch origin --tags
@@ -92,5 +94,3 @@ jobs:
       - uses: fischerscode/tagger@v0
         with:
           prefix: v
-
-
