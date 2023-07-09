@@ -1,4 +1,5 @@
 .DS_Store
+
 /deno.lock
 /dist
 /cov_profile
@@ -6,6 +7,6 @@
 /examples/jfk.wav*
 /examples/node_modules
 /examples/package.json
-/examples/package-lock.json
-/fixtures/npm-integration-test/node_modules
-/fixtures/npm-integration-test/package-lock.json
+
+package-lock.json
+node_modules

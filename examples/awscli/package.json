@@ -1,0 +1,8 @@
+{
+  "name": "tea-aws-cli",
+  "main": "index.mjs",
+  "dependencies": {
+    "@teaxyz/lib": "^0.9.1",
+    "aws-cli-js": "^2.2.3"
+  }
+}
