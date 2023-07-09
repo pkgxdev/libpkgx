@@ -90,7 +90,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
       throw new Error(`sha: expected: ${checksum}, got: ${computed_hash_value}`)
     }
 
-    const path = tmpdir.mv({ to: shelf.join(`v${pkg.version}`) })
+    const path = tmpdir.mv({ to: shelf.join(`v${pkg.version}`) }).chmod(0o755)
     const install = { pkg, path }
 
     logger?.installed?.(install)
