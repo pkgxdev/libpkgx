@@ -10,7 +10,7 @@ on:
   workflow_call:
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.ref || github.event.release.name }}
   cancel-in-progress: true
 
 jobs:

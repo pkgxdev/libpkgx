@@ -18,19 +18,8 @@ jobs:
     if: ${{ github.event.release.prerelease }}
     uses: ./.github/workflows/ci.yml
 
-  strip:
-    runs-on: ubuntu-latest
-    outputs:
-      v: ${{ steps.strip.outputs.v }}
-    steps:
-      - name: strip prerelease component
-        run: echo "v=${V%%-rc}" >> $GITHUB_OUTPUT
-        id: strip
-        env:
-          V: ${{ github.event.release.tag_name }}
-
   dnt:
-    needs: [check, strip]
+    needs: [check]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -44,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: teaxyz/setup@v0
-      - run: deno task dnt ${{ needs.strip.outputs.v }}
+      - run: deno task dnt ${{ github.event.release.name }}
 
       - uses: actions/upload-artifact@v3
         if: ${{ matrix.os == 'ubuntu-latest' }}
@@ -68,7 +57,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish:
-    needs: [publish-npm, strip]
+    needs: [publish-npm]
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -80,7 +69,7 @@ jobs:
           curl -fX PATCH \
             -H "Authorization: Bearer ${{ github.token }}" \
             -H "Accept: application/vnd.github.v3+json" \
-            -d '{"draft": false, "prerelease": false, "make_latest": true, "tag_name": "${{ needs.strip.outputs.v }}"}' \
+            -d '{"draft": false, "prerelease": false, "make_latest": true, "tag_name": "${{ github.event.release.name }}"}' \
             "https://api.github.com/repos/${{ github.repository }}/releases/${{ github.event.release.id }}"
 
       # delete pre-release tag
