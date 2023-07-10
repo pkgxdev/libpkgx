@@ -49,11 +49,13 @@ export default function usePantry() {
   const prefix = config.prefix.join('tea.xyz/var/pantry/projects')
 
   async function* ls(): AsyncGenerator<LsEntry> {
+    const seen = new Set()
+
     for (const prefix of pantry_paths()) {
       for await (const path of _ls_pantry(prefix)) {
-        yield {
-          project: path.parent().relative({ to: prefix }),
-          path
+        const project = path.parent().relative({ to: prefix })
+        if (seen.insert(project).inserted) {
+          yield { project, path }
         }
       }
     }
