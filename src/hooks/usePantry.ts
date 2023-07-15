@@ -65,19 +65,36 @@ export default function usePantry() {
     const project = isString(input) ? input : input.project
 
     const yaml = (() => {
-      for (const prefix of pantry_paths()) {
-        if (!prefix.exists()) throw new PantryNotFoundError(prefix.parent())
-        const dir = prefix.join(project)
-        const filename = dir.join("package.yml")
-        if (!filename.exists()) continue
+      let memo: Promise<PlainObject>
+      return () => memo ?? (memo = (async () => {
+        for (const prefix of pantry_paths()) {
+          if (!prefix.exists()) throw new PantryNotFoundError(prefix.parent())
+          const dir = prefix.join(project)
+          const filename = dir.join("package.yml")
+          if (!filename.exists()) continue
 
-        let memo: Promise<PlainObject> | undefined
+          return await filename.readYAML()
+            .then(validate.obj)
+            .catch(cause => { throw new PantryParseError(project, filename, cause) })
+        }
 
-        return () => memo ?? (memo = filename.readYAML()
-          .then(validate.obj)
-          .catch(cause => { throw new PantryParseError(project, filename, cause) }))
-      }
-      throw new PackageNotFoundError(project)
+        // We didn't find project... but maybe it's a display-name?
+        for await (const entry of ls()) {
+          const filename = entry.path
+          if (!filename.exists()) continue
+
+          const yml = await filename.readYAML()
+            .then(validate.obj)
+            .catch(cause => { throw new PantryParseError(project, filename, cause) })
+          if (yml["display-name"] === project) {
+            return yml
+          }
+        }
+
+        // We didn't find _anything_.
+        throw new PackageNotFoundError(project)
+      })())
+
     })()
 
     const companions = async () => parse_pkgs_node((await yaml())["companions"])

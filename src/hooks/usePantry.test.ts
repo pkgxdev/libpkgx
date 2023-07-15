@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "deno/testing/asserts.ts"
+import { assert, assertEquals, assertMatch } from "deno/testing/asserts.ts"
 import { useTestConfig } from "./useTestConfig.ts"
 import { _internals } from "../utils/host.ts"
 import { stub } from "deno/testing/mock.ts"
@@ -46,4 +46,10 @@ Deno.test("runtime.env", async () => {
   assertEquals(env.BAZ, prefix.join("bar.com/v1.2.3/baz").string)
 
   _config_internals.reset()
+})
+
+Deno.test("project by display-name", async () => {
+  const agpt = usePantry().project("Auto-GPT")
+  assert(await agpt.available())
+  assertMatch((await agpt.yaml()).versions.github, /Significant-Gravitas\/Auto-GPT/)
 })
