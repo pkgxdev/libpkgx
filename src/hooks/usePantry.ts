@@ -66,33 +66,31 @@ export default function usePantry() {
 
     const yaml = (() => {
       let memo: Promise<PlainObject>
+
+      const parseYAMLFile = (filename: Path) => {
+        if (!filename.exists()) return
+
+        return filename.readYAML()
+          .then(validate.obj)
+          .catch(cause => { throw new PantryParseError(project, filename, cause) })
+      }
+
       return () => memo ?? (memo = (async () => {
         for (const prefix of pantry_paths()) {
           if (!prefix.exists()) throw new PantryNotFoundError(prefix.parent())
           const dir = prefix.join(project)
           const filename = dir.join("package.yml")
-          if (!filename.exists()) continue
 
-          return await filename.readYAML()
-            .then(validate.obj)
-            .catch(cause => { throw new PantryParseError(project, filename, cause) })
+          const yml = await parseYAMLFile(filename)
+          if (!yml) continue
+
+          return yml
         }
 
         // We didn't find project... but maybe it's a display-name?
         for await (const entry of ls()) {
-          const filename = entry.path
-          // from about here on, we're not very DRY with the
-          // above code, but it's not worth the effort to
-          // refactor it, unless we love this and want to use
-          // it.
-          if (!filename.exists()) continue
-
-          const yml = await filename.readYAML()
-            .then(validate.obj)
-            .catch(cause => { throw new PantryParseError(project, filename, cause) })
-          if (yml["display-name"] === project) {
-            return yml
-          }
+          const yml = await parseYAMLFile(entry.path)
+          if (yml?.["display-name"] === project) return yml
         }
 
         // We didn't find _anything_.
