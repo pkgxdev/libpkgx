@@ -81,6 +81,10 @@ export default function usePantry() {
         // We didn't find project... but maybe it's a display-name?
         for await (const entry of ls()) {
           const filename = entry.path
+          // from about here on, we're not very DRY with the
+          // above code, but it's not worth the effort to
+          // refactor it, unless we love this and want to use
+          // it.
           if (!filename.exists()) continue
 
           const yml = await filename.readYAML()
@@ -134,6 +138,8 @@ export default function usePantry() {
       })
     }
 
+    // FIXME: doesn't rely on `yaml()`, so this is the only
+    // function that doesn't work on display-name alone.
     const provider = async () => {
       for (const prefix of pantry_paths()) {
         if (!prefix.exists()) continue
