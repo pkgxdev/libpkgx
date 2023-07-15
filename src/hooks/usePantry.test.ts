@@ -49,7 +49,7 @@ Deno.test("runtime.env", async () => {
 })
 
 Deno.test("project by display-name", async () => {
-  const agpt = usePantry().project("Auto-GPT")
-  assert(await agpt.available())
-  assertMatch((await agpt.yaml()).versions.github, /Significant-Gravitas\/Auto-GPT/)
+  const aws = usePantry().project("aws/cli")
+  assert(await aws.available())
+  assertMatch((await aws.yaml()).versions.github, /aws\/aws-cli\/tags/)
 })
