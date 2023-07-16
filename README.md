@@ -131,7 +131,7 @@ await run("youtube-dl youtu.be/xiq5euezOEQ", { logger }).exec()
 
 We have our own implementation of semver because open source has existed for
 decades and Semantic Versioning is much newer than that. Our implementation is
-quite compatible but not completely so. Use our semver with with libtea.
+quite compatible but not completely so. Use our semver with libtea.
 Our implementation is 100% compatible with strings output from node’s own
 semver.
 
@@ -144,7 +144,7 @@ appreciate your help in fixing it.
 The plumbing has no magic. Libraries need well defined behavior.
 You’ll need to read the docs to use them effectively.
 
-libtea almost certainly will not work in a browser. Potentially its possible.
+libtea almost certainly will not work in a browser. Potentially it's possible.
 The first step would be compiling our bottles to WASM. We could use your help
 with that…
 
