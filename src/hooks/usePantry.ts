@@ -181,9 +181,10 @@ export default function usePantry() {
     return undefined
   }
 
-  const missing = () => !prefix.exists()
+  const missing = () => !pantry_paths().some(x => x.exists())
 
   const neglected = () => {
+    if (!prefix.exists()) return true
     const stat = Deno.statSync(prefix.string)
     if (!stat.mtime) return true
     return (Date.now() - stat.mtime.getTime()) > 24 * 60 * 60 * 1000
