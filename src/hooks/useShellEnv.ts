@@ -122,7 +122,7 @@ function suffixes(key: EnvKey) {
     case 'PATH':
       return ["bin", "sbin"]
     case 'MANPATH':
-      return ["share/man"]
+      return ["man", "share/man"]
     case 'PKG_CONFIG_PATH':
       return ['share/pkgconfig', 'lib/pkgconfig']
     case 'XDG_DATA_DIRS':
