@@ -99,7 +99,7 @@ const go = await install("go.dev");
 
 ### Designed for Composibility
 
-The library is split into [plumbing] and [porcelain] (copying git’s lead).
+The library is split into [plumbing](src/plumbing) and [porcelain](src/porcelain) (copying git’s lead).
 The porcelain is what most people need, but if you need more control, dive
 into the porcelain sources to see how to use the plumbing primitives to get
 precisely what you need.
