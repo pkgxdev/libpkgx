@@ -247,12 +247,7 @@ export class Range {
       // AFAICT this is what people expect
       // verified via https://jubianchi.github.io/semver-check/
 
-      const parts = input.split('.')
-      if (parts.length < 3) {
-        return new Range(`^${input}`)
-      } else {
-        return new Range(`~${input}`)
-      }
+      return new Range(`@${input}`)
     }
   }
 

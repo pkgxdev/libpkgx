@@ -3,6 +3,7 @@ import { is_what } from "../deps.ts"
 const { isString, isNumber } = is_what
 import * as semver from "./semver.ts"
 import host from "./host.ts"
+import { TeaError } from "../../mod.ts"
 
 export function validatePackageRequirement(project: string, constraint: unknown): PackageRequirement | undefined
 {
@@ -25,8 +26,13 @@ export function validatePackageRequirement(project: string, constraint: unknown)
     throw new Error(`invalid constraint for ${project}: ${constraint}`)
   }
 
+  constraint = semver.Range.parse(constraint as string)
+  if (!constraint) {
+    throw new TeaError("invalid constraint for " + project + ": " + constraint)
+  }
+
   return {
     project,
-    constraint: new semver.Range(constraint as string)
+    constraint: constraint as semver.Range
   }
 }

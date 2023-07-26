@@ -264,9 +264,9 @@ Deno.test("coverage", () => {
 
   assertThrows(() => new semver.Range("1"))
 
-  assertEquals(semver.Range.parse("1"), new semver.Range("^1"))
-  assertEquals(semver.Range.parse("1.1"), new semver.Range("^1.1"))
-  assertEquals(semver.Range.parse("1.1.2"), new semver.Range("~1.1.2"))
+  assertEquals(semver.Range.parse("1")?.toString(), new semver.Range("^1").toString())
+  assertEquals(semver.Range.parse("1.1")?.toString(), new semver.Range("~1.1").toString())
+  assertEquals(semver.Range.parse("1.1.2")?.toString(), new semver.Range(">=1.1.2<1.1.3").toString())
 
   assertEquals(semver.Range.parse("a"), undefined)
 
