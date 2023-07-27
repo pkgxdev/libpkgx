@@ -3,6 +3,7 @@ const { isNumber, isPlainObject, isString, isArray, isPrimitive, isBoolean } = i
 import { validatePackageRequirement } from "../utils/hacks.ts"
 import { Package, Installation } from "../types.ts"
 import useMoustaches from "./useMoustaches.ts"
+import whichProvides from "../plumbing/which.ts"
 import { TeaError } from "../utils/error.ts"
 import { validate } from "../utils/misc.ts"
 import SemVer from "../utils/semver.ts"
@@ -76,24 +77,12 @@ export default function usePantry() {
       }
 
       return () => memo ?? (memo = (async () => {
-        for (const prefix of pantry_paths()) {
-          if (!prefix.exists()) throw new PantryNotFoundError(prefix.parent())
-          const dir = prefix.join(project)
-          const filename = dir.join("package.yml")
+        const pkg = await find(project)
+        if (!pkg) throw new PackageNotFoundError(project)
 
-          const yml = await parseYAMLFile(filename)
-          if (!yml) continue
+        const yml = await parseYAMLFile(pkg.path)
+        if (yml) return yml
 
-          return yml
-        }
-
-        // We didn't find project... but maybe it's a display-name?
-        for await (const entry of ls()) {
-          const yml = await parseYAMLFile(entry.path)
-          if (yml?.["display-name"] === project) return yml
-        }
-
-        // We didn't find _anything_.
         throw new PackageNotFoundError(project)
       })())
 
@@ -180,6 +169,43 @@ export default function usePantry() {
       provider,
       yaml
     }
+  }
+
+  enum Scopes {
+    DisplayName, Provides, ProjectName
+  }
+
+  async function find(input: string | { project: string }, scopes: Scopes[] = []): Promise<LsEntry | undefined> {
+    input = isString(input) ? input : input.project
+    if (scopes.length === 0) {
+      scopes = [Scopes.DisplayName, Scopes.Provides, Scopes.ProjectName]
+    }
+
+    // Project name is the easiest, so check that first
+    if (scopes.includes(Scopes.ProjectName)) {
+      for (const prefix of pantry_paths()) {
+        if (!prefix.exists()) throw new PantryNotFoundError(prefix.parent())
+        const dir = prefix.join(input)
+        const path = dir.join("package.yml")
+        if (path.exists()) return { project: input, path }
+      }
+    }
+
+    // Provides is next most likely
+    if (scopes.includes(Scopes.Provides)) {
+      const pkg = await whichProvides(input)
+      if (pkg) return await find(pkg.project, [Scopes.ProjectName])
+    }
+
+    // Display name is least likely, and slow
+    if (scopes.includes(Scopes.DisplayName)) {
+      for await (const entry of ls()) {
+        const yml = validate.obj(await entry.path.readYAML())
+        if (yml?.["display-name"] === input) return entry
+      }
+    }
+
+    return
   }
 
   async function which({ interprets: extension }: { interprets: string }): Promise<Interpreter | undefined> {
