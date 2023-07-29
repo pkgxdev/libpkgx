@@ -45,6 +45,9 @@ Deno.test("semver", async test => {
 
   await test.step("satisfies", () => {
     assertEquals(new semver.Range("=3.1.0").max([new SemVer("3.1.0")]), new SemVer("3.1.0"))
+
+    assertEquals(new semver.Range("^300").max([new SemVer("3.1.0")]), undefined)
+    assertEquals(new semver.Range("@300").max([new SemVer("3.1.0")]), undefined)
   })
 
   await test.step("constructor", () => {
@@ -153,6 +156,10 @@ Deno.test("semver", async test => {
     assertThrows(() => new semver.Range("1.2"))
     assertThrows(() => new semver.Range("1.2.3"))
     assertThrows(() => new semver.Range("1.2.3.4"))
+
+    assertEquals(new semver.Range("@300").toString(), "^300")
+    assertEquals(new semver.Range("@300.1").toString(), "~300.1")
+    assertEquals(new semver.Range("@300.1.0").toString(), ">=300.1<300.1.1")
   })
 
   await test.step("intersection", async test => {
