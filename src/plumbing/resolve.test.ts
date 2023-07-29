@@ -118,9 +118,13 @@ Deno.test("postgres@500 fails if installed", { permissions }, async () => {
   const prefix = useTestConfig().prefix
 
   const cellar = useCellar()
-  const has = (_: Path | Package | PackageRequirement) => {
-    const a: Installation = {pkg, path: prefix.join(pkg.project, `v${pkg.version}`) }
-    return Promise.resolve(a)
+  const has = (b: Path | Package | PackageRequirement) => {
+    if ("constraint" in b && b.constraint.satisfies(pkg.version)) {
+      const a: Installation = {pkg, path: prefix.join(pkg.project, `v${pkg.version}`) }
+      return Promise.resolve(a)
+    } else {
+      return Promise.resolve(undefined)
+    }
   }
 
   const select = useInventory().select

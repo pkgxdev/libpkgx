@@ -53,7 +53,7 @@ export default class SemVer {
       this.raw = v.raw
       this.pretty = v.pretty
     } else {
-      this.components = input
+      this.components = [...input]
       this.raw = input.join('.')
     }
 
@@ -180,7 +180,7 @@ export class Range {
             // @5.1 => latest 5.1.x (ie. ~5.1)
             // @5.1.0 => latest 5.1.0 (usually 5.1.0 since most stuff hasn't got more digits)
             const parts = match[2].split(".").map(x => parseInt(x))
-            v1 = new SemVer([...parts])
+            v1 = new SemVer(parts)
             const last = parts.pop()!
             v2 = new SemVer([...parts, last + 1])
             return [v1, v2]
