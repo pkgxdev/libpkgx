@@ -53,7 +53,7 @@ export default class SemVer {
       this.raw = v.raw
       this.pretty = v.pretty
     } else {
-      this.components = input
+      this.components = [...input]
       this.raw = input.join('.')
     }
 
