@@ -80,7 +80,7 @@ Deno.test("resolve cellar.has", async runner => {
   })
 })
 
-const permissions = { net: false, read: true, env: ["TMPDIR", "HOME", "TMP"], write: true /*FIXME*/ }
+const permissions = { net: false, read: true, env: ["TMPDIR", "HOME", "TMP", "TEMP"], write: true /*FIXME*/ }
 
 // https://github.com/teaxyz/cli/issues/655
 Deno.test("postgres@500 fails", { permissions }, async () => {
