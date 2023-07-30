@@ -171,18 +171,17 @@ export default function usePantry() {
     }
   }
 
-  enum Scopes {
-    DisplayName, Provides, ProjectName
+  enum FindScope {
+    All, DisplayName, Provides, ProjectName
   }
 
-  async function find(input: string | { project: string }, scopes: Scopes[] = []): Promise<LsEntry | undefined> {
+  async function find(input: string | { project: string }, scopes: FindScope | FindScope[] = FindScope.All): Promise<LsEntry | undefined> {
     input = isString(input) ? input : input.project
-    if (scopes.length === 0) {
-      scopes = [Scopes.DisplayName, Scopes.Provides, Scopes.ProjectName]
-    }
+
+    if (!isArray(scopes)) scopes = [scopes]
 
     // Project name is the easiest, so check that first
-    if (scopes.includes(Scopes.ProjectName)) {
+    if (scopes.includes(FindScope.ProjectName) || scopes.includes(FindScope.All)) {
       for (const prefix of pantry_paths()) {
         if (!prefix.exists()) throw new PantryNotFoundError(prefix.parent())
         const dir = prefix.join(input)
@@ -192,13 +191,13 @@ export default function usePantry() {
     }
 
     // Provides is next most likely
-    if (scopes.includes(Scopes.Provides)) {
+    if (scopes.includes(FindScope.Provides) || scopes.includes(FindScope.All)) {
       const pkg = await whichProvides(input)
-      if (pkg) return await find(pkg.project, [Scopes.ProjectName])
+      if (pkg) return await find(pkg.project, [FindScope.ProjectName])
     }
 
     // Display name is least likely, and slow
-    if (scopes.includes(Scopes.DisplayName)) {
+    if (scopes.includes(FindScope.DisplayName) || scopes.includes(FindScope.All)) {
       for await (const entry of ls()) {
         const yml = validate.obj(await entry.path.readYAML())
         if (yml?.["display-name"] === input) return entry
