@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "deno/testing/asserts.ts"
+import { assert, assertEquals, assertFalse } from "deno/testing/asserts.ts"
 import { useTestConfig } from "./useTestConfig.ts"
 import { _internals } from "../utils/host.ts"
 import { stub } from "deno/testing/mock.ts"
@@ -46,4 +46,14 @@ Deno.test("runtime.env", async () => {
   assertEquals(env.BAZ, prefix.join("bar.com/v1.2.3/baz").string)
 
   _config_internals.reset()
+})
+
+Deno.test("missing()", () => {
+  useTestConfig({TEA_PANTRY_PATH: "/a"})
+  assert(usePantry().missing())
+})
+
+Deno.test("!missing()", () => {
+  useTestConfig()
+  assertFalse(usePantry().missing())
 })

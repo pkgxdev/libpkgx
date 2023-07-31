@@ -181,7 +181,17 @@ export default function usePantry() {
     return undefined
   }
 
-  const missing = () => !pantry_paths().some(x => x.exists())
+  const missing = () => {
+    try {
+      return !pantry_paths().some(x => x.exists())
+    } catch (e) {
+      if (e instanceof PantryNotFoundError) {
+        return false
+      } else {
+        throw e
+      }
+    }
+  }
 
   const neglected = () => {
     if (!prefix.exists()) return true
