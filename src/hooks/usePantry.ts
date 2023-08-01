@@ -186,7 +186,7 @@ export default function usePantry() {
       return !pantry_paths().some(x => x.exists())
     } catch (e) {
       if (e instanceof PantryNotFoundError) {
-        return false
+        return true
       } else {
         throw e
       }
