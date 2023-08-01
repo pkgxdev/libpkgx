@@ -83,3 +83,4 @@ jobs:
       - uses: fischerscode/tagger@v0
         with:
           prefix: v
+          tag: ${{ github.event.release.name }}
