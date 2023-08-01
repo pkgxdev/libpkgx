@@ -161,6 +161,27 @@ export default function usePantry() {
     }
   }
 
+  /// finds a project that matches the input string on either name, display-name or FQD project name
+  /// - Returns: Project[] since there may by multiple matches, if you want a single match you should use `project()`
+  async function find(name: string) {
+    //TODO not very performant due to serial awaits
+    const rv: ReturnType<typeof project>[] = []
+    for await (const pkg of ls()) {
+      const proj = project(pkg.project)
+      if (pkg.project == name) {
+        rv.push(proj)
+        continue
+      }
+      const yaml = await proj.yaml()
+      if (yaml["display-name"] == name) {
+        rv.push(proj)
+      } else if ((await proj.provides()).includes(name)) {
+        rv.push(proj)
+      }
+    }
+    return rv
+  }
+
   async function which({ interprets: extension }: { interprets: string }): Promise<Interpreter | undefined> {
     if (extension[0] == '.') extension = extension.slice(1)
     if (!extension) return
@@ -195,6 +216,7 @@ export default function usePantry() {
     which,
     ls,
     project,
+    find,
     parse_pkgs_node,
     expand_env_obj,
     missing,
