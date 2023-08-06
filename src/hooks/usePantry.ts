@@ -164,8 +164,10 @@ export default function usePantry() {
   /// finds a project that matches the input string on either name, display-name or FQD project name
   /// - Returns: Project[] since there may by multiple matches, if you want a single match you should use `project()`
   async function find(name: string) {
+    type Foo = ReturnType<typeof project> & LsEntry
+
     //TODO not very performant due to serial awaits
-    const rv: ReturnType<typeof project>[] = []
+    const rv: Foo[] = []
     for await (const pkg of ls()) {
       const proj = {...project(pkg.project), ...pkg}
       if (pkg.project == name) {
