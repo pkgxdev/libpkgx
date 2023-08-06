@@ -167,7 +167,7 @@ export default function usePantry() {
     //TODO not very performant due to serial awaits
     const rv: ReturnType<typeof project>[] = []
     for await (const pkg of ls()) {
-      const proj = project(pkg.project)
+      const proj = {...project(pkg.project), ...pkg}
       if (pkg.project == name) {
         rv.push(proj)
         continue
