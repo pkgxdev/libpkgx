@@ -166,18 +166,20 @@ export default function usePantry() {
   async function find(name: string) {
     type Foo = ReturnType<typeof project> & LsEntry
 
+    name = name.toLowerCase()
+
     //TODO not very performant due to serial awaits
     const rv: Foo[] = []
     for await (const pkg of ls()) {
       const proj = {...project(pkg.project), ...pkg}
-      if (pkg.project == name) {
+      if (pkg.project.toLowerCase() == name) {
         rv.push(proj)
         continue
       }
       const yaml = await proj.yaml()
-      if (yaml["display-name"] == name) {
+      if (yaml["display-name"]?.toLowerCase() == name) {
         rv.push(proj)
-      } else if ((await proj.provides()).includes(name)) {
+      } else if ((await proj.provides()).map(x => x.toLowerCase()).includes(name)) {
         rv.push(proj)
       }
     }
