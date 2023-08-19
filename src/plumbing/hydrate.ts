@@ -53,56 +53,47 @@ export default async function hydrate(
   const graph: Record<string, Node> = {}
   const bootstrap = new Set<string>()
   const initial_set = new Set(dry.map(x => x.project))
+  const stack: Node[] = []
 
-  const go = async (target: Node) => {
-    /// we trace up a target pkg’s dependency graph
-    /// the target pkg is thus the youngest child and we are ascending up its parents
-    const ascend = async (node: Node, children: Set<string>) => {
+  // Starting the DFS loop for each package in the dry list
+  for (const pkg of dry) {
+    let new_node = graph[pkg.project]
+    if (new_node) {
+      // Intersect constraints for existing nodes
+      new_node.pkg.constraint = semver.intersect(new_node.pkg.constraint, pkg.constraint)
+    } else {
+      new_node = new Node(pkg)
+      graph[pkg.project] = new_node
+      stack.push(new_node)
+    }
 
-      for (const dep of await get_deps(node.pkg, initial_set.has(node.project))) {
+    while (stack.length > 0) {
+      const current_node = stack.pop()!
+      const children = current_node.children
 
+      for (const dep of await get_deps(current_node.pkg, initial_set.has(current_node.project))) {
         if (children.has(dep.project)) {
           if (!bootstrap.has(dep.project)) {
-            console.warn(`tea: cyclic dep: ${dep.project}: ${node.project}`)
-
-            //TODO the bootstrap should keep the version constraint since it may be different
+            console.warn(`tea: cyclic dep: ${dep.project}: ${current_node.project}`)
             bootstrap.add(dep.project)
           }
         } else {
-          const found = graph[dep.project]
-          if (found) {
-            /// we already traced this graph
-
-            if (found.count() < node.count()) {
-              found.parent = node
-            }
-
-            //FIXME strictly we only have to constrain graphs that contain linkage
-            // ie. you cannot have a binary that links two separate versions of eg. openssl
-            // or (maybe) services, eg. you might suffer if there are two versions of postgres running (though tea mitigates this)
-            found.pkg.constraint = semver.intersect(found.pkg.constraint, dep.constraint)
-
+          let child_node = graph[dep.project]
+          if (child_node) {
+            // Intersect constraints
+            child_node.pkg.constraint = semver.intersect(child_node.pkg.constraint, dep.constraint)
           } else {
-            const new_node = new Node(dep, node)
-            graph[dep.project] = new_node
-            await ascend(new_node, new Set([...children, dep.project]))
+            child_node = new Node(dep, current_node)
+            graph[dep.project] = child_node
+            stack.push(child_node)
           }
+          current_node.children.add(dep.project)
         }
       }
     }
-    await ascend(target, new Set<string>([target.project]))
   }
 
-  for (const pkg of dry) {
-    if (pkg.project in graph) {
-      graph[pkg.project].pkg.constraint = semver.intersect(graph[pkg.project].pkg.constraint, pkg.constraint)
-    } else {
-      const new_node = new Node(pkg)
-      graph[pkg.project] = new_node
-      await go(new_node)
-    }
-  }
-
+  // Sorting and constructing the return value
   const pkgs = Object.values(graph)
     .sort((a, b) => b.count() - a.count())
     .map(({pkg}) => pkg)
@@ -112,7 +103,7 @@ export default async function hydrate(
 
   return {
     pkgs,
-    dry: pkgs.filter(({project}) =>  initial_set.has(project)),
+    dry: pkgs.filter(({project}) => initial_set.has(project)),
     wet: pkgs.filter(({project}) => !initial_set.has(project) || bootstrap_required.has(project)),
     bootstrap_required
   }
@@ -137,6 +128,7 @@ class Node {
   parent: Node | undefined
   readonly pkg: PackageRequirement
   readonly project: string
+  children: Set<string> = new Set()
 
   constructor(pkg: PackageRequirement, parent?: Node) {
     this.parent = parent
@@ -146,9 +138,9 @@ class Node {
 
   count(): number {
     let n = 0
-    let node = this as Node | undefined
-    // deno-lint-ignore no-cond-assign
-    while (node = node?.parent) n++
+    // deno-lint-ignore no-this-alias
+    let node: Node | undefined = this
+    while ((node = node?.parent)) n++
     return n
   }
 }
