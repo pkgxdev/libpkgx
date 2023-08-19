@@ -37,26 +37,35 @@ export default async function resolve(reqs: (Package | PackageRequirement)[], {u
   const cellar = _internals.useCellar()
   const rv: Resolution = { pkgs: [], installed: [], pending: [] }
   let installation: Installation | undefined
+
+  const promises: Promise<void>[] = []
+
   for (const req of reqs) {
     if (!update && (installation = await cellar.has(req))) {
       // if something is already installed that satisfies the constraint then use it
       rv.installed.push(installation)
       rv.pkgs.push(installation.pkg)
     } else {
-      const version = await inventory.select(req)
-      if (!version) {
-        throw new ResolveError(req)
-      }
-      const pkg = { version, project: req.project }
-      rv.pkgs.push(pkg)
+      const promise = inventory.select(req).then(async version => {
+        if (!version) {
+          throw new ResolveError(req)
+        }
+        const pkg = { version, project: req.project }
+        rv.pkgs.push(pkg)
 
-      if ((installation = await cellar.has(pkg))) {
-        rv.installed.push(installation)
-      } else {
-        rv.pending.push(pkg)
-      }
+        if ((installation = await cellar.has(pkg))) {
+          // we were asked to update, but we already are at the latest version
+          rv.installed.push(installation)
+        } else {
+          rv.pending.push(pkg)
+        }
+      })
+      promises.push(promise)
     }
   }
+
+  await Promise.all(promises)
+
   return rv
 }
 
