@@ -3,7 +3,6 @@ import useInventory from "../hooks/useInventory.ts"
 import { str as pkgstr } from "../utils/pkg.ts"
 import useCellar from "../hooks/useCellar.ts"
 import { TeaError } from "../utils/error.ts"
-import SemVer from "../utils/semver.ts";
 
 /// NOTE resolves to bottles
 /// NOTE contract there are no duplicate projects in input
