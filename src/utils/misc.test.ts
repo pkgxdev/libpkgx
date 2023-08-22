@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects, assertThrows } from "deno/testing/asserts.ts"
+import { assertEquals, assertRejects, assertThrows } from "deno/assert/mod.ts"
 import { async_flatmap, flatmap, validate } from "./misc.ts"
 import { isNumber } from "is-what"
 
@@ -72,6 +72,9 @@ Deno.test("set insert", () => {
 Deno.test("array compact", () => {
   assertEquals([1, 2, undefined, null, false, 3].compact(), [1, 2, 3])
   assertEquals([1, 2, undefined, null, false, 3].compact((n) => isNumber(n) && n * 2), [2, 4, 6])
+
+  // will fail to compile if the compiler cannot infer the type of the compact() return
+  assertEquals([1, 2, undefined, null, false, 3].compact()[0] + 1, 2)
 
   const throws = () => {
     throw Error("test error")
