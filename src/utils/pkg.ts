@@ -8,13 +8,8 @@ export function parse(input: string): PackageRequirement {
   if (!match[2]) match[2] = "*"
 
   const project = match[1]
-
-  if (match[2] == "@latest") {
-    return { project, constraint: new semver.Range('*') }
-  } else {
-    const constraint = new semver.Range(match[2])
-    return { project, constraint }
-  }
+  const constraint = new semver.Range(match[2])
+  return { project, constraint }
 }
 
 export function compare(a: Package, b: Package): number {
