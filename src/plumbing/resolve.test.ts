@@ -11,7 +11,7 @@ import SemVer from "../utils/semver.ts"
 import Path from "../utils/Path.ts"
 
 Deno.test("resolve cellar.has", {
-  permissions: {'read': true, 'env': ["TMPDIR", "HOME"], 'write': [Deno.env.get("TMPDIR") ?? "/tmp"] }
+  permissions: {'read': true, 'env': ["TMPDIR", "TMP", "HOME"], 'write': [Deno.env.get("TMPDIR") ?? Deno.env.get("TMP") ?? "/tmp"] }
 }, async runner => {
   const prefix = useTestConfig().prefix
   const pkg = { project: "foo", version: new SemVer("1.0.0") }
