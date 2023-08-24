@@ -76,6 +76,10 @@ Deno.test("array compact", () => {
   // will fail to compile if the compiler cannot infer the type of the compact() return
   assertEquals([1, 2, undefined, null, false, 3].compact()[0] + 1, 2)
 
+  // verifies transforming the type gives singular type return
+  const foo = [1, 2, undefined, null, false, 3].compact((n) => isNumber(n) && `${n * 2}`)
+  assertEquals(foo, ["2", "4", "6"])
+
   const throws = () => {
     throw Error("test error")
   }
