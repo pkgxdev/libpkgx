@@ -214,10 +214,40 @@ export class Range {
         } else if (v2.major == Infinity) {
           const v = chomp(v1)
           return `>=${v}`
+        } else if (at(v1, v2)) {
+          return `@${v1}`
         } else {
           return `>=${chomp(v1)}<${chomp(v2)}`
         }
       }).join(",")
+    }
+
+    function at(v1: SemVer, {components: cc2}: SemVer) {
+      const cc1 = [...v1.components]
+
+      if (cc1.length > cc2.length) {
+        return false
+      }
+
+      // it's possible the components were short due to 0-truncation
+      // add them back so our algo works
+      while (cc1.length < cc2.length) {
+        cc1.push(0)
+      }
+
+      if (last(cc1) != last(cc2) - 1) {
+        return false
+      }
+
+      for (let i = 0; i < (cc1.length - 1); i++) {
+        if (cc1[i] != cc2[i]) return false
+      }
+
+      return true
+    }
+
+    function last<T>(arr: number[]) {
+      return arr[arr.length - 1]
     }
   }
 

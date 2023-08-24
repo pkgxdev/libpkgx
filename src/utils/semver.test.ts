@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { assert, assertEquals, assertFalse, assertThrows } from "deno/testing/asserts.ts"
+import { assert, assertEquals, assertFalse, assertThrows } from "deno/assert/mod.ts"
 import SemVer, * as semver from "./semver.ts"
 
 
@@ -160,7 +160,8 @@ Deno.test("semver", async test => {
 
     assertEquals(new semver.Range("@300").toString(), "^300")
     assertEquals(new semver.Range("@300.1").toString(), "~300.1")
-    assertEquals(new semver.Range("@300.1.0").toString(), ">=300.1<300.1.1")
+    assertEquals(new semver.Range("@300.1.0").toString(), "@300.1.0")
+    assertEquals(new semver.Range(">=300.1.0<300.1.1").toString(), "@300.1.0")
   })
 
   await test.step("intersection", async test => {
@@ -274,7 +275,7 @@ Deno.test("coverage", () => {
 
   assertEquals(semver.Range.parse("1")?.toString(), new semver.Range("^1").toString())
   assertEquals(semver.Range.parse("1.1")?.toString(), new semver.Range("~1.1").toString())
-  assertEquals(semver.Range.parse("1.1.2")?.toString(), new semver.Range(">=1.1.2<1.1.3").toString())
+  assertEquals(semver.Range.parse("1.1.2")?.toString(), new semver.Range("@1.1.2").toString())
 
   assertEquals(semver.Range.parse("a"), undefined)
 
