@@ -32,6 +32,7 @@ export { validate }
 declare global {
   interface Array<T> {
     compact(): Array<Exclude<T, boolean | null | undefined>>
+    compact<S>(body: (t: T) => S | null | undefined | false): Array<S>
     compact<S>(body?: (t: T) => S | T | null | undefined | false, opts?: { rescue: boolean }): Array<S | T>
   }
 
@@ -49,7 +50,7 @@ Set.prototype.insert = function<T>(t: T) {
   }
 }
 
-Array.prototype.compact = function<T, S = T>(body?: (t: T) => S | null | undefined | false, opts?: { rescue: boolean }): S[] {
+Array.prototype.compact = function<T, S>(body?: (t: T) => S | null | undefined | false, opts?: { rescue: boolean }): S[] {
   const rv: S[] = []
   for (const e of this) {
     try {

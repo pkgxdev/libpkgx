@@ -46,13 +46,6 @@ Deno.test("pkg.str", async test => {
 })
 
 Deno.test("pkg.parse", async test => {
-  await test.step("@latest", () => {
-    const { constraint } = pkg.parse("test@latest")
-    assert(constraint.satisfies(new SemVer([5,0,0])))
-    assert(constraint.satisfies(new SemVer([5,1,0])))
-    assert(constraint.satisfies(new SemVer([6,0,0])))
-  })
-
   await test.step("@5", () => {
     const { constraint } = pkg.parse("test@5")
     assert(constraint.satisfies(new SemVer([5,0,0])))

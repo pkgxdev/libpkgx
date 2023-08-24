@@ -32,7 +32,7 @@ export class ResolveError extends TeaError {
 /// that resolve so if we are resolving `node>=12`, node 13 is installed, but
 /// node 19 is the latest we return node 13. if `update` is true we return node
 /// 19 and *you will need to install it*.
-export default async function resolve(reqs: (Package | PackageRequirement)[], {update}: {update: boolean} = {update: false}): Promise<Resolution> {
+export default async function resolve(reqs: (Package | PackageRequirement)[], {update}: {update: boolean | Set<string>} = {update: false}): Promise<Resolution> {
   const inventory = _internals.useInventory()
   const cellar = _internals.useCellar()
   const rv: Resolution = { pkgs: [], installed: [], pending: [] }
@@ -41,7 +41,8 @@ export default async function resolve(reqs: (Package | PackageRequirement)[], {u
   const promises: Promise<void>[] = []
 
   for (const req of reqs) {
-    if (!update && (installation = await cellar.has(req))) {
+    const noup = !should_update(req.project)
+    if (noup && (installation = await cellar.has(req))) {
       // if something is already installed that satisfies the constraint then use it
       rv.installed.push(installation)
       rv.pkgs.push(installation.pkg)
@@ -67,6 +68,10 @@ export default async function resolve(reqs: (Package | PackageRequirement)[], {u
   await Promise.all(promises)
 
   return rv
+
+  function should_update(project: string) {
+    return update === true || (update instanceof Set && update.has(project))
+  }
 }
 
 export const _internals = {
