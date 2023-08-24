@@ -29,11 +29,13 @@ const validate = {
 export { validate }
 
 ////////////////////////////////////////////////////////////// base extensions
+type Falsy = false | 0 | '' | null | undefined;
+
 declare global {
   interface Array<T> {
-    compact(): Array<Exclude<T, boolean | null | undefined>>
-    compact<S>(body: (t: T) => S | null | undefined | false): Array<S>
-    compact<S>(body?: (t: T) => S | T | null | undefined | false, opts?: { rescue: boolean }): Array<S | T>
+    compact(): Array<Exclude<T, Falsy>>;
+    compact<S>(body: (t: T) => S | Falsy): Array<S>
+    compact<S>(body?: (t: T) => S | T | Falsy, opts?: { rescue: boolean }): Array<S | T>
   }
 
   interface Set<T> {
@@ -50,7 +52,7 @@ Set.prototype.insert = function<T>(t: T) {
   }
 }
 
-Array.prototype.compact = function<T, S>(body?: (t: T) => S | null | undefined | false, opts?: { rescue: boolean }): S[] {
+Array.prototype.compact = function<T, S>(body?: (t: T) => S | Falsy, opts?: { rescue: boolean }): S[] {
   const rv: S[] = []
   for (const e of this) {
     try {
@@ -63,22 +65,37 @@ Array.prototype.compact = function<T, S>(body?: (t: T) => S | null | undefined |
   return rv
 }
 
-export function flatmap<S, T>(t: T | undefined | null, body: (t: T) => S | undefined, opts?: {rescue?: boolean}): NonNullable<S> | undefined {
+export function flatmap<S, T>(t: T | Falsy, body: (t: T) => S | Falsy, opts?: {rescue?: boolean}): S | undefined;
+export function flatmap<S, T>(t: Promise<T | Falsy>, body: (t: T) => Promise<S | Falsy>, opts?: {rescue?: boolean}): Promise<S | undefined>;
+export function flatmap<S, T>(t: Promise<T | Falsy> | (T | Falsy), body: (t: T) => (S | Falsy) | Promise<S | Falsy>, opts?: {rescue?: boolean}): Promise<S | undefined> | (S | undefined) {
   try {
-    if (t) return body(t) ?? undefined
+    if (t instanceof Promise) {
+      const foo = t.then(t => {
+        if (!t) return
+        const s = body(t) as Promise<S | Falsy>
+        if (!s) return
+        const bar = s
+          .then(body => body || undefined)
+          .catch(err => { if (!opts?.rescue) throw err; else return undefined } )
+        return bar
+      })
+      return foo
+    } else {
+      if (t) return body(t) as (S | Falsy) || undefined
+    }
   } catch (err) {
     if (!opts?.rescue) throw err
   }
 }
 
-export async function async_flatmap<S, T>(t: Promise<T | undefined | null>, body: (t: T) => Promise<S> | undefined, opts?: {rescue?: boolean}): Promise<NonNullable<S> | undefined> {
-  try {
-    const tt = await t
-    if (tt) return await body(tt) ?? undefined
-  } catch (err) {
-    if (!opts?.rescue) throw err
-  }
-}
+// export async function async_flatmap<S, T>(t: Promise<T | Falsy>, body: (t: T) => Promise<S | Falsy>, opts?: {rescue?: boolean}): Promise<S | undefined> {
+//   try {
+//     const tt = await t
+//     if (tt) return await body(tt) || undefined
+//   } catch (err) {
+//     if (!opts?.rescue) throw err
+//   }
+// }
 
 //////////////////////////////////////////////////////// chuzzle
 declare global {

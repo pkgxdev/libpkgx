@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects, assertThrows } from "deno/assert/mod.ts"
-import { async_flatmap, flatmap, validate } from "./misc.ts"
+import { flatmap, validate } from "./misc.ts"
 import { isNumber } from "is-what"
 
 Deno.test("validate string", () => {
@@ -43,12 +43,12 @@ Deno.test("async flatmap", async () => {
 
   const add = (n: number) => Promise.resolve(n + 1)
 
-  assertEquals(await async_flatmap(producer(1), add), 2)
-  assertEquals(await async_flatmap(producer(undefined), add), undefined)
-  assertEquals(await async_flatmap(producer(1), (_n) => undefined), undefined)
+  assertEquals(await flatmap(producer(1), add), 2)
+  assertEquals(await flatmap(producer(undefined), add), undefined)
+  assertEquals(await flatmap(producer(1), (_n) => undefined), undefined)
 
-  assertEquals(await async_flatmap(producer(1, Error()), add, {rescue: true}), undefined)
-  await assertRejects(() => async_flatmap(producer(1, Error()), add, undefined))
+  assertEquals(await flatmap(producer(1, Error()), add, {rescue: true}), undefined)
+  await assertRejects(() => flatmap(producer(1, Error()), add, undefined))
 })
 
 Deno.test("chuzzle", () => {
@@ -74,7 +74,7 @@ Deno.test("array compact", () => {
   assertEquals([1, 2, undefined, null, false, 3].compact((n) => isNumber(n) && n * 2), [2, 4, 6])
 
   // will fail to compile if the compiler cannot infer the type of the compact() return
-  assertEquals([1, 2, undefined, null, false, 3].compact()[0] + 1, 2)
+  assertEquals([1, 2, undefined, null, false as false | number, 3].compact()[0] + 1, 2)
 
   // verifies transforming the type gives singular type return
   const foo = [1, 2, undefined, null, false, 3].compact((n) => isNumber(n) && `${n * 2}`)

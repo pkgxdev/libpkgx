@@ -87,7 +87,7 @@ Deno.test("resolve cellar.has", {
     }
   })
 
-  await runner.step("updates version if latest is not installed", async runner => {
+  await runner.step("updates version if latest is not installed when update is set", async runner => {
     const stub1 = stub(_internals, "useInventory", () => ({
       get: () => fail(),
       select: () => Promise.resolve(new SemVer("1.0.1")),
