@@ -155,7 +155,14 @@ export default class Path {
   }
 
   isReadableFile(): Path | undefined {
-    return this.isFile() /*FIXME*/ ? this : undefined
+    try {
+      const {mode, isFile} = Deno.statSync(this.string)
+      if (isFile && mode && mode & 0o400) {
+        return this
+      }
+    } catch {
+      return undefined
+    }
   }
 
   exists(): Path | undefined {
