@@ -4,11 +4,8 @@
     "strict": true
   },
   "fmt": {
-    "files": {
-      "exclude": [
-        "./"
-      ]
-    }
+    "semiColons": false,
+    "lineWidth": 100
   },
   "tea": {
     "dependencies": {
