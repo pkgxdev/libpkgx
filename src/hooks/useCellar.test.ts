@@ -7,7 +7,7 @@ import useCellar from "./useCellar.ts"
 Deno.test("useCellar.resolve()", async () => {
   useTestConfig()
 
-  const pkgrq = { project: "python.org", version: new SemVer("3.11.3")}
+  const pkgrq = { project: "python.org", version: new SemVer("3.11.3") }
   const installation = await install(pkgrq)
 
   await useCellar().resolve(installation)
@@ -15,7 +15,9 @@ Deno.test("useCellar.resolve()", async () => {
   await useCellar().resolve({ project: "python.org", constraint: new semver.Range("^3") })
   await useCellar().resolve(installation.path)
 
-  assertRejects(() => useCellar().resolve({ project: "python.org", constraint: new semver.Range("@300")}))
+  assertRejects(() =>
+    useCellar().resolve({ project: "python.org", constraint: new semver.Range("@300") })
+  )
 })
 
 Deno.test("useCellar.has()", async () => {

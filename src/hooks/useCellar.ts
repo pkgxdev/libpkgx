@@ -1,4 +1,4 @@
-import { Package, PackageRequirement, Installation } from "../types.ts"
+import { Installation, Package, PackageRequirement } from "../types.ts"
 import { TeaError } from "../utils/error.ts"
 import * as pkgutils from "../utils/pkg.ts"
 import SemVer from "../utils/semver.ts"
@@ -24,7 +24,8 @@ export default function useCellar() {
   const keg = (pkg: Package) => shelf(pkg.project).join(`v${pkg.version}`)
 
   /// returns the `Installation` if the pkg is installed
-  const has = (pkg: Package | PackageRequirement | Path) => resolve(pkg).swallow(InstallationNotFoundError)
+  const has = (pkg: Package | PackageRequirement | Path) =>
+    resolve(pkg).swallow(InstallationNotFoundError)
 
   return {
     has,
@@ -41,13 +42,13 @@ export default function useCellar() {
     if (!d.isDirectory()) return []
 
     const rv: Installation[] = []
-    for await (const [path, {name, isDirectory}] of d.ls()) {
+    for await (const [path, { name, isDirectory }] of d.ls()) {
       try {
         if (!isDirectory) continue
-        if (!name.startsWith("v") || name == 'var') continue
+        if (!name.startsWith("v") || name == "var") continue
         const version = new SemVer(name)
-        if (await vacant(path)) continue  // failed build probs
-        rv.push({path, pkg: {project, version}})
+        if (await vacant(path)) continue // failed build probs
+        rv.push({ path, pkg: { project, version } })
       } catch {
         //noop: other directories can exist
       }
@@ -59,7 +60,7 @@ export default function useCellar() {
   /// if package is installed, returns its installation
   async function resolve(pkg: Package | PackageRequirement | Path | Installation) {
     const installation = await (async () => {
-      if ("pkg" in pkg) { return pkg }
+      if ("pkg" in pkg) return pkg
       // ^^ is `Installation`
 
       const { prefix } = config
@@ -68,17 +69,18 @@ export default function useCellar() {
         const version = new SemVer(path.basename())
         const project = path.parent().relative({ to: prefix })
         return {
-          path, pkg: { project, version }
+          path,
+          pkg: { project, version },
         }
       } else if ("version" in pkg) {
         const path = keg(pkg)
         return { path, pkg }
       } else {
         const installations = await ls(pkg.project)
-        const versions = installations.map(({ pkg: {version}}) => version)
+        const versions = installations.map(({ pkg: { version } }) => version)
         const version = pkg.constraint.max(versions)
         if (version) {
-          const path = installations.find(({pkg: {version: v}}) => v.eq(version))!.path
+          const path = installations.find(({ pkg: { version: v } }) => v.eq(version))!.path
           return { path, pkg: { project: pkg.project, version } }
         } else {
           throw new InstallationNotFoundError(pkg)
@@ -96,8 +98,8 @@ export default function useCellar() {
 async function vacant(path: Path): Promise<boolean> {
   if (!path.isDirectory()) {
     return true
-  } else for await (const _ of path.ls()) {
-    return false
-  }
+  } else {for await (const _ of path.ls()) {
+      return false
+    }}
   return true
 }

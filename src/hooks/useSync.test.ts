@@ -3,7 +3,7 @@ import { assert } from "deno/testing/asserts.ts"
 import usePantry from "./usePantry.ts"
 import useSync from "./useSync.ts"
 
-Deno.test("useSync", async runner => {
+Deno.test("useSync", async (runner) => {
   await runner.step("w/o git", async () => {
     const TEA_PREFIX = Deno.makeTempDirSync()
     const conf = useTestConfig({ TEA_PREFIX, TEA_PANTRY_PATH: `${TEA_PREFIX}/tea.xyz/var/pantry` })
@@ -13,7 +13,11 @@ Deno.test("useSync", async runner => {
 
   await runner.step("w/git", async () => {
     const TEA_PREFIX = Deno.makeTempDirSync()
-    const conf = useTestConfig({ TEA_PREFIX, TEA_PANTRY_PATH: `${TEA_PREFIX}/tea.xyz/var/pantry`, PATH: "/usr/bin" })
+    const conf = useTestConfig({
+      TEA_PREFIX,
+      TEA_PANTRY_PATH: `${TEA_PREFIX}/tea.xyz/var/pantry`,
+      PATH: "/usr/bin",
+    })
     assert(conf.git !== undefined)
     await test()
 

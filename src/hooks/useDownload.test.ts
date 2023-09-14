@@ -2,14 +2,14 @@ import { useTestConfig } from "./useTestConfig.ts"
 import { assert } from "deno/testing/asserts.ts"
 import useDownload from "./useDownload.ts"
 
-Deno.test("etag-mtime-check", async runner => {
+Deno.test("etag-mtime-check", async (runner) => {
   useTestConfig({ TEA_CACHE_DIR: Deno.makeTempDirSync() })
 
   const src = new URL("https://dist.tea.xyz/ijg.org/versions.txt")
   const { download, cache } = useDownload()
 
   await runner.step("download", async () => {
-    await download({src})
+    await download({ src })
 
     const mtimePath = cache({ for: src }).join("mtime")
     const etagPath = cache({ for: src }).join("etag")
@@ -29,12 +29,15 @@ Deno.test("etag-mtime-check", async runner => {
 
   await runner.step("second download doesn’t http", async () => {
     let n = 0
-    await download({src}, blob => { n += blob.length; return Promise.resolve() }) // for coverage
+    await download({ src }, (blob) => {
+      n += blob.length
+      return Promise.resolve()
+    }) // for coverage
     assert(n > 0)
   })
 
   await runner.step("second download doesn’t http and is fine if we do nothing", async () => {
-    const dst = await download({src})
+    const dst = await download({ src })
     assert(dst.isFile())
   })
 })

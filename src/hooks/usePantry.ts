@@ -1,7 +1,7 @@
 import { is_what, PlainObject } from "../deps.ts"
 const { isNumber, isPlainObject, isString, isArray, isPrimitive, isBoolean } = is_what
 import { validatePackageRequirement } from "../utils/hacks.ts"
-import { Package, Installation } from "../types.ts"
+import { Installation, Package } from "../types.ts"
 import useMoustaches from "./useMoustaches.ts"
 import { TeaError } from "../utils/error.ts"
 import { validate } from "../utils/misc.ts"
@@ -15,8 +15,7 @@ export interface Interpreter {
   args: string[]
 }
 
-export class PantryError extends TeaError
-{}
+export class PantryError extends TeaError {}
 
 export class PantryParseError extends PantryError {
   project: string
@@ -46,7 +45,7 @@ export class PantryNotFoundError extends PantryError {
 
 export default function usePantry() {
   const config = useConfig()
-  const prefix = config.prefix.join('tea.xyz/var/pantry/projects')
+  const prefix = config.prefix.join("tea.xyz/var/pantry/projects")
 
   async function* ls(): AsyncGenerator<LsEntry> {
     const seen = new Set()
@@ -73,9 +72,12 @@ export default function usePantry() {
 
         let memo: Promise<PlainObject> | undefined
 
-        return () => memo ?? (memo = filename.readYAML()
-          .then(validate.obj)
-          .catch(cause => { throw new PantryParseError(project, filename, cause) }))
+        return () =>
+          memo ?? (memo = filename.readYAML()
+            .then(validate.obj)
+            .catch((cause) => {
+              throw new PantryParseError(project, filename, cause)
+            }))
       }
       throw new PackageNotFoundError(project)
     })()
@@ -93,7 +95,8 @@ export default function usePantry() {
       if (!platforms) return true
       if (isString(platforms)) platforms = [platforms]
       if (!isArray(platforms)) throw new PantryParseError(project)
-      return platforms.includes(host().platform) ||platforms.includes(`${host().platform}/${host().arch}`)
+      return platforms.includes(host().platform) ||
+        platforms.includes(`${host().platform}/${host().arch}`)
     }
 
     const drydeps = async () => parse_pkgs_node((await yaml()).dependencies)
@@ -106,7 +109,7 @@ export default function usePantry() {
       }
       if (!isArray(node)) throw new PantryParseError(project)
 
-      return node.compact(x => {
+      return node.compact((x) => {
         if (isPlainObject(x)) {
           x = x["executable"]
         }
@@ -127,12 +130,12 @@ export default function usePantry() {
         const cmds = validate.arr<string>(yaml.cmds)
         return (binname: string) => {
           if (!cmds.includes(binname)) return
-          const args = yaml['args']
+          const args = yaml["args"]
           if (isPlainObject(args)) {
             if (args[binname]) {
               return get_args(args[binname])
             } else {
-              return get_args(args['...'])
+              return get_args(args["..."])
             }
           } else {
             return get_args(args)
@@ -152,12 +155,12 @@ export default function usePantry() {
       companions,
       runtime: {
         env: runtime_env,
-        deps: drydeps
+        deps: drydeps,
       },
       available,
       provides,
       provider,
-      yaml
+      yaml,
     }
   }
 
@@ -171,7 +174,7 @@ export default function usePantry() {
     //TODO not very performant due to serial awaits
     const rv: Foo[] = []
     for await (const pkg of ls()) {
-      const proj = {...project(pkg.project), ...pkg}
+      const proj = { ...project(pkg.project), ...pkg }
       if (pkg.project.toLowerCase() == name) {
         rv.push(proj)
         continue
@@ -179,15 +182,17 @@ export default function usePantry() {
       const yaml = await proj.yaml()
       if (yaml["display-name"]?.toLowerCase() == name) {
         rv.push(proj)
-      } else if ((await proj.provides()).map(x => x.toLowerCase()).includes(name)) {
+      } else if ((await proj.provides()).map((x) => x.toLowerCase()).includes(name)) {
         rv.push(proj)
       }
     }
     return rv
   }
 
-  async function which({ interprets: extension }: { interprets: string }): Promise<Interpreter | undefined> {
-    if (extension[0] == '.') extension = extension.slice(1)
+  async function which(
+    { interprets: extension }: { interprets: string },
+  ): Promise<Interpreter | undefined> {
+    if (extension[0] == ".") extension = extension.slice(1)
     if (!extension) return
     for await (const pkg of ls()) {
       const yml = await project(pkg).yaml()
@@ -195,8 +200,10 @@ export default function usePantry() {
       if (!isPlainObject(node)) continue
       try {
         const { extensions, args } = yml["interprets"]
-        if ((isString(extensions) && extensions === extension) ||
-          (isArray(extensions) && extensions.includes(extension))) {
+        if (
+          (isString(extensions) && extensions === extension) ||
+          (isArray(extensions) && extensions.includes(extension))
+        ) {
           return { project: pkg.project, args: isArray(args) ? args : [args] }
         }
       } catch {
@@ -208,7 +215,7 @@ export default function usePantry() {
 
   const missing = () => {
     try {
-      return !pantry_paths().some(x => x.exists())
+      return !pantry_paths().some((x) => x.exists())
     } catch (e) {
       if (e instanceof PantryNotFoundError) {
         return true
@@ -234,7 +241,7 @@ export default function usePantry() {
     parse_pkgs_node,
     expand_env_obj,
     missing,
-    neglected
+    neglected,
   }
 
   function pantry_paths(): Path[] {
@@ -262,8 +269,7 @@ export function parse_pkgs_node(node: any) {
   platform_reduce(node)
 
   return Object.entries(node)
-    .compact(([project, constraint]) =>
-      validatePackageRequirement(project, constraint))
+    .compact(([project, constraint]) => validatePackageRequirement(project, constraint))
 }
 
 /// expands platform specific keys into the object
@@ -275,7 +281,7 @@ function platform_reduce(env: PlainObject) {
       let match = key.match(/^(darwin|linux)\/(aarch64|x86-64)$/)
       if (match) return [match[1], match[2]]
       if ((match = key.match(/^(darwin|linux)$/))) return [match[1]]
-      if ((match = key.match(/^(aarch64|x86-64)$/))) return [,match[1]]
+      if ((match = key.match(/^(aarch64|x86-64)$/))) return [, match[1]]
       return []
     })()
 
@@ -300,8 +306,12 @@ function platform_reduce(env: PlainObject) {
   }
 }
 
-export function expand_env_obj(env_: PlainObject, pkg: Package, deps: Installation[]): Record<string, string> {
-  const env = {...env_}
+export function expand_env_obj(
+  env_: PlainObject,
+  pkg: Package,
+  deps: Installation[],
+): Record<string, string> {
+  const env = { ...env_ }
 
   platform_reduce(env)
 
@@ -309,7 +319,7 @@ export function expand_env_obj(env_: PlainObject, pkg: Package, deps: Installati
 
   for (let [key, value] of Object.entries(env)) {
     if (isArray(value)) {
-      value = value.map(x => transform(x)).join(" ")
+      value = value.map((x) => transform(x)).join(" ")
     } else {
       value = transform(value)
     }
@@ -321,7 +331,9 @@ export function expand_env_obj(env_: PlainObject, pkg: Package, deps: Installati
 
   // deno-lint-ignore no-explicit-any
   function transform(value: any): string {
-    if (!isPrimitive(value)) throw new PantryParseError(pkg.project, undefined, JSON.stringify(value))
+    if (!isPrimitive(value)) {
+      throw new PantryParseError(pkg.project, undefined, JSON.stringify(value))
+    }
 
     if (isBoolean(value)) {
       return value ? "1" : "0"
@@ -331,8 +343,8 @@ export function expand_env_obj(env_: PlainObject, pkg: Package, deps: Installati
       const mm = useMoustaches()
       const home = Path.home().string
       const obj = [
-        { from: 'env.HOME', to: home },  // historic, should be removed at v1
-        { from: 'home', to: home }       // remove, stick with just ~
+        { from: "env.HOME", to: home }, // historic, should be removed at v1
+        { from: "home", to: home }, // remove, stick with just ~
       ]
       obj.push(...mm.tokenize.all(pkg, deps))
       return mm.apply(value, obj)

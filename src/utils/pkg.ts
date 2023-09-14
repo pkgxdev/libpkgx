@@ -13,9 +13,7 @@ export function parse(input: string): PackageRequirement {
 }
 
 export function compare(a: Package, b: Package): number {
-  return a.project === b.project
-    ? a.version.compare(b.version)
-    : a.project.localeCompare(b.project)
+  return a.project === b.project ? a.version.compare(b.version) : a.project.localeCompare(b.project)
 }
 
 export function str(pkg: Package | PackageRequirement): string {

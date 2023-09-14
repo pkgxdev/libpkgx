@@ -1,9 +1,8 @@
-import { PackageRequirement, Package } from "../types.ts"
+import { Package, PackageRequirement } from "../types.ts"
 import * as semver from "../utils/semver.ts"
 import usePantry from "../hooks/usePantry.ts"
 import { is_what } from "../deps.ts"
 const { isArray } = is_what
-
 
 //TODO linktime cyclic dependencies cannot be allowed
 //NOTE however if they aren’t link time it's presumably ok in some scenarios
@@ -11,7 +10,6 @@ const { isArray } = is_what
 //   mime types of files which could depend on the listing tool
 //FIXME actually we are not refining the constraints currently
 //TODO we are not actually restricting subsequent asks, eg. deno^1 but then deno^1.2
-
 
 interface ReturnValue {
   /// full list topologically sorted (ie dry + wet)
@@ -38,13 +36,12 @@ const get = (x: PackageRequirement) => usePantry().project(x).runtime.deps()
 export default async function hydrate(
   input: (PackageRequirement | Package)[] | (PackageRequirement | Package),
   get_deps: (pkg: PackageRequirement, dry: boolean) => Promise<PackageRequirement[]> = get,
-): Promise<ReturnValue>
-{
+): Promise<ReturnValue> {
   if (!isArray(input)) input = [input]
 
-  const dry = condense(input.map(spec => {
+  const dry = condense(input.map((spec) => {
     if ("version" in spec) {
-      return {project: spec.project, constraint: new semver.Range(`=${spec.version}`)}
+      return { project: spec.project, constraint: new semver.Range(`=${spec.version}`) }
     } else {
       return spec
     }
@@ -52,7 +49,7 @@ export default async function hydrate(
 
   const graph: Record<string, Node> = {}
   const bootstrap = new Set<string>()
-  const initial_set = new Set(dry.map(x => x.project))
+  const initial_set = new Set(dry.map((x) => x.project))
   const stack: Node[] = []
 
   // Starting the DFS loop for each package in the dry list
@@ -96,23 +93,25 @@ export default async function hydrate(
   // Sorting and constructing the return value
   const pkgs = Object.values(graph)
     .sort((a, b) => b.count() - a.count())
-    .map(({pkg}) => pkg)
+    .map(({ pkg }) => pkg)
 
   //TODO strictly we need to record precisely the bootstrap version constraint
-  const bootstrap_required = new Set(pkgs.compact(({project}) => bootstrap.has(project) && project))
+  const bootstrap_required = new Set(
+    pkgs.compact(({ project }) => bootstrap.has(project) && project),
+  )
 
   return {
     pkgs,
-    dry: pkgs.filter(({project}) => initial_set.has(project)),
-    wet: pkgs.filter(({project}) => !initial_set.has(project) || bootstrap_required.has(project)),
-    bootstrap_required
+    dry: pkgs.filter(({ project }) => initial_set.has(project)),
+    wet: pkgs.filter(({ project }) => !initial_set.has(project) || bootstrap_required.has(project)),
+    bootstrap_required,
   }
 }
 
 function condense(pkgs: PackageRequirement[]) {
   const out: PackageRequirement[] = []
   for (const pkg of pkgs) {
-    const found = out.find(x => x.project === pkg.project)
+    const found = out.find((x) => x.project === pkg.project)
     if (found) {
       found.constraint = semver.intersect(found.constraint, pkg.constraint)
     } else {
@@ -121,7 +120,6 @@ function condense(pkgs: PackageRequirement[]) {
   }
   return out
 }
-
 
 /////////////////////////////////////////////////////////////////////////// lib
 class Node {

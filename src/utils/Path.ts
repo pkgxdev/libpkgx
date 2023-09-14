@@ -28,13 +28,14 @@ export default class Path {
   static home(): Path {
     return new Path(
       (() => {
-      switch (Deno.build.os) {
-        case "windows":
-          return Deno.env.get("USERPROFILE")!
-        default:
-          return Deno.env.get("HOME")!
-      }
-    })())
+        switch (Deno.build.os) {
+          case "windows":
+            return Deno.env.get("USERPROFILE")!
+          default:
+            return Deno.env.get("HOME")!
+        }
+      })(),
+    )
   }
 
   /// normalizes the path
@@ -42,13 +43,15 @@ export default class Path {
   constructor(input: string | Path) {
     if (input instanceof Path) {
       this.string = input.string
-    } else if (!input || input[0] != '/') {
+    } else if (!input || input[0] != "/") {
       throw new Error(`invalid absolute path: ${input}`)
     } else {
       this.string = sys.normalize(input)
       // ^^ seemingly doesn’t normalize trailing slashes away
-      if (this.string != "/") while (this.string.endsWith("/")) {
-        this.string = this.string.slice(0, -1)
+      if (this.string != "/") {
+        while (this.string.endsWith("/")) {
+          this.string = this.string.slice(0, -1)
+        }
       }
     }
   }
@@ -78,10 +81,10 @@ export default class Path {
     } catch (err) {
       const code = err.code
       switch (code) {
-      case 'EINVAL':
-        return this // is file
-      case 'ENOENT':
-        throw err   // there is no symlink at this path
+        case "EINVAL":
+          return this // is file
+        case "ENOENT":
+          throw err // there is no symlink at this path
       }
       throw err
     }
@@ -106,8 +109,8 @@ export default class Path {
   /// rationale: usually if you are trying to join an absolute path it is a bug in your code
   /// TODO should warn tho
   join(...components: string[]): Path {
-    const joined = components.filter(x => x).join("/")
-    if (joined[0] == '/') {
+    const joined = components.filter((x) => x).join("/")
+    if (joined[0] == "/") {
       return new Path(joined)
     } else if (joined) {
       return new Path(`${this.string}/${joined}`)
@@ -205,16 +208,16 @@ export default class Path {
   }
 
   components(): string[] {
-    return this.string.split('/')
+    return this.string.split("/")
   }
 
-  static mktemp(opts?: { prefix?: string, dir?: Path }): Path {
-    let {prefix, dir} = opts ?? {}
+  static mktemp(opts?: { prefix?: string; dir?: Path }): Path {
+    let { prefix, dir } = opts ?? {}
     dir ??= new Path(os.tmpdir())
     prefix ??= ""
-    if (!prefix.startsWith('/')) prefix = `/${prefix}`
+    if (!prefix.startsWith("/")) prefix = `/${prefix}`
     // not using deno.makeTempDirSync because it's bugg’d and the node shim doesn’t handler `dir`
-    const rv = mkdtempSync(`${dir.mkdir('p')}${prefix}`)
+    const rv = mkdtempSync(`${dir.mkdir("p")}${prefix}`)
     return new Path(rv)
   }
 
@@ -254,7 +257,7 @@ export default class Path {
       end result preexists, checking for this condition is too expensive a
       trade-off.
     */
-  mv({force, ...opts}: {to: Path, force?: boolean} | {into: Path, force?: boolean}): Path {
+  mv({ force, ...opts }: { to: Path; force?: boolean } | { into: Path; force?: boolean }): Path {
     if ("to" in opts) {
       fs.moveSync(this.string, opts.to.string, { overwrite: force })
       return opts.to
@@ -267,13 +270,13 @@ export default class Path {
 
   //FIXME operates in ”force” mode
   //TODO needs a recursive option
-  cp({into}: {into: Path}): Path {
+  cp({ into }: { into: Path }): Path {
     const dst = into.join(this.basename())
     Deno.copyFileSync(this.string, dst.string)
     return dst
   }
 
-  rm({recursive} = {recursive: false}) {
+  rm({ recursive } = { recursive: false }) {
     if (this.exists()) {
       try {
         Deno.removeSync(this.string, { recursive })
@@ -285,12 +288,12 @@ export default class Path {
         }
       }
     }
-    return this  // may seem weird but I've had cases where I wanted to chain
+    return this // may seem weird but I've had cases where I wanted to chain
   }
 
-  mkdir(opts?: 'p'): Path {
+  mkdir(opts?: "p"): Path {
     if (!this.isDirectory()) {
-      Deno.mkdirSync(this.string, { recursive: opts == 'p' })
+      Deno.mkdirSync(this.string, { recursive: opts == "p" })
     }
     return this
   }
@@ -313,7 +316,7 @@ export default class Path {
   /// `this` is the symlink that is created pointing at `target`
   /// in Path.ts we always create `this`, our consistency helps with the notoriously difficuly argument order of `ln -s`
   /// note symlink is full and absolute path
-  ln(_: 's', {target}: { target: Path }): Path {
+  ln(_: "s", { target }: { target: Path }): Path {
     Deno.symlinkSync(target.string, this.string)
     return this
   }
@@ -325,10 +328,10 @@ export default class Path {
   async *readLines(): AsyncIterableIterator<string> {
     const fd = Deno.openSync(this.string)
     try {
-      for await (const line of readLines(fd))
+      for await (const line of readLines(fd)) {
         yield line
       }
-    finally {
+    } finally {
       fd.close()
     }
   }
@@ -347,10 +350,14 @@ export default class Path {
   }
 
   readJSON(): Promise<unknown> {
-    return this.read().then(x => JSON.parse(x))
+    return this.read().then((x) => JSON.parse(x))
   }
 
-  write({ force, ...content }: ({text: string} | {json: PlainObject, space?: number}) & {force?: boolean}): Path {
+  write(
+    { force, ...content }: ({ text: string } | { json: PlainObject; space?: number }) & {
+      force?: boolean
+    },
+  ): Path {
     if (this.exists()) {
       if (!force) throw new Error(`file-exists:${this}`)
       this.rm()
@@ -366,7 +373,7 @@ export default class Path {
 
   touch(): Path {
     //FIXME work more as expected
-    return this.write({force: true, text: ""})
+    return this.write({ force: true, text: "" })
   }
 
   chmod(mode: number): Path {
@@ -379,8 +386,8 @@ export default class Path {
   }
 
   relative({ to: base }: { to: Path }): string {
-    const pathComps = ['/'].concat(this.string.split("/").filter(x=>x))
-    const baseComps = ['/'].concat(base.string.split("/").filter(x=>x))
+    const pathComps = ["/"].concat(this.string.split("/").filter((x) => x))
+    const baseComps = ["/"].concat(base.string.split("/").filter((x) => x))
 
     if (this.string.startsWith(base.string)) {
       return pathComps.slice(baseComps.length).join("/")
@@ -393,7 +400,7 @@ export default class Path {
         newBaseComps.shift()
       }
 
-      const relComps = Array.from({ length: newBaseComps.length } , () => "..")
+      const relComps = Array.from({ length: newBaseComps.length }, () => "..")
       relComps.push(...newPathComps)
       return relComps.join("/")
     }
@@ -404,13 +411,15 @@ export default class Path {
   }
 
   prettyString(): string {
-    return this.string.replace(new RegExp(`^${Path.home()}`), '~')
+    return this.string.replace(new RegExp(`^${Path.home()}`), "~")
   }
 
   // if we’re inside the CWD we print that
   prettyLocalString(): string {
     const cwd = Path.cwd()
-    return this.string.startsWith(cwd.string) ? `./${this.relative({ to: cwd })}` : this.prettyString()
+    return this.string.startsWith(cwd.string)
+      ? `./${this.relative({ to: cwd })}`
+      : this.prettyString()
   }
 
   [Symbol.for("Deno.customInspect")]() {

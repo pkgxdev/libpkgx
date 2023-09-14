@@ -4,8 +4,8 @@ import { isArray, isString } from "https://deno.land/x/is_what@v4.1.15/src/index
 /**
  * we have our own implementation because open source is full of weird
  * but *almost* valid semver schemes, eg:
-   * openssl 1.1.1q
-   * ghc 5.64.3.2
+ * openssl 1.1.1q
+ * ghc 5.64.3.2
  * it also allows us to implement semver_intersection without hating our lives
  */
 export default class SemVer {
@@ -23,10 +23,10 @@ export default class SemVer {
   readonly pretty?: string
 
   constructor(input: string | number[] | Range | SemVer) {
-    if (typeof input == 'string') {
-      const vprefix = input.startsWith('v')
+    if (typeof input == "string") {
+      const vprefix = input.startsWith("v")
       const raw = vprefix ? input.slice(1) : input
-      const parts = raw.split('.')
+      const parts = raw.split(".")
       let pretty_is_raw = false
       this.components = parts.flatMap((x, index) => {
         const match = x.match(/^(\d+)([a-z])$/)
@@ -37,7 +37,7 @@ export default class SemVer {
           pretty_is_raw = true
           return [n, char_to_num(match[2])]
         } else if (/^\d+$/.test(x)) {
-          const n = parseInt(x)  // parseInt will parse eg. `5-start` to `5`
+          const n = parseInt(x) // parseInt will parse eg. `5-start` to `5`
           if (isNaN(n)) throw new Error(`invalid version: ${input}`)
           return [n]
         } else {
@@ -54,7 +54,7 @@ export default class SemVer {
       this.pretty = v.pretty
     } else {
       this.components = [...input]
-      this.raw = input.join('.')
+      this.raw = input.join(".")
     }
 
     this.major = this.components[0]
@@ -62,7 +62,7 @@ export default class SemVer {
     this.patch = this.components[2] ?? 0
 
     function char_to_num(c: string) {
-      return c.charCodeAt(0) - 'a'.charCodeAt(0) + 1
+      return c.charCodeAt(0) - "a".charCodeAt(0) + 1
     }
   }
 
@@ -70,7 +70,7 @@ export default class SemVer {
     return this.pretty ??
       (this.components.length <= 3
         ? `${this.major}.${this.minor}.${this.patch}`
-        : this.components.join('.'))
+        : this.components.join("."))
   }
 
   eq(that: SemVer): boolean {
@@ -124,11 +124,11 @@ export function isValid(input: string) {
 /// we don’t support as much as node-semver but we refuse to do so because it is badness
 export class Range {
   // contract [0, 1] where 0 != 1 and 0 < 1
-  readonly set: ([SemVer, SemVer] | SemVer)[] | '*'
+  readonly set: ([SemVer, SemVer] | SemVer)[] | "*"
 
   constructor(input: string | ([SemVer, SemVer] | SemVer)[]) {
     if (input === "*") {
-      this.set = '*'
+      this.set = "*"
     } else if (!isString(input)) {
       this.set = input
     } else {
@@ -136,7 +136,7 @@ export class Range {
 
       const err = () => new Error(`invalid semver range: ${input}`)
 
-      this.set = input.split(/(?:,|\s*\|\|\s*)/).map(input => {
+      this.set = input.split(/(?:,|\s*\|\|\s*)/).map((input) => {
         let match = input.match(/^>=((\d+\.)*\d+)\s*(<((\d+\.)*\d+))?$/)
         if (match) {
           const v1 = new SemVer(match[1])
@@ -145,46 +145,49 @@ export class Range {
         } else if ((match = input.match(/^([~=<^@])(.+)$/))) {
           let v1: SemVer | undefined, v2: SemVer | undefined
           switch (match[1]) {
-          // deno-lint-ignore no-case-declarations
-          case "^":
-            v1 = new SemVer(match[2])
-            const parts = []
-            for (let i = 0; i < v1.components.length; i++) {
-              if (v1.components[i] === 0 && i < v1.components.length - 1) {
-                parts.push(0)
-              } else {
-                parts.push(v1.components[i] + 1)
-                break
+            // deno-lint-ignore no-case-declarations
+            case "^":
+              v1 = new SemVer(match[2])
+              const parts = []
+              for (let i = 0; i < v1.components.length; i++) {
+                if (v1.components[i] === 0 && i < v1.components.length - 1) {
+                  parts.push(0)
+                } else {
+                  parts.push(v1.components[i] + 1)
+                  break
+                }
               }
+              v2 = new SemVer(parts)
+              return [v1, v2]
+            case "~":
+              {
+                v1 = new SemVer(match[2])
+                if (v1.components.length == 1) {
+                  // yep this is the official policy
+                  v2 = new SemVer([v1.major + 1])
+                } else {
+                  v2 = new SemVer([v1.major, v1.minor + 1])
+                }
+              }
+              return [v1, v2]
+            case "<":
+              v1 = new SemVer([0])
+              v2 = new SemVer(match[2])
+              return [v1, v2]
+            case "=":
+              return new SemVer(match[2])
+            case "@": {
+              // @ is not a valid semver operator, but people expect it to work like so:
+              // @5 => latest 5.x (ie ^5)
+              // @5.1 => latest 5.1.x (ie. ~5.1)
+              // @5.1.0 => latest 5.1.0 (usually 5.1.0 since most stuff hasn't got more digits)
+              const parts = match[2].split(".").map((x) => parseInt(x))
+              v1 = new SemVer(parts)
+              const last = parts.pop()!
+              v2 = new SemVer([...parts, last + 1])
+              return [v1, v2]
             }
-            v2 = new SemVer(parts)
-            return [v1, v2]
-          case "~": {
-            v1 = new SemVer(match[2])
-            if (v1.components.length == 1) {
-              // yep this is the official policy
-              v2 = new SemVer([v1.major + 1])
-            } else {
-              v2 = new SemVer([v1.major, v1.minor + 1])
-            }
-          } return [v1, v2]
-          case "<":
-            v1 = new SemVer([0])
-            v2 = new SemVer(match[2])
-            return [v1, v2]
-          case "=":
-            return new SemVer(match[2])
-          case "@": {
-            // @ is not a valid semver operator, but people expect it to work like so:
-            // @5 => latest 5.x (ie ^5)
-            // @5.1 => latest 5.1.x (ie. ~5.1)
-            // @5.1.0 => latest 5.1.0 (usually 5.1.0 since most stuff hasn't got more digits)
-            const parts = match[2].split(".").map(x => parseInt(x))
-            v1 = new SemVer(parts)
-            const last = parts.pop()!
-            v2 = new SemVer([...parts, last + 1])
-            return [v1, v2]
-          }}
+          }
         }
         throw err()
       })
@@ -199,10 +202,10 @@ export class Range {
   }
 
   toString(): string {
-    if (this.set === '*') {
-      return '*'
+    if (this.set === "*") {
+      return "*"
     } else {
-      return this.set.map(v => {
+      return this.set.map((v) => {
         if (!isArray(v)) return `=${v.toString()}`
         const [v1, v2] = v
         if (v1.major > 0 && v2.major == v1.major + 1 && v2.minor == 0 && v2.patch == 0) {
@@ -222,7 +225,7 @@ export class Range {
       }).join(",")
     }
 
-    function at(v1: SemVer, {components: cc2}: SemVer) {
+    function at(v1: SemVer, { components: cc2 }: SemVer) {
       const cc1 = [...v1.components]
 
       if (cc1.length > cc2.length) {
@@ -282,10 +285,10 @@ export class Range {
   }
 
   satisfies(version: SemVer): boolean {
-    if (this.set === '*') {
+    if (this.set === "*") {
       return true
     } else {
-      return this.set.some(v => {
+      return this.set.some((v) => {
         if (isArray(v)) {
           const [v1, v2] = v
           return version.compare(v1) >= 0 && version.compare(v2) < 0
@@ -297,11 +300,11 @@ export class Range {
   }
 
   max(versions: SemVer[]): SemVer | undefined {
-    return versions.filter(x => this.satisfies(x)).sort((a,b) => a.compare(b)).pop()
+    return versions.filter((x) => this.satisfies(x)).sort((a, b) => a.compare(b)).pop()
   }
 
   single(): SemVer | undefined {
-    if (this.set === '*') return
+    if (this.set === "*") return
     if (this.set.length > 1) return
     return isArray(this.set[0]) ? undefined : this.set[0]
   }
@@ -320,9 +323,8 @@ function zip<T, U>(a: T[], b: U[]) {
   return rv
 }
 
-
 function _compare(a: SemVer, b: SemVer): number {
-  for (const [c,d] of zip(cmpcomponents(a), cmpcomponents(b))) {
+  for (const [c, d] of zip(cmpcomponents(a), cmpcomponents(b))) {
     if (c != d) return (c ?? 0) - (d ?? 0)
   }
   return 0
@@ -331,7 +333,7 @@ function _compare(a: SemVer, b: SemVer): number {
   /// we worry that one day we will severely regret this but… it’s what we do for now
   function cmpcomponents(v: SemVer) {
     if (v.major > 1996 && v.major != Infinity) {
-      return [0,0,0, ...v.components]
+      return [0, 0, 0, ...v.components]
     } else {
       return v.components
     }
@@ -339,10 +341,9 @@ function _compare(a: SemVer, b: SemVer): number {
 }
 export { _compare as compare }
 
-
 export function intersect(a: Range, b: Range): Range {
-  if (b.set === '*') return a
-  if (a.set === '*') return b
+  if (b.set === "*") return a
+  if (a.set === "*") return b
 
   // calculate the intersection between two semver.Ranges
   const set: ([SemVer, SemVer] | SemVer)[] = []
@@ -377,10 +378,9 @@ export function intersect(a: Range, b: Range): Range {
   return new Range(set)
 }
 
-
 //FIXME yes yes this is not sufficient
 export const regex = /\d+\.\d+\.\d+/
 
 function chomp(v: SemVer) {
-  return v.toString().replace(/(\.0)+$/g, '') || '0'
+  return v.toString().replace(/(\.0)+$/g, "") || "0"
 }

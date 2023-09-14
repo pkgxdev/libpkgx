@@ -11,7 +11,7 @@ const path = (stowage: Stowage) => {
   const stem = pkg.project.replaceAll("/", "∕")
 
   let filename = `${stem}-${pkg.version}`
-  if (type == 'bottle') {
+  if (type == "bottle") {
     const { platform, arch } = stowage.host ?? host()
     filename += `+${platform}+${arch}.tar.${stowage.compression}`
   } else {

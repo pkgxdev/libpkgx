@@ -1,4 +1,4 @@
-import host, { SupportedPlatform, SupportedArchitecture } from "./utils/host.ts"
+import host, { SupportedArchitecture, SupportedPlatform } from "./utils/host.ts"
 import SemVer, { Range } from "./utils/semver.ts"
 import Path from "./utils/Path.ts"
 
@@ -21,19 +21,19 @@ export interface Installation {
 
 /// remotely available package content (bottles or source tarball)
 export type Stowage = {
-  type: 'src'
+  type: "src"
   pkg: Package
   extname: string
 } | {
-  type: 'bottle'
+  type: "bottle"
   pkg: Package
-  compression: 'xz' | 'gz'
-  host?: { platform: SupportedPlatform, arch: SupportedArchitecture }
+  compression: "xz" | "gz"
+  host?: { platform: SupportedPlatform; arch: SupportedArchitecture }
 }
 
 /// once downloaded, `Stowage` becomes `Stowed`
 export type Stowed = Stowage & { path: Path }
 
-export function StowageNativeBottle(opts: { pkg: Package, compression: 'xz' | 'gz' }): Stowage {
-  return { ...opts, host: host(), type: 'bottle' }
+export function StowageNativeBottle(opts: { pkg: Package; compression: "xz" | "gz" }): Stowage {
+  return { ...opts, host: host(), type: "bottle" }
 }

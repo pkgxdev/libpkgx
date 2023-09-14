@@ -1,7 +1,7 @@
 import { deno } from "../deps.ts"
 const { crypto: crypto_, streams: { writeAll } } = deno
 const { toHashString, crypto } = crypto_
-import { TeaError, panic } from "../utils/error.ts"
+import { panic, TeaError } from "../utils/error.ts"
 import useConfig from "./useConfig.ts"
 import useFetch from "./useFetch.ts"
 import Path from "../utils/Path.ts"
@@ -12,7 +12,7 @@ interface DownloadOptions {
   src: URL
   dst?: Path
   headers?: Record<string, string>
-  logger?: (info: {src: URL, dst: Path, rcvd?: number, total?: number }) => void
+  logger?: (info: { src: URL; dst: Path; rcvd?: number; total?: number }) => void
 }
 
 export class DownloadError extends TeaError {
@@ -20,9 +20,9 @@ export class DownloadError extends TeaError {
   src: URL
   headers?: Record<string, string>
 
-  constructor(status: number, opts: { src: URL, headers?: Record<string, string>}) {
+  constructor(status: number, opts: { src: URL; headers?: Record<string, string> }) {
     super(`http: ${status}: ${opts.src}`)
-    this.name = 'DownloadError'
+    this.name = "DownloadError"
     this.status = status
     this.src = opts.src
     this.headers = opts.headers
@@ -31,7 +31,10 @@ export class DownloadError extends TeaError {
 
 const tmpname = (dst: Path) => dst.parent().join(dst.basename() + ".incomplete")
 
-async function download(opts: DownloadOptions, chunk?: (blob: Uint8Array) => Promise<void>): Promise<Path> {
+async function download(
+  opts: DownloadOptions,
+  chunk?: (blob: Uint8Array) => Promise<void>,
+): Promise<Path> {
   const [dst, stream] = await the_meat(opts)
 
   if (stream || chunk) {
@@ -39,8 +42,8 @@ async function download(opts: DownloadOptions, chunk?: (blob: Uint8Array) => Pro
 
     const writer = await (() => {
       if (stream) {
-        dst.parent().mkdir('p')
-        return Deno.open(tmpname(dst).string, {write: true, create: true, truncate: true})
+        dst.parent().mkdir("p")
+        return Deno.open(tmpname(dst).string, { write: true, create: true, truncate: true })
       }
     })()
 
@@ -63,12 +66,12 @@ async function download(opts: DownloadOptions, chunk?: (blob: Uint8Array) => Pro
   return dst
 }
 
-function cache({ for: url }: {for: URL}): Path {
+function cache({ for: url }: { for: URL }): Path {
   return useConfig().cache
     .join(url.protocol.slice(0, -1))
     .join(url.hostname)
     .join(hash())
-    .mkdir('p')
+    .mkdir("p")
 
   function hash() {
     let key = url.pathname
@@ -82,15 +85,15 @@ function cache({ for: url }: {for: URL}): Path {
 export default function useDownload() {
   return {
     download,
-    cache
+    cache,
   }
 }
 
-
 /// internal
 
-async function the_meat<T>({ src, logger, headers, dst }: DownloadOptions): Promise<[Path, ReadableStream<Uint8Array> | undefined, number | undefined]>
-{
+async function the_meat<T>(
+  { src, logger, headers, dst }: DownloadOptions,
+): Promise<[Path, ReadableStream<Uint8Array> | undefined, number | undefined]> {
   const hash = cache({ for: src })
   const mtime_entry = hash.join("mtime")
   const etag_entry = hash.join("etag")
@@ -116,36 +119,43 @@ async function the_meat<T>({ src, logger, headers, dst }: DownloadOptions): Prom
   const rsp = await useFetch(src, { headers })
 
   switch (rsp.status) {
-  case 200: {
-    const sz = parseInt(rsp.headers.get("Content-Length")!).chuzzle()
+    case 200: {
+      const sz = parseInt(rsp.headers.get("Content-Length")!).chuzzle()
 
-    if (logger) logger({ src, dst, total: sz })
+      if (logger) logger({ src, dst, total: sz })
 
-    const reader = rsp.body ?? panic()
+      const reader = rsp.body ?? panic()
 
-    const text = rsp.headers.get("Last-Modified")
-    if (text) mtime_entry.write({text, force: true})
-    const etag = rsp.headers.get("ETag")
-    if (etag) etag_entry.write({text: etag, force: true})
+      const text = rsp.headers.get("Last-Modified")
+      if (text) mtime_entry.write({ text, force: true })
+      const etag = rsp.headers.get("ETag")
+      if (etag) etag_entry.write({ text: etag, force: true })
 
-    if (!logger) {
-      return [dst, reader, sz]
-    } else {
-      let n = 0
-      return [dst, reader.pipeThrough(new TransformStream({
-        transform: (buf, controller) => {
-          n += buf.length
-          logger({ src, dst: dst!, rcvd: n, total: sz })
-          controller.enqueue(buf)
-      }})), sz]
+      if (!logger) {
+        return [dst, reader, sz]
+      } else {
+        let n = 0
+        return [
+          dst,
+          reader.pipeThrough(
+            new TransformStream({
+              transform: (buf, controller) => {
+                n += buf.length
+                logger({ src, dst: dst!, rcvd: n, total: sz })
+                controller.enqueue(buf)
+              },
+            }),
+          ),
+          sz,
+        ]
+      }
     }
-  }
-  case 304: {
-    const sz = (await Deno.stat(dst.string)).size
-    if (logger) logger({ src, dst, rcvd: sz, total: sz })
-    return [dst, undefined, sz]
-  }
-  default:
-    throw new DownloadError(rsp.status, { src, headers })
+    case 304: {
+      const sz = (await Deno.stat(dst.string)).size
+      if (logger) logger({ src, dst, rcvd: sz, total: sz })
+      return [dst, undefined, sz]
+    }
+    default:
+      throw new DownloadError(rsp.status, { src, headers })
   }
 }

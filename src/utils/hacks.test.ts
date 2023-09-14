@@ -28,7 +28,8 @@ Deno.test({
   fn: () => {
     const result = validatePackageRequirement("apple.com/xcode/clt", "*")
     assertEquals(result, undefined)
-}})
+  },
+})
 
 Deno.test("validatePackageRequirement - linux hack", () => {
   if (host().platform !== "linux") return

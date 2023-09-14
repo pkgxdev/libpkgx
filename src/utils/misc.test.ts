@@ -16,7 +16,7 @@ Deno.test("validate array", () => {
 })
 
 Deno.test("validate obj", () => {
-  assertEquals(validate.obj({a: 1}), {a: 1})
+  assertEquals(validate.obj({ a: 1 }), { a: 1 })
   assertThrows(() => validate.obj("jkl"), "not-array: jkl")
 })
 
@@ -29,7 +29,7 @@ Deno.test("flatmap", () => {
     throw Error("test error")
   }
 
-  assertEquals(flatmap(1, throws, {rescue: true}), undefined)
+  assertEquals(flatmap(1, throws, { rescue: true }), undefined)
   assertThrows(() => flatmap(1, throws), "test error")
 })
 
@@ -47,7 +47,7 @@ Deno.test("async flatmap", async () => {
   assertEquals(await flatmap(producer(undefined), add), undefined)
   assertEquals(await flatmap(producer(1), (_n) => undefined), undefined)
 
-  assertEquals(await flatmap(producer(1, Error()), add, {rescue: true}), undefined)
+  assertEquals(await flatmap(producer(1, Error()), add, { rescue: true }), undefined)
   await assertRejects(() => flatmap(producer(1, Error()), add, undefined))
 })
 
@@ -61,8 +61,8 @@ Deno.test("chuzzle", () => {
 Deno.test("set insert", () => {
   const s = new Set([1, 2, 3])
 
-  assertEquals(s.insert(1), {inserted: false})
-  assertEquals(s.insert(4), {inserted: true})
+  assertEquals(s.insert(1), { inserted: false })
+  assertEquals(s.insert(4), { inserted: true })
   assertEquals(s.size, 4)
 
   assertEquals(s.has(1), true)
@@ -83,6 +83,10 @@ Deno.test("array compact", () => {
   const throws = () => {
     throw Error("test error")
   }
-  assertEquals([()=>1, ()=>2, throws, ()=>3].compact((n) => n() * 2, { rescue: true }), [2, 4, 6])
-  assertThrows(() => [()=>1, ()=>2, throws, ()=>3].compact((n) => n() * 2))
+  assertEquals([() => 1, () => 2, throws, () => 3].compact((n) => n() * 2, { rescue: true }), [
+    2,
+    4,
+    6,
+  ])
+  assertThrows(() => [() => 1, () => 2, throws, () => 3].compact((n) => n() * 2))
 })

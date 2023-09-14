@@ -1,7 +1,7 @@
 import { assertRejects, assertThrows } from "deno/testing/asserts.ts"
 import { panic } from "../utils/error.ts"
 
-Deno.test("errors", async test => {
+Deno.test("errors", async (test) => {
   await test.step("panic", () => {
     assertThrows(() => panic("test msg"), "test msg")
   })
@@ -12,11 +12,8 @@ Deno.test("errors", async test => {
   })
 })
 
-class FooError extends Error
-{}
+class FooError extends Error {}
 
-class BarError extends Error
-{}
+class BarError extends Error {}
 
-class BazError extends BarError
-{}
+class BazError extends BarError {}

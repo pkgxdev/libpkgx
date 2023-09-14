@@ -1,17 +1,17 @@
 import { assert, assertEquals, assertFalse, assertThrows } from "deno/testing/asserts.ts"
 import Path from "./Path.ts"
 
-Deno.test("test Path", async test => {
+Deno.test("test Path", async (test) => {
   await test.step("creating files", () => {
     assertEquals(new Path("/a/b/c").components(), ["", "a", "b", "c"])
     assertEquals(new Path("/a/b/c").split(), [new Path("/a/b"), "c"])
 
-    const tmp = Path.mktemp({prefix: "tea-"})
+    const tmp = Path.mktemp({ prefix: "tea-" })
     assert(tmp.isEmpty())
 
     const child = tmp.join("a/b/c")
     assertFalse(child.parent().isDirectory())
-    child.parent().mkdir('p')
+    child.parent().mkdir("p")
     assert(child.parent().isDirectory())
 
     assertThrows(() => child.readlink()) // not found
@@ -23,15 +23,14 @@ Deno.test("test Path", async test => {
     assertFalse(tmp.isEmpty())
     assertEquals(child.readlink(), child) // not a link
 
-
     assertEquals(new Path("/").string, "/")
   })
 
   await test.step("write and read", async () => {
-    const tmp = Path.mktemp({prefix: "tea-"})
+    const tmp = Path.mktemp({ prefix: "tea-" })
 
     const data = tmp.join("test.dat")
-    data.write({text: "hello\nworld"})
+    data.write({ text: "hello\nworld" })
 
     const lines = await asyncIterToArray(data.readLines())
     assertEquals(lines, ["hello", "world"])
@@ -44,7 +43,7 @@ Deno.test("test Path", async test => {
   })
 
   await test.step("test walk", async () => {
-    const tmp = Path.mktemp({prefix: "tea-"})
+    const tmp = Path.mktemp({ prefix: "tea-" })
 
     const a = tmp.join("a").mkdir()
     a.join("a1").touch()
@@ -63,28 +62,28 @@ Deno.test("test Path", async test => {
 
     const walked = (await asyncIterToArray(tmp.walk()))
       .map(([path, entry]) => {
-        return {name: path.basename(), isDir: entry.isDirectory}
+        return { name: path.basename(), isDir: entry.isDirectory }
       })
       .sort((a, b) => a.name.localeCompare(b.name))
 
     assertEquals(walked, [
-      { name: "a", isDir: true},
-      { name: "a1", isDir: false},
-      { name: "a2", isDir: false},
-      { name: "b", isDir: true},
-      { name: "b1", isDir: false},
-      { name: "b2", isDir: false},
-      { name: "c", isDir: true},
-      { name: "c1", isDir: false},
-      { name: "c2", isDir: false},
+      { name: "a", isDir: true },
+      { name: "a1", isDir: false },
+      { name: "a2", isDir: false },
+      { name: "b", isDir: true },
+      { name: "b1", isDir: false },
+      { name: "b2", isDir: false },
+      { name: "c", isDir: true },
+      { name: "c1", isDir: false },
+      { name: "c2", isDir: false },
     ])
   })
 
   await test.step("test symlink created", () => {
-    const tmp = Path.mktemp({prefix: "tea-"}).join("foo").mkdir()
+    const tmp = Path.mktemp({ prefix: "tea-" }).join("foo").mkdir()
     const a = tmp.join("a").touch()
     const b = tmp.join("b")
-    b.ln('s', { target: a })
+    b.ln("s", { target: a })
     assertEquals(b.readlink(), a)
     assert(b.isSymlink())
   })
@@ -114,7 +113,7 @@ Deno.test("Path.join()", () => {
 })
 
 Deno.test("Path.isExecutableFile()", () => {
-  const tmp = Path.mktemp({prefix: "tea-"}).mkdir()
+  const tmp = Path.mktemp({ prefix: "tea-" }).mkdir()
   const executable = tmp.join("executable").touch()
   executable.chmod(0o755)
   const notExecutable = tmp.join("not-executable").touch()
@@ -129,7 +128,7 @@ Deno.test("Path.extname()", () => {
 })
 
 Deno.test("Path.mv()", () => {
-  const tmp = Path.mktemp({prefix: "tea-"})
+  const tmp = Path.mktemp({ prefix: "tea-" })
   const a = tmp.join("a").touch()
   const b = tmp.join("b")
 
@@ -150,7 +149,7 @@ Deno.test("Path.mv()", () => {
 })
 
 Deno.test("Path.cp()", () => {
-  const tmp = Path.mktemp({prefix: "tea-"}).mkdir()
+  const tmp = Path.mktemp({ prefix: "tea-" }).mkdir()
   const a = tmp.join("a").touch()
   const b = tmp.join("b").mkdir()
 
@@ -167,9 +166,9 @@ Deno.test("Path.relative()", () => {
 })
 
 Deno.test("Path.realpath()", () => {
-  const tmp = Path.mktemp({prefix: "tea-"}).mkdir()
+  const tmp = Path.mktemp({ prefix: "tea-" }).mkdir()
   const a = tmp.join("a").touch()
-  const b = tmp.join("b").ln('s', { target: a })
+  const b = tmp.join("b").ln("s", { target: a })
 
   assertEquals(b.realpath(), a.realpath())
 })
@@ -190,21 +189,21 @@ Deno.test("Path.chuzzle()", () => {
 })
 
 Deno.test("Path.ls()", async () => {
-  const tmp = Path.mktemp({prefix: "tea-"}).mkdir()
+  const tmp = Path.mktemp({ prefix: "tea-" }).mkdir()
   tmp.join("a").touch()
   tmp.join("b").touch()
   tmp.join("c").mkdir()
 
-  const entries = (await asyncIterToArray(tmp.ls())).map(([,{name}]) => name)
+  const entries = (await asyncIterToArray(tmp.ls())).map(([, { name }]) => name)
   assertEquals(entries.sort(), ["a", "b", "c"])
 })
 
-async function asyncIterToArray<T> (iter: AsyncIterable<T>){
-  const result = [];
-  for await(const i of iter) {
-    result.push(i);
+async function asyncIterToArray<T>(iter: AsyncIterable<T>) {
+  const result = []
+  for await (const i of iter) {
+    result.push(i)
   }
-  return result;
+  return result
 }
 
 Deno.test("ctor throws", () => {

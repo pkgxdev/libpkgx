@@ -5,10 +5,10 @@ import { stub } from "deno/testing/mock.ts"
 import SemVer from "../utils/semver.ts"
 import { Package } from "../types.ts"
 
-Deno.test("install()", async runner => {
+Deno.test("install()", async (runner) => {
   const pkg: Package = {
     project: "tea.xyz/brewkit",
-    version: new SemVer("0.30.0")
+    version: new SemVer("0.30.0"),
   }
 
   const conf = useTestConfig()
@@ -16,7 +16,7 @@ Deno.test("install()", async runner => {
   await runner.step("download & install", async () => {
     // for coverage
     const logger = ConsoleLogger()
-    const stubber = stub(console, "error", x => assert(x))
+    const stubber = stub(console, "error", (x) => assert(x))
 
     const installation = await install(pkg, logger)
 
@@ -44,7 +44,7 @@ Deno.test("install()", async runner => {
 Deno.test("install locks", async () => {
   const pkg: Package = {
     project: "tea.xyz/brewkit",
-    version: new SemVer("0.30.0")
+    version: new SemVer("0.30.0"),
   }
 
   const conf = useTestConfig()
@@ -55,7 +55,7 @@ Deno.test("install locks", async () => {
     locking: () => {},
     installed: () => {},
     installing: () => assertFalse(unlocked_once),
-    unlocking: () => unlocked_once = true
+    unlocking: () => unlocked_once = true,
   }
 
   const installer1 = install(pkg, logger)

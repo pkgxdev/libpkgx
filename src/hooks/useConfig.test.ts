@@ -1,4 +1,10 @@
-import { assert, assertEquals, assertFalse, assertThrows, assertMatch } from "deno/testing/asserts.ts"
+import {
+  assert,
+  assertEquals,
+  assertFalse,
+  assertMatch,
+  assertThrows,
+} from "deno/testing/asserts.ts"
 import { _internals, ConfigDefault } from "./useConfig.ts"
 import { useTestConfig } from "./useTestConfig.ts"
 import Path from "../utils/Path.ts"
@@ -13,7 +19,7 @@ Deno.test("useConfig", () => {
   }
 
   config = ConfigDefault({ TEA_PANTRY_PATH: "/foo:/bar", CI: "true" })
-  assertEquals(config.pantries.map(x => x.string), ["/foo", "/bar"])
+  assertEquals(config.pantries.map((x) => x.string), ["/foo", "/bar"])
   assertEquals(config.options.compression, "gz")
 
   assertFalse(_internals.boolize("false"))

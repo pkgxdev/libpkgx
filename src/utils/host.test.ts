@@ -7,26 +7,26 @@ Deno.test("host()", async () => {
 
   const { platform, arch } = host()
   switch (uname[0]) {
-  case "Darwin":
-    assertEquals(platform, "darwin")
-    break
-  case "Linux":
-    assertEquals(platform, "linux")
-    break
-  default:
-    fail()
+    case "Darwin":
+      assertEquals(platform, "darwin")
+      break
+    case "Linux":
+      assertEquals(platform, "linux")
+      break
+    default:
+      fail()
   }
 
   switch (uname[1]) {
-  case "aarch64":
-  case "arm64":
-    assertEquals(arch, "aarch64")
-    break
-  case "x86_64":
-    assertEquals(arch, "x86-64")
-    break
-  default:
-    fail()
+    case "aarch64":
+    case "arm64":
+      assertEquals(arch, "aarch64")
+      break
+    case "x86_64":
+      assertEquals(arch, "x86-64")
+      break
+    default:
+      fail()
   }
 
   async function run(cmd: string) {

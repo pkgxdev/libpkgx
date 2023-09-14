@@ -5,19 +5,24 @@ import * as semver from "./semver.ts"
 import host from "./host.ts"
 import { TeaError } from "../../mod.ts"
 
-export function validatePackageRequirement(project: string, constraint: unknown): PackageRequirement | undefined
-{
-  if (host().platform == 'darwin' && (project == "apple.com/xcode/clt" || project == "tea.xyz/gx/make")) {
+export function validatePackageRequirement(
+  project: string,
+  constraint: unknown,
+): PackageRequirement | undefined {
+  if (
+    host().platform == "darwin" &&
+    (project == "apple.com/xcode/clt" || project == "tea.xyz/gx/make")
+  ) {
     // Apple will error out and prompt the user to install when the tool is used
-    return  // compact this dep away
+    return // compact this dep away
   }
-  if (host().platform == 'linux' && project == "tea.xyz/gx/make") {
+  if (host().platform == "linux" && project == "tea.xyz/gx/make") {
     project = "gnu.org/make"
-    constraint = '*'
+    constraint = "*"
   }
 
-  if (constraint == 'c99' && project == 'tea.xyz/gx/cc') {
-    constraint = '^0.1'
+  if (constraint == "c99" && project == "tea.xyz/gx/cc") {
+    constraint = "^0.1"
   }
 
   if (isNumber(constraint)) {
@@ -33,6 +38,6 @@ export function validatePackageRequirement(project: string, constraint: unknown)
 
   return {
     project,
-    constraint: constraint as semver.Range
+    constraint: constraint as semver.Range,
   }
 }

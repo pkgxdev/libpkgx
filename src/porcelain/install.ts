@@ -1,4 +1,7 @@
-import install, { Logger as BaseLogger, ConsoleLogger as BaseConsoleLogger } from "../plumbing/install.ts"
+import install, {
+  ConsoleLogger as BaseConsoleLogger,
+  Logger as BaseLogger,
+} from "../plumbing/install.ts"
 import { Installation, PackageSpecification } from "../types.ts"
 import resolve, { Resolution } from "../plumbing/resolve.ts"
 import usePantry from "../hooks/usePantry.ts"
@@ -22,15 +25,19 @@ export function ConsoleLogger(prefix?: any): Logger {
   prefix = prefix ? `${prefix}: ` : ""
   return {
     ...BaseConsoleLogger(prefix),
-    progress: function() { console.error(`${prefix}progress`, ...arguments) },
+    progress: function () {
+      console.error(`${prefix}progress`, ...arguments)
+    },
   }
 }
 
 /// eg. install("python.org~3.10")
-export default async function(pkgs: PackageSpecification[] | string[] | string, logger?: Logger): Promise<Installation[]> {
-
+export default async function (
+  pkgs: PackageSpecification[] | string[] | string,
+  logger?: Logger,
+): Promise<Installation[]> {
   if (isString(pkgs)) pkgs = pkgs.split(/\s+/)
-  pkgs = pkgs.map(pkg => isString(pkg) ? parse(pkg) : pkg)
+  pkgs = pkgs.map((pkg) => isString(pkg) ? parse(pkg) : pkg)
 
   const pantry = usePantry()
 
@@ -47,8 +54,10 @@ export default async function(pkgs: PackageSpecification[] | string[] | string, 
   const { pending, installed } = resolution
   logger = WrapperLogger(pending, logger)
   const installers = pending
-    .map(pkg => install(pkg, logger)
-      .then(i => link(i).then(() => i)))
+    .map((pkg) =>
+      install(pkg, logger)
+        .then((i) => link(i).then(() => i))
+    )
 
   installed.push(...await Promise.all(installers))
 
@@ -58,13 +67,13 @@ export default async function(pkgs: PackageSpecification[] | string[] | string, 
 function WrapperLogger(pending: PackageSpecification[], logger?: Logger): Logger | undefined {
   if (!logger?.progress) return logger
 
-  const projects = pending.map(pkg => pkg.project)
+  const projects = pending.map((pkg) => pkg.project)
   const totals: Record<string, number> = {}
   const progresses: Record<string, number> = {}
   return {
     ...logger,
-    downloading: args => {
-      const { pkg: {project}, total } = args
+    downloading: (args) => {
+      const { pkg: { project }, total } = args
       if (total) {
         totals[project] = total
         updateProgress()
@@ -73,8 +82,8 @@ function WrapperLogger(pending: PackageSpecification[], logger?: Logger): Logger
         logger.downloading(args)
       }
     },
-    installing: args => {
-      const { pkg: {project}, progress } = args
+    installing: (args) => {
+      const { pkg: { project }, progress } = args
       if (progress) {
         progresses[project] = progress
         updateProgress()
@@ -82,7 +91,7 @@ function WrapperLogger(pending: PackageSpecification[], logger?: Logger): Logger
       if (logger?.installing) {
         logger.installing(args)
       }
-    }
+    },
   }
 
   function updateProgress() {

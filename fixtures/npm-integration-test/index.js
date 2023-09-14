@@ -5,4 +5,3 @@ const { ConsoleLogger } = require("@teaxyz/lib/plumbing/install")
 console.log(ConfigDefault(), ConsoleLogger())
 
 run("ls -la")
-

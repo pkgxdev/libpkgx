@@ -10,10 +10,10 @@ declare global {
   }
 }
 
-Promise.prototype.swallow = function(errorClass?: new (...args: any) => any) {
+Promise.prototype.swallow = function (errorClass?: new (...args: any) => any) {
   return this.catch((err: unknown) => {
     if (errorClass && !(err instanceof errorClass)) {
-      throw err;
+      throw err
     }
   })
 }

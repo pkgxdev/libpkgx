@@ -19,7 +19,7 @@ const select = async (rq: PackageRequirement | Package) => {
 
   if ("constraint" in rq) {
     return rq.constraint.max(versions)
-  } else if (versions.find(x => x.eq(rq.version))) {
+  } else if (versions.find((x) => x.eq(rq.version))) {
     return rq.version
   }
 }
@@ -27,24 +27,24 @@ const select = async (rq: PackageRequirement | Package) => {
 const get = async (rq: PackageRequirement | Package) => {
   const { platform, arch } = host()
 
-  const url = new URL('https://dist.tea.xyz')
-  url.pathname = Path.root.join(rq.project, platform, arch, 'versions.txt').string
+  const url = new URL("https://dist.tea.xyz")
+  url.pathname = Path.root.join(rq.project, platform, arch, "versions.txt").string
 
   const rsp = await useFetch(url)
 
   if (!rsp.ok) {
-    throw new DownloadError(rsp.status, {src: url})
+    throw new DownloadError(rsp.status, { src: url })
   }
 
   const releases = await rsp.text()
-  let versions = releases.split("\n").compact(x => new SemVer(x))
+  let versions = releases.split("\n").compact((x) => new SemVer(x))
 
   if (versions.length < 1) throw new Error()
 
-  if (rq.project == 'openssl.org') {
+  if (rq.project == "openssl.org") {
     // workaround our previous sins
     const v = new SemVer("1.1.118")
-    versions = versions.filter(x => x.neq(v))
+    versions = versions.filter((x) => x.neq(v))
   }
 
   return versions

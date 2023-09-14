@@ -11,22 +11,22 @@ Deno.test("useCache", () => {
 
   const stowage = StowageNativeBottle({
     pkg: { project: "foo/bar", version: new SemVer("1.0.0") },
-    compression: "xz"
-  });
+    compression: "xz",
+  })
   assertEquals(useCache().path(stowage), cache.join(`foo∕bar-1.0.0+${hw}.tar.xz`))
 
   const stowage2: Stowage = {
-    type: 'bottle',
+    type: "bottle",
     pkg: stowage.pkg,
     host: { platform: "linux", arch: "aarch64" },
-    compression: 'xz'
+    compression: "xz",
   }
   assertEquals(useCache().path(stowage2), cache.join("foo∕bar-1.0.0+linux+aarch64.tar.xz"))
 
   const stowage3: Stowage = {
     pkg: stowage.pkg,
     type: "src",
-    extname: ".tgz"
+    extname: ".tgz",
   }
   assertEquals(useCache().path(stowage3), cache.join("foo∕bar-1.0.0.tgz"))
 })

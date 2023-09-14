@@ -10,11 +10,16 @@ import * as pkg from "./src/utils/pkg.ts"
 
 import { panic, TeaError } from "./src/utils/error.ts"
 import useConfig from "./src/hooks/useConfig.ts"
-import useOffLicense  from "./src/hooks/useOffLicense.ts"
+import useOffLicense from "./src/hooks/useOffLicense.ts"
 import useCache from "./src/hooks/useCache.ts"
-import useCellar, { InstallationNotFoundError} from "./src/hooks/useCellar.ts"
+import useCellar, { InstallationNotFoundError } from "./src/hooks/useCellar.ts"
 import useMoustaches from "./src/hooks/useMoustaches.ts"
-import usePantry, { PantryError, PantryParseError, PantryNotFoundError, PackageNotFoundError } from "./src/hooks/usePantry.ts"
+import usePantry, {
+  PackageNotFoundError,
+  PantryError,
+  PantryNotFoundError,
+  PantryParseError,
+} from "./src/hooks/usePantry.ts"
 import useFetch from "./src/hooks/useFetch.ts"
 import useDownload, { DownloadError } from "./src/hooks/useDownload.ts"
 import useShellEnv from "./src/hooks/useShellEnv.ts"
@@ -30,7 +35,12 @@ import run, { RunError } from "./src/porcelain/run.ts"
 import porcelain_install from "./src/porcelain/install.ts"
 
 const utils = {
-  pkg, host, flatmap, validate, panic, ConsoleLogger
+  pkg,
+  host,
+  flatmap,
+  validate,
+  panic,
+  ConsoleLogger,
 }
 
 const hooks = {
@@ -52,27 +62,34 @@ const plumbing = {
   link,
   install,
   resolve,
-  which
+  which,
 }
 
 const porcelain = {
   install: porcelain_install,
-  run
+  run,
 }
 
 const hacks = {
-  validatePackageRequirement
+  validatePackageRequirement,
 }
 
 export {
-  utils, hooks, plumbing, porcelain, hacks,
+  DownloadError,
+  hacks,
+  hooks,
+  InstallationNotFoundError,
+  PackageNotFoundError,
+  PantryError,
+  PantryNotFoundError,
+  PantryParseError,
+  plumbing,
+  porcelain,
+  ResolveError,
+  RunError,
   semver,
   TeaError,
-    RunError,
-    ResolveError,
-    PantryError, PantryParseError, PantryNotFoundError, PackageNotFoundError,
-    InstallationNotFoundError,
-    DownloadError
+  utils,
 }
 
 /// export types

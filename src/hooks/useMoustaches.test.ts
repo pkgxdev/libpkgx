@@ -10,7 +10,7 @@ Deno.test("useMoustaches", () => {
 
   const pkg: Package = {
     project: "tea.xyz/test",
-    version: new SemVer("1.0.0")
+    version: new SemVer("1.0.0"),
   }
 
   const tokens = moustaches.tokenize.all(pkg, [])

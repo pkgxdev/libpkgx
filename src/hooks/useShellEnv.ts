@@ -4,19 +4,19 @@ import usePantry from "./usePantry.ts"
 import host from "../utils/host.ts"
 
 export const EnvKeys = [
-  'PATH',
-  'MANPATH',
-  'PKG_CONFIG_PATH',
-  'LIBRARY_PATH',
-  'LD_LIBRARY_PATH',
-  'CPATH',
-  'XDG_DATA_DIRS',
-  'CMAKE_PREFIX_PATH',
-  'DYLD_FALLBACK_LIBRARY_PATH',
-  'SSL_CERT_FILE',
-  'LDFLAGS',
-  'TEA_PREFIX',
-  'ACLOCAL_PATH'
+  "PATH",
+  "MANPATH",
+  "PKG_CONFIG_PATH",
+  "LIBRARY_PATH",
+  "LD_LIBRARY_PATH",
+  "CPATH",
+  "XDG_DATA_DIRS",
+  "CMAKE_PREFIX_PATH",
+  "DYLD_FALLBACK_LIBRARY_PATH",
+  "SSL_CERT_FILE",
+  "LDFLAGS",
+  "TEA_PREFIX",
+  "ACLOCAL_PATH",
 ] as const
 export type EnvKey = typeof EnvKeys[number]
 
@@ -24,28 +24,27 @@ interface Options {
   installations: Installation[]
 }
 
-export default function() {
+export default function () {
   return {
     map,
     expand,
-    flatten
+    flatten,
   }
 }
 
 /// returns an environment that supports the provided packages
-async function map({installations}: Options): Promise<Record<string, string[]>> {
+async function map({ installations }: Options): Promise<Record<string, string[]>> {
   const vars: Partial<Record<EnvKey, OrderedSet<string>>> = {}
-  const isMac = host().platform == 'darwin'
+  const isMac = host().platform == "darwin"
 
-  const projects = new Set(installations.map(x => x.pkg.project))
-  const has_cmake = projects.has('cmake.org')
+  const projects = new Set(installations.map((x) => x.pkg.project))
+  const has_cmake = projects.has("cmake.org")
   const archaic = true
 
   const rv: Record<string, string[]> = {}
   const seen = new Set<string>()
 
   for (const installation of installations) {
-
     if (!seen.insert(installation.pkg.project).inserted) {
       console.warn("tea: env is being duped:", installation.pkg.project)
     }
@@ -57,7 +56,10 @@ async function map({installations}: Options): Promise<Record<string, string[]>> 
     }
 
     if (archaic) {
-      vars.LIBRARY_PATH = compact_add(vars.LIBRARY_PATH, installation.path.join("lib").chuzzle()?.string)
+      vars.LIBRARY_PATH = compact_add(
+        vars.LIBRARY_PATH,
+        installation.path.join("lib").chuzzle()?.string,
+      )
       vars.CPATH = compact_add(vars.CPATH, installation.path.join("include").chuzzle()?.string)
     }
 
@@ -65,11 +67,14 @@ async function map({installations}: Options): Promise<Record<string, string[]>> 
       vars.CMAKE_PREFIX_PATH = compact_add(vars.CMAKE_PREFIX_PATH, installation.path.string)
     }
 
-    if (projects.has('gnu.org/autoconf')) {
-      vars.ACLOCAL_PATH = compact_add(vars.ACLOCAL_PATH, installation.path.join("share/aclocal").chuzzle()?.string)
+    if (projects.has("gnu.org/autoconf")) {
+      vars.ACLOCAL_PATH = compact_add(
+        vars.ACLOCAL_PATH,
+        installation.path.join("share/aclocal").chuzzle()?.string,
+      )
     }
 
-    if (installation.pkg.project === 'openssl.org') {
+    if (installation.pkg.project === "openssl.org") {
       const certPath = installation.path.join("ssl/cert.pem").chuzzle()?.string
       // this is a single file, so we assume a
       // valid entry is correct
@@ -80,17 +85,20 @@ async function map({installations}: Options): Promise<Record<string, string[]>> 
     }
 
     // pantry configured runtime environment
-    const runtime = await usePantry().project(installation.pkg).runtime.env(installation.pkg.version, installations)
+    const runtime = await usePantry().project(installation.pkg).runtime.env(
+      installation.pkg.version,
+      installations,
+    )
     for (const key in runtime) {
       rv[key] ??= []
       rv[key].push(runtime[key])
     }
   }
 
-   // this is how we use precise versions of libraries
-   // for your virtual environment
-   //FIXME SIP on macOS prevents DYLD_FALLBACK_LIBRARY_PATH from propagating to grandchild processes
-   if (vars.LIBRARY_PATH) {
+  // this is how we use precise versions of libraries
+  // for your virtual environment
+  //FIXME SIP on macOS prevents DYLD_FALLBACK_LIBRARY_PATH from propagating to grandchild processes
+  if (vars.LIBRARY_PATH) {
     vars.LD_LIBRARY_PATH = vars.LIBRARY_PATH
     if (isMac) {
       // non FALLBACK variety causes strange issues in edge cases
@@ -119,32 +127,33 @@ async function map({installations}: Options): Promise<Record<string, string[]>> 
 
 function suffixes(key: EnvKey) {
   switch (key) {
-    case 'PATH':
+    case "PATH":
       return ["bin", "sbin"]
-    case 'MANPATH':
+    case "MANPATH":
       return ["man", "share/man"]
-    case 'PKG_CONFIG_PATH':
-      return ['share/pkgconfig', 'lib/pkgconfig']
-    case 'XDG_DATA_DIRS':
-      return ['share']
-    case 'LIBRARY_PATH':
-    case 'LD_LIBRARY_PATH':
-    case 'DYLD_FALLBACK_LIBRARY_PATH':
-    case 'CPATH':
-    case 'CMAKE_PREFIX_PATH':
-    case 'SSL_CERT_FILE':
-    case 'LDFLAGS':
-    case 'TEA_PREFIX':
-    case 'ACLOCAL_PATH':
-      return []  // we handle these specially
+    case "PKG_CONFIG_PATH":
+      return ["share/pkgconfig", "lib/pkgconfig"]
+    case "XDG_DATA_DIRS":
+      return ["share"]
+    case "LIBRARY_PATH":
+    case "LD_LIBRARY_PATH":
+    case "DYLD_FALLBACK_LIBRARY_PATH":
+    case "CPATH":
+    case "CMAKE_PREFIX_PATH":
+    case "SSL_CERT_FILE":
+    case "LDFLAGS":
+    case "TEA_PREFIX":
+    case "ACLOCAL_PATH":
+      return [] // we handle these specially
     default: {
       const exhaustiveness_check: never = key
       throw new Error(`unhandled id: ${exhaustiveness_check}`)
-  }}
+    }
+  }
 }
 
 export function expand(env: Record<string, string[]>) {
-  let rv = ''
+  let rv = ""
   for (const [key, value] of Object.entries(env)) {
     if (value.length == 0) continue
     rv += `export ${key}="${value.join(":")}"\n`
@@ -168,23 +177,23 @@ function compact_add<T>(set: OrderedSet<T> | undefined, item: T | null | undefin
 }
 
 class OrderedSet<T> {
-  private items: T[];
-  private set: Set<T>;
+  private items: T[]
+  private set: Set<T>
 
   constructor() {
-    this.items = [];
-    this.set = new Set();
+    this.items = []
+    this.set = new Set()
   }
 
   add(item: T): void {
     if (!this.set.has(item)) {
-      this.items.push(item);
-      this.set.add(item);
+      this.items.push(item)
+      this.set.add(item)
     }
   }
 
   toArray(): T[] {
-    return [...this.items];
+    return [...this.items]
   }
 
   isEmpty(): boolean {

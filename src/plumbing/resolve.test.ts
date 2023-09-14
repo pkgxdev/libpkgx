@@ -1,5 +1,5 @@
 // deno-lint-ignore-file require-await
-import { assert, assertEquals, fail, assertRejects } from "deno/assert/mod.ts"
+import { assert, assertEquals, assertRejects, fail } from "deno/assert/mod.ts"
 import { Installation, Package, PackageRequirement } from "../types.ts"
 import { useTestConfig } from "../hooks/useTestConfig.ts"
 import useInventory from "../hooks/useInventory.ts"
@@ -11,8 +11,12 @@ import SemVer from "../utils/semver.ts"
 import Path from "../utils/Path.ts"
 
 Deno.test("resolve cellar.has", {
-  permissions: {'read': true, 'env': ["TMPDIR", "TMP", "TEMP", "HOME"], 'write': [Deno.env.get("TMPDIR") || Deno.env.get("TMP") || Deno.env.get("TEMP") || "/tmp"] }
-}, async runner => {
+  permissions: {
+    "read": true,
+    "env": ["TMPDIR", "TMP", "TEMP", "HOME"],
+    "write": [Deno.env.get("TMPDIR") || Deno.env.get("TMP") || Deno.env.get("TEMP") || "/tmp"],
+  },
+}, async (runner) => {
   const prefix = useTestConfig().prefix
   const pkg = { project: "foo", version: new SemVer("1.0.0") }
 
@@ -20,9 +24,9 @@ Deno.test("resolve cellar.has", {
   const has = async (pkg_: Package | PackageRequirement | Path) => {
     if (pkg_ instanceof Path) fail()
     if (pkg.project == pkg_.project) {
-      if ('constraint' in pkg_ && !pkg_.constraint.satisfies(pkg.version)) return
-      if ('version' in pkg_ && !pkg_.version.eq(pkg.version)) return
-      const a: Installation = {pkg, path: prefix.join(pkg.project, `v${pkg.version}`) }
+      if ("constraint" in pkg_ && !pkg_.constraint.satisfies(pkg.version)) return
+      if ("version" in pkg_ && !pkg_.version.eq(pkg.version)) return
+      const a: Installation = { pkg, path: prefix.join(pkg.project, `v${pkg.version}`) }
       return a
     }
   }
@@ -30,14 +34,15 @@ Deno.test("resolve cellar.has", {
   await runner.step("happy path", async () => {
     const stub1 = stub(_internals, "useInventory", () => ({
       get: () => fail(),
-      select: () => Promise.resolve(pkg.version)
+      select: () => Promise.resolve(pkg.version),
     }))
     const stub2 = stub(_internals, "useCellar", () => ({
-      ...cellar, has
+      ...cellar,
+      has,
     }))
 
     try {
-    const rv = await resolve([pkg])
+      const rv = await resolve([pkg])
       assertEquals(rv.pkgs[0].project, pkg.project)
       assertEquals(rv.installed[0].pkg.project, pkg.project)
     } finally {
@@ -53,7 +58,7 @@ Deno.test("resolve cellar.has", {
     }))
     const stub2 = stub(_internals, "useCellar", () => ({
       ...cellar,
-      has: () => Promise.resolve(undefined)
+      has: () => Promise.resolve(undefined),
     }))
 
     let errord = false
@@ -74,7 +79,8 @@ Deno.test("resolve cellar.has", {
       select: () => Promise.resolve(pkg.version),
     }))
     const stub2 = stub(_internals, "useCellar", () => ({
-      ...cellar, has
+      ...cellar,
+      has,
     }))
 
     try {
@@ -87,38 +93,51 @@ Deno.test("resolve cellar.has", {
     }
   })
 
-  await runner.step("updates version if latest is not installed when update is set", async runner => {
-    const stub1 = stub(_internals, "useInventory", () => ({
-      get: () => fail(),
-      select: () => Promise.resolve(new SemVer("1.0.1")),
-    }))
-    const stub2 = stub(_internals, "useCellar", () => ({
-      ...cellar, has
-    }))
+  await runner.step(
+    "updates version if latest is not installed when update is set",
+    async (runner) => {
+      const stub1 = stub(_internals, "useInventory", () => ({
+        get: () => fail(),
+        select: () => Promise.resolve(new SemVer("1.0.1")),
+      }))
+      const stub2 = stub(_internals, "useCellar", () => ({
+        ...cellar,
+        has,
+      }))
 
-    try {
-      await runner.step("update: true", async () => {
-        const rv = await resolve([{ project: pkg.project, constraint: new semver.Range("^1") }], { update: true })
-        assertEquals(rv.pkgs[0].project, pkg.project)
-        assertEquals(rv.pending[0].project, pkg.project)
-        assertEquals(rv.pending[0].version, new SemVer("1.0.1"))
-      })
+      try {
+        await runner.step("update: true", async () => {
+          const rv = await resolve([{ project: pkg.project, constraint: new semver.Range("^1") }], {
+            update: true,
+          })
+          assertEquals(rv.pkgs[0].project, pkg.project)
+          assertEquals(rv.pending[0].project, pkg.project)
+          assertEquals(rv.pending[0].version, new SemVer("1.0.1"))
+        })
 
-      await runner.step("update: set", async () => {
-        const update = new Set([pkg.project])
-        const rv = await resolve([{ project: pkg.project, constraint: new semver.Range("^1") }], { update })
-        assertEquals(rv.pkgs[0].project, pkg.project)
-        assertEquals(rv.pending[0].project, pkg.project)
-        assertEquals(rv.pending[0].version, new SemVer("1.0.1"))
-      })
-    } finally {
-      stub1.restore()
-      stub2.restore()
-    }
-  })
+        await runner.step("update: set", async () => {
+          const update = new Set([pkg.project])
+          const rv = await resolve([{ project: pkg.project, constraint: new semver.Range("^1") }], {
+            update,
+          })
+          assertEquals(rv.pkgs[0].project, pkg.project)
+          assertEquals(rv.pending[0].project, pkg.project)
+          assertEquals(rv.pending[0].version, new SemVer("1.0.1"))
+        })
+      } finally {
+        stub1.restore()
+        stub2.restore()
+      }
+    },
+  )
 })
 
-const permissions = { net: false, read: true, env: ["TMPDIR", "HOME", "TMP", "TEMP"], write: true /*FIXME*/ }
+const permissions = {
+  net: false,
+  read: true,
+  env: ["TMPDIR", "HOME", "TMP", "TEMP"],
+  write: true, /*FIXME*/
+}
 
 // https://github.com/teaxyz/cli/issues/655
 Deno.test("postgres@500 fails", { permissions }, async () => {
@@ -126,7 +145,7 @@ Deno.test("postgres@500 fails", { permissions }, async () => {
 
   const pkg = {
     project: "posqtgres.org",
-    version: new SemVer("15.0.1")
+    version: new SemVer("15.0.1"),
   }
 
   const select = useInventory().select
@@ -136,7 +155,7 @@ Deno.test("postgres@500 fails", { permissions }, async () => {
   }))
 
   const pkgs = [
-    { project: pkg.project, constraint: new semver.Range('@500') }
+    { project: pkg.project, constraint: new semver.Range("@500") },
   ]
 
   try {
@@ -151,14 +170,14 @@ Deno.test("postgres@500 fails", { permissions }, async () => {
 Deno.test("postgres@500 fails if installed", { permissions }, async () => {
   const pkg = {
     project: "posqtgres.org",
-    version: new SemVer("15.0.1")
+    version: new SemVer("15.0.1"),
   }
   const prefix = useTestConfig().prefix
 
   const cellar = useCellar()
   const has = (b: Path | Package | PackageRequirement) => {
     if ("constraint" in b && b.constraint.satisfies(pkg.version)) {
-      const a: Installation = {pkg, path: prefix.join(pkg.project, `v${pkg.version}`) }
+      const a: Installation = { pkg, path: prefix.join(pkg.project, `v${pkg.version}`) }
       return Promise.resolve(a)
     } else {
       return Promise.resolve(undefined)
@@ -172,11 +191,11 @@ Deno.test("postgres@500 fails if installed", { permissions }, async () => {
   }))
   const stub2 = stub(_internals, "useCellar", () => ({
     ...cellar,
-    has
+    has,
   }))
 
   const pkgs = [
-    { project: pkg.project, constraint: new semver.Range('@500') }
+    { project: pkg.project, constraint: new semver.Range("@500") },
   ]
 
   try {

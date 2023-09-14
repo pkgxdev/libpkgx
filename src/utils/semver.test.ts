@@ -2,10 +2,15 @@
 import { assert, assertEquals, assertFalse, assertThrows } from "deno/assert/mod.ts"
 import SemVer, * as semver from "./semver.ts"
 
-
-Deno.test("semver", async test => {
+Deno.test("semver", async (test) => {
   await test.step("sort", () => {
-    const input = [new SemVer([1,2,3]), new SemVer("10.3.4"), new SemVer("1.2.4"), semver.parse("1.2.3.1")!, new SemVer("2.3.4")]
+    const input = [
+      new SemVer([1, 2, 3]),
+      new SemVer("10.3.4"),
+      new SemVer("1.2.4"),
+      semver.parse("1.2.3.1")!,
+      new SemVer("2.3.4"),
+    ]
     const sorted1 = [...input].sort(semver.compare)
     const sorted2 = [...input].sort()
 
@@ -16,7 +21,13 @@ Deno.test("semver", async test => {
   })
 
   await test.step("calver sort", () => {
-    const input = [new SemVer([1,2,3]), new SemVer("2.3.4"), new SemVer("2023.03.04"), semver.parse("1.2.3.1")!, new SemVer([3,4,5])]
+    const input = [
+      new SemVer([1, 2, 3]),
+      new SemVer("2.3.4"),
+      new SemVer("2023.03.04"),
+      semver.parse("1.2.3.1")!,
+      new SemVer([3, 4, 5]),
+    ]
     const sorted1 = [...input].sort(semver.compare)
     const sorted2 = [...input].sort()
 
@@ -63,11 +74,11 @@ Deno.test("semver", async test => {
     assertEquals(new SemVer("v1").toString(), "1.0.0")
 
     assertEquals(new SemVer("9e").toString(), "9e")
-    assertEquals(new SemVer("9e").components, [9,5])
+    assertEquals(new SemVer("9e").components, [9, 5])
     assertEquals(new SemVer("3.3a").toString(), "3.3a")
-    assertEquals(new SemVer("3.3a").components, [3,3,1])
+    assertEquals(new SemVer("3.3a").components, [3, 3, 1])
     assertEquals(new SemVer("1.1.1q").toString(), "1.1.1q")
-    assertEquals(new SemVer("1.1.1q").components, [1,1,1,17])
+    assertEquals(new SemVer("1.1.1q").components, [1, 1, 1, 17])
   })
 
   await test.step("ranges", () => {
@@ -164,7 +175,7 @@ Deno.test("semver", async test => {
     assertEquals(new semver.Range(">=300.1.0<300.1.1").toString(), "@300.1.0")
   })
 
-  await test.step("intersection", async test => {
+  await test.step("intersection", async (test) => {
     await test.step("^3.7…=3.11", () => {
       const a = new semver.Range("^3.7")
       const b = new semver.Range("=3.11")
@@ -248,10 +259,10 @@ Deno.test("semver", async test => {
 })
 
 Deno.test("coverage", () => {
-  assert(new SemVer("1.2.3").eq(new SemVer([1,2,3])))
-  assert(new SemVer("1.2.3").neq(new SemVer([1,2,4])))
-  assert(new SemVer("1.2.3").lt(new SemVer([1,2,4])))
-  assert(new SemVer("1.2.4").gt(new SemVer([1,2,3])))
+  assert(new SemVer("1.2.3").eq(new SemVer([1, 2, 3])))
+  assert(new SemVer("1.2.3").neq(new SemVer([1, 2, 4])))
+  assert(new SemVer("1.2.3").lt(new SemVer([1, 2, 4])))
+  assert(new SemVer("1.2.4").gt(new SemVer([1, 2, 3])))
 
   assertThrows(() => new SemVer("1.q.3"))
 
@@ -283,13 +294,15 @@ Deno.test("coverage", () => {
 
   assert(new semver.Range("*").satisfies(new SemVer("1.2.3")))
 
-  assertEquals(new semver.Range("^1").max([new SemVer("1.2.3"), new SemVer("1.2.4")]), new SemVer("1.2.4"))
+  assertEquals(
+    new semver.Range("^1").max([new SemVer("1.2.3"), new SemVer("1.2.4")]),
+    new SemVer("1.2.4"),
+  )
 
   assertEquals(new semver.Range("*").single(), undefined)
 
   assert(semver.intersect(new semver.Range("*"), new semver.Range("^2")))
   assert(semver.intersect(new semver.Range("^2"), new semver.Range("*")))
-
 
   assertEquals(new semver.Range("^1.2.0").toString(), "^1.2")
 })

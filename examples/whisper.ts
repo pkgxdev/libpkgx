@@ -8,7 +8,7 @@ import { porcelain } from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
 import { green } from "https://deno.land/std/fmt/colors.ts"
 const { run } = porcelain
 
-const url = 'https://github.com/ggerganov/whisper.cpp/raw/master/samples/jfk.wav'
+const url = "https://github.com/ggerganov/whisper.cpp/raw/master/samples/jfk.wav"
 const rsp = await fetch(url)
 await Deno.writeFile("jfk.wav", rsp.body!)
 

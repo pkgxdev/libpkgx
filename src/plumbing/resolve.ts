@@ -1,4 +1,4 @@
-import { Package, PackageRequirement, Installation } from "../types.ts"
+import { Installation, Package, PackageRequirement } from "../types.ts"
 import useInventory from "../hooks/useInventory.ts"
 import { str as pkgstr } from "../utils/pkg.ts"
 import useCellar from "../hooks/useCellar.ts"
@@ -32,7 +32,10 @@ export class ResolveError extends TeaError {
 /// that resolve so if we are resolving `node>=12`, node 13 is installed, but
 /// node 19 is the latest we return node 13. if `update` is true we return node
 /// 19 and *you will need to install it*.
-export default async function resolve(reqs: (Package | PackageRequirement)[], {update}: {update: boolean | Set<string>} = {update: false}): Promise<Resolution> {
+export default async function resolve(
+  reqs: (Package | PackageRequirement)[],
+  { update }: { update: boolean | Set<string> } = { update: false },
+): Promise<Resolution> {
   const inventory = _internals.useInventory()
   const cellar = _internals.useCellar()
   const rv: Resolution = { pkgs: [], installed: [], pending: [] }
@@ -47,7 +50,7 @@ export default async function resolve(reqs: (Package | PackageRequirement)[], {u
       rv.installed.push(installation)
       rv.pkgs.push(installation.pkg)
     } else {
-      const promise = inventory.select(req).then(async version => {
+      const promise = inventory.select(req).then(async (version) => {
         if (!version) {
           throw new ResolveError(req)
         }
@@ -76,5 +79,5 @@ export default async function resolve(reqs: (Package | PackageRequirement)[], {u
 
 export const _internals = {
   useInventory,
-  useCellar
+  useCellar,
 }

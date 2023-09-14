@@ -3,12 +3,12 @@ import { assert } from "deno/testing/asserts.ts"
 import SemVer from "../utils/semver.ts"
 import { Package } from "../types.ts"
 import install from "./install.ts"
-import link from "./link.ts";
+import link from "./link.ts"
 
-Deno.test("plumbing.link", async runner => {
+Deno.test("plumbing.link", async (runner) => {
   const pkg: Package = {
     project: "tea.xyz/brewkit",
-    version: new SemVer("0.30.0")
+    version: new SemVer("0.30.0"),
   }
 
   await runner.step("link()", async () => {
@@ -16,7 +16,7 @@ Deno.test("plumbing.link", async runner => {
 
     const installation = await install(pkg)
     await link(installation)
-    await link(installation)  // test that calling twice serially works
+    await link(installation) // test that calling twice serially works
 
     /// test symlinks work
     assert(installation.path.parent().join("v*").isDirectory())
