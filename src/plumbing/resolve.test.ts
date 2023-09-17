@@ -11,7 +11,7 @@ import SemVer from "../utils/semver.ts"
 import Path from "../utils/Path.ts"
 
 Deno.test("resolve cellar.has", {
-  permissions: {'read': true, 'env': ["TMPDIR", "TMP", "TEMP", "HOME"], 'write': [Deno.env.get("TMPDIR") || Deno.env.get("TMP") || Deno.env.get("TEMP") || "/tmp"] }
+  permissions: {'read': true, 'env': true, 'write': [Deno.env.get("TMPDIR") || Deno.env.get("TMP") || Deno.env.get("TEMP") || "/tmp"] }
 }, async runner => {
   const prefix = useTestConfig().prefix
   const pkg = { project: "foo", version: new SemVer("1.0.0") }
@@ -118,7 +118,7 @@ Deno.test("resolve cellar.has", {
   })
 })
 
-const permissions = { net: false, read: true, env: ["TMPDIR", "HOME", "TMP", "TEMP"], write: true /*FIXME*/ }
+const permissions = { net: false, read: true, env: true, write: true /*FIXME*/ }
 
 // https://github.com/teaxyz/cli/issues/655
 Deno.test("postgres@500 fails", { permissions }, async () => {

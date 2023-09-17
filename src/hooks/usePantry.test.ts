@@ -30,7 +30,10 @@ Deno.test("available()", async () => {
 })
 
 Deno.test("runtime.env", async () => {
-  const TEA_PANTRY_PATH = new Path(Deno.env.get("SRCROOT")!).join("fixtures").string
+  const url = new URL(import.meta.url)
+  let srcroot = new Path(url.pathname).parent().parent().parent()
+  if (!srcroot.join("fixtures").exists()) srcroot = srcroot.parent().parent() // running from dnt
+  const TEA_PANTRY_PATH = srcroot.join("fixtures").string
   const { prefix } = useTestConfig({ TEA_PANTRY_PATH  })
 
   const deps = [{
