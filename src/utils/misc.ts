@@ -78,7 +78,7 @@ export function flatmap<S, T>(t: Promise<T | Falsy> | (T | Falsy), body: (t: T) 
           .then(body => body || undefined)
           .catch(err => { if (!opts?.rescue) throw err; else return undefined } )
         return bar
-      })
+      }).catch(err => { if (!opts?.rescue) throw err; else return undefined } )
       return foo
     } else {
       if (t) return body(t) as (S | Falsy) || undefined
