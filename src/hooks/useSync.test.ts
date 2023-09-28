@@ -5,15 +5,15 @@ import useSync from "./useSync.ts"
 
 Deno.test("useSync", async runner => {
   await runner.step("w/o git", async () => {
-    const TEA_PREFIX = Deno.makeTempDirSync()
-    const conf = useTestConfig({ TEA_PREFIX, TEA_PANTRY_PATH: `${TEA_PREFIX}/tea.xyz/var/pantry` })
+    const TEA_DIR = Deno.makeTempDirSync()
+    const conf = useTestConfig({ TEA_DIR, TEA_PANTRY_PATH: `${TEA_DIR}/tea.xyz/var/pantry` })
     assert(conf.git === undefined)
     await test()
   })
 
   await runner.step("w/git", async () => {
-    const TEA_PREFIX = Deno.makeTempDirSync()
-    const conf = useTestConfig({ TEA_PREFIX, TEA_PANTRY_PATH: `${TEA_PREFIX}/tea.xyz/var/pantry`, PATH: "/usr/bin" })
+    const TEA_DIR = Deno.makeTempDirSync()
+    const conf = useTestConfig({ TEA_DIR, TEA_PANTRY_PATH: `${TEA_DIR}/tea.xyz/var/pantry`, PATH: "/usr/bin" })
     assert(conf.git !== undefined)
     await test()
 

@@ -5,7 +5,7 @@ export function useTestConfig(env?: Record<string, string>) {
   env ??= {}
 
   /// always prefer a new prefix
-  env.TEA_PREFIX ??= Path.mktemp().string
+  env.TEA_DIR ??= Path.mktemp().string
 
   /// reuse these unless the test overrides them to speed up testing
   env.TEA_CACHE_DIR ??= Path.home().join(".tea/tea.xyz/var/www").string

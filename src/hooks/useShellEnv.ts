@@ -15,7 +15,7 @@ export const EnvKeys = [
   'DYLD_FALLBACK_LIBRARY_PATH',
   'SSL_CERT_FILE',
   'LDFLAGS',
-  'TEA_PREFIX',
+  'TEA_DIR',
   'ACLOCAL_PATH'
 ] as const
 export type EnvKey = typeof EnvKeys[number]
@@ -134,7 +134,7 @@ function suffixes(key: EnvKey) {
     case 'CMAKE_PREFIX_PATH':
     case 'SSL_CERT_FILE':
     case 'LDFLAGS':
-    case 'TEA_PREFIX':
+    case 'TEA_DIR':
     case 'ACLOCAL_PATH':
       return []  // we handle these specially
     default: {

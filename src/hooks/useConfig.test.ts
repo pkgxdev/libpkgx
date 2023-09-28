@@ -25,12 +25,12 @@ Deno.test("useConfig", () => {
   assert(_internals.initialized())
 })
 
-Deno.test("useConfig empty TEA_PREFIX is ignored", () => {
-  assertEquals(ConfigDefault({ TEA_PREFIX: "" }).prefix, Path.home().join(".tea"))
-  assertEquals(ConfigDefault({ TEA_PREFIX: "   " }).prefix, Path.home().join(".tea"))
-  assertEquals(ConfigDefault({ TEA_PREFIX: " /  " }).prefix, Path.root)
-  assertThrows(() => ConfigDefault({ TEA_PREFIX: " foo  " }))
-  assertThrows(() => ConfigDefault({ TEA_PREFIX: "foo" }))
+Deno.test("useConfig empty TEA_DIR is ignored", () => {
+  assertEquals(ConfigDefault({ TEA_DIR: "" }).prefix, Path.home().join(".tea"))
+  assertEquals(ConfigDefault({ TEA_DIR: "   " }).prefix, Path.home().join(".tea"))
+  assertEquals(ConfigDefault({ TEA_DIR: " /  " }).prefix, Path.root)
+  assertThrows(() => ConfigDefault({ TEA_DIR: " foo  " }))
+  assertThrows(() => ConfigDefault({ TEA_DIR: "foo" }))
 })
 
 Deno.test("useConfig empty TEA_PANTRY_PATH is ignored", () => {
