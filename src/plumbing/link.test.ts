@@ -1,5 +1,5 @@
 import { useTestConfig } from "../hooks/useTestConfig.ts"
-import { assert } from "deno/testing/asserts.ts"
+import { assert } from "deno/assert/mod.ts"
 import SemVer from "../utils/semver.ts"
 import { Package } from "../types.ts"
 import install from "./install.ts"
@@ -7,8 +7,8 @@ import link from "./link.ts";
 
 Deno.test("plumbing.link", async runner => {
   const pkg: Package = {
-    project: "tea.xyz/brewkit",
-    version: new SemVer("0.30.0")
+    project: "darwinsys.com/file",
+    version: new SemVer("5.43.0")
   }
 
   await runner.step("link()", async () => {

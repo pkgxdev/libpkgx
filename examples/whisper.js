@@ -1,9 +1,9 @@
 /*
-    npm install @teaxyz/lib
+    npm install libpkgx
     node whisper.js
 */
 
-const { porcelain } = require("@teaxyz/lib")
+const { porcelain } = require("libpkgx")
 const https = require("node:https")
 const { run } = porcelain
 const fs = require("node:fs")

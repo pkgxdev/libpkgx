@@ -5,10 +5,13 @@ import useShellEnv from "./useShellEnv.ts"
 import hydrate from "../plumbing/hydrate.ts"
 import resolve from "../plumbing/resolve.ts"
 import install from "../plumbing/install.ts"
+import useSync from "./useSync.ts"
 
 Deno.test("useShellEnv", async () => {
   const { map, flatten } = useShellEnv()
   useTestConfig()
+
+  await useSync()
 
   const rv1 = await hydrate({ project: "python.org", constraint: new semver.Range("^3.11") })
   const rv2 = await resolve(rv1.pkgs)
@@ -22,7 +25,7 @@ Deno.test("useShellEnv", async () => {
   const env = await map({ installations })
 
   // test that we installed the correct platform binaries
-  // ※ https://github.com/teaxyz/lib/pull/11/checks
+  // ※ https://github.com/pkgxdev/lib/pull/11/checks
   execSync("python --version", { env: flatten(env) })
   //NOTE ^^ using execSync rather than Deno.run as the shim doesn’t behave consistently between deno and node
 })

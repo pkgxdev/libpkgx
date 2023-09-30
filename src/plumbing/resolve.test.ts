@@ -120,7 +120,7 @@ Deno.test("resolve cellar.has", {
 
 const permissions = { net: false, read: true, env: ["TMPDIR", "HOME", "TMP", "TEMP"], write: true /*FIXME*/ }
 
-// https://github.com/teaxyz/cli/issues/655
+// https://github.com/pkgxdev/cli/issues/655
 Deno.test("postgres@500 fails", { permissions }, async () => {
   useTestConfig()
 
@@ -140,14 +140,14 @@ Deno.test("postgres@500 fails", { permissions }, async () => {
   ]
 
   try {
-    // https://github.com/teaxyz/cli/issues/655
+    // https://github.com/pkgxdev/cli/issues/655
     await assertRejects(() => resolve(pkgs))
   } finally {
     stub1.restore()
   }
 })
 
-// https://github.com/teaxyz/cli/issues/655
+// https://github.com/pkgxdev/cli/issues/655
 Deno.test("postgres@500 fails if installed", { permissions }, async () => {
   const pkg = {
     project: "posqtgres.org",
@@ -180,7 +180,7 @@ Deno.test("postgres@500 fails if installed", { permissions }, async () => {
   ]
 
   try {
-    // https://github.com/teaxyz/cli/issues/655
+    // https://github.com/pkgxdev/cli/issues/655
     await assertRejects(() => resolve(pkgs))
   } finally {
     stub1.restore()

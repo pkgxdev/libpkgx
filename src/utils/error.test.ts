@@ -1,4 +1,4 @@
-import { assertRejects, assertThrows } from "deno/testing/asserts.ts"
+import { assertRejects, assertThrows } from "deno/assert/mod.ts"
 import { panic } from "../utils/error.ts"
 
 Deno.test("errors", async test => {

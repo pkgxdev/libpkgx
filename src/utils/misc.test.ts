@@ -34,21 +34,14 @@ Deno.test("flatmap", () => {
 })
 
 Deno.test("async flatmap", async () => {
-  const producer = <T>(value?: T, err?: Error): Promise<T | undefined | null> => {
-    if (err) {
-      return Promise.reject(err)
-    }
-    return Promise.resolve(value)
-  }
-
   const add = (n: number) => Promise.resolve(n + 1)
 
-  assertEquals(await flatmap(producer(1), add), 2)
-  assertEquals(await flatmap(producer(undefined), add), undefined)
-  assertEquals(await flatmap(producer(1), (_n) => undefined), undefined)
+  assertEquals(await flatmap(Promise.resolve(1), add), 2)
+  assertEquals(await flatmap(Promise.resolve(undefined), add), undefined)
+  assertEquals(await flatmap(Promise.resolve(1), (_n) => undefined), undefined)
 
-  assertEquals(await flatmap(producer(1, Error()), add, {rescue: true}), undefined)
-  await assertRejects(() => flatmap(producer(1, Error()), add, undefined))
+  assertEquals(await flatmap(Promise.resolve(1), () => Promise.reject(new Error()), {rescue: true}), undefined)
+  await assertRejects(() => flatmap(Promise.resolve(1), () => Promise.reject("new Error()")) ?? Promise.resolve())
 })
 
 Deno.test("chuzzle", () => {

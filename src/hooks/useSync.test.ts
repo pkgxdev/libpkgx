@@ -1,19 +1,19 @@
 import { useTestConfig } from "./useTestConfig.ts"
-import { assert } from "deno/testing/asserts.ts"
+import { assert } from "deno/assert/mod.ts"
 import usePantry from "./usePantry.ts"
 import useSync from "./useSync.ts"
 
 Deno.test("useSync", async runner => {
   await runner.step("w/o git", async () => {
-    const TEA_PREFIX = Deno.makeTempDirSync()
-    const conf = useTestConfig({ TEA_PREFIX, TEA_PANTRY_PATH: `${TEA_PREFIX}/tea.xyz/var/pantry` })
+    const PKGX_DIR = Deno.makeTempDirSync()
+    const conf = useTestConfig({ PKGX_DIR, HOME: `${PKGX_DIR}/home` })
     assert(conf.git === undefined)
     await test()
   })
 
   await runner.step("w/git", async () => {
-    const TEA_PREFIX = Deno.makeTempDirSync()
-    const conf = useTestConfig({ TEA_PREFIX, TEA_PANTRY_PATH: `${TEA_PREFIX}/tea.xyz/var/pantry`, PATH: "/usr/bin" })
+    const PKGX_DIR = Deno.makeTempDirSync()
+    const conf = useTestConfig({ PKGX_DIR, HOME: `${PKGX_DIR}/home`, PATH: "/usr/bin" })
     assert(conf.git !== undefined)
     await test()
 
@@ -24,14 +24,14 @@ Deno.test("useSync", async runner => {
   async function test() {
     let errord = false
     try {
-      await usePantry().project("tea.xyz/brewkit").available()
+      await usePantry().project("python.org").available()
     } catch {
       errord = true
     }
-    assert(errord)
+    assert(errord, `should be no pantry but there is! ${usePantry().prefix}`)
 
     await useSync()
 
-    assert(await usePantry().project("tea.xyz/brewkit").available())
+    assert(await usePantry().project("python.org").available())
   }
 })

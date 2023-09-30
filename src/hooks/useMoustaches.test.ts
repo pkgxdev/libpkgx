@@ -1,4 +1,4 @@
-import { assertEquals } from "deno/testing/asserts.ts"
+import { assertEquals } from "deno/assert/mod.ts"
 import { useTestConfig } from "./useTestConfig.ts"
 import useMoustaches from "./useMoustaches.ts"
 import { Package } from "../types.ts"
@@ -9,10 +9,10 @@ Deno.test("useMoustaches", () => {
   const moustaches = useMoustaches()
 
   const pkg: Package = {
-    project: "tea.xyz/test",
+    project: "pkgx.sh/test",
     version: new SemVer("1.0.0")
   }
 
   const tokens = moustaches.tokenize.all(pkg, [])
-  assertEquals(tokens[0].to, conf.prefix.join(`tea.xyz/test/v${pkg.version}`).string)
+  assertEquals(tokens[0].to, conf.prefix.join(`pkgx.sh/test/v${pkg.version}`).string)
 })

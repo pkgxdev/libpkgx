@@ -6,6 +6,7 @@ export interface Config {
   prefix: Path
   pantries: Path[]
   cache: Path
+  data: Path
 
   options: {
     /// prefer xz or gz for bottle downloads
@@ -17,12 +18,31 @@ export interface Config {
   git?: Path
 }
 
+function platform_cache_default() {
+  if (host().platform == 'darwin') {
+    return Path.home().join('Library/Caches')
+  } else {
+    return Path.home().join('.cache')
+  }
+}
+
 export function ConfigDefault(env = Deno.env.toObject()): Config {
-  const prefix = flatmap(env['TEA_PREFIX']?.trim(), x => new Path(x)) ?? Path.home().join('.tea')
-  const pantries = env['TEA_PANTRY_PATH']?.split(":").compact(x => flatmap(x.trim(), x => Path.abs(x) ?? Path.cwd().join(x))) ?? []
-  const cache = Path.abs(env['TEA_CACHE_DIR']) ?? prefix.join('tea.xyz/var/www')
+  const prefix = flatmap(env['PKGX_DIR']?.trim(), x => new Path(x)) ?? Path.home().join('.pkgx')
+  const pantries = env['PKGX_PANTRY_PATH']?.split(":").compact(x => flatmap(x.trim(), x => Path.abs(x) ?? Path.cwd().join(x))) ?? []
+  const cache = (flatmap(env["XDG_CACHE_HOME"], x => new Path(x)) ?? platform_cache_default()).join("pkgx")
   const isCI = boolize(env['CI']) ?? false
-  const UserAgent = flatmap(getv(), v => `tea.lib/${v}`) ?? 'tea.lib'
+  const UserAgent = flatmap(getv(), v => `libpkgx/${v}`) ?? 'libpkgx'
+
+  const data = (() => {
+    const xdg = env["XDG_DATA_HOME"]
+    if (xdg) {
+      return new Path(xdg)
+    } else if (host().platform == "darwin") {
+      return Path.home().join("Library/Application Support")
+    } else {
+      return Path.home().join(".local/share")
+    }
+  })().join("pkgx")
 
   //TODO prefer 'xz' on Linux (as well) if supported
   const compression = !isCI && host().platform == 'darwin' ? 'xz' : 'gz'
@@ -31,6 +51,7 @@ export function ConfigDefault(env = Deno.env.toObject()): Config {
     prefix,
     pantries,
     cache,
+    data,
     UserAgent,
     options: {
       compression,
@@ -50,15 +71,15 @@ function getv(): string | undefined {
   }
 }
 
-const gt = globalThis as unknown as {xyz_tea_config?: Config}
+const gt = globalThis as unknown as {sh_pkgx_config?: Config}
 
 export default function useConfig(input?: Config): Config {
   // storing on globalThis so our config is shared across
-  // potentially multiple versions of libtea being loaded in the same process
-  if (!gt.xyz_tea_config || input) {
-    gt.xyz_tea_config = input ?? ConfigDefault()
+  // potentially multiple versions of libpkgx being loaded in the same process
+  if (!gt.sh_pkgx_config || input) {
+    gt.sh_pkgx_config = input ?? ConfigDefault()
   }
-  return {...gt.xyz_tea_config}  // copy to prevent mutation
+  return {...gt.sh_pkgx_config}  // copy to prevent mutation
 }
 
 function boolize(input: string | undefined): boolean | undefined {
@@ -75,21 +96,21 @@ function boolize(input: string | undefined): boolean | undefined {
 }
 
 function reset() {
-  return delete gt.xyz_tea_config
+  return delete gt.sh_pkgx_config
 }
 
 function initialized() {
-  return gt.xyz_tea_config !== undefined
+  return gt.sh_pkgx_config !== undefined
 }
 
 export const _internals = { reset, initialized, boolize }
 
 
-/// we support a tea installed or system installed git, nothing else
-/// eg. `git` could be a symlink in `PATH` to tea, which would cause a fork bomb
+/// we support a pkgx installed or system installed git, nothing else
+/// eg. `git` could be a symlink in `PATH` to pkgx, which would cause a fork bomb
 /// on darwin if xcode or xcode/clt is not installed this will fail to our http fallback above
 //TODO be able to use our own git if installed
-//NOTE however we don’t want to have to fully hydrate its env when libtea is initialized only when needed so…
+//NOTE however we don’t want to have to fully hydrate its env when libpkgx is initialized only when needed so…
 function git(_prefix: Path, PATH?: string): Path | undefined {
   return usr()
 

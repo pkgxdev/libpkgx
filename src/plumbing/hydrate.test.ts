@@ -1,4 +1,4 @@
-import { assertEquals } from "deno/testing/asserts.ts"
+import { assertEquals } from "deno/assert/mod.ts"
 import { describe, it } from "deno/testing/bdd.ts"
 import { PackageRequirement } from "../types.ts"
 import * as semver from "../utils/semver.ts"

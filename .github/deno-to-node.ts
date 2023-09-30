@@ -1,19 +1,6 @@
-#!/usr/bin/env -S tea -E
+#!/usr/bin/env -S pkgx +npm deno run --allow-env --allow-read --allow-write --allow-net --allow-run
 
-/*---
-args:
-  - deno
-  - run
-  - --allow-env
-  - --allow-read
-  - --allow-write
-  - --allow-net
-  - --allow-run
-dependencies:
-  npmjs.com: '*'
----*/
-
-import { build, emptyDir } from "https://deno.land/x/dnt@0.38.0/mod.ts";
+import { build, emptyDir } from "https://deno.land/x/dnt@0.38.1/mod.ts";
 import SemVer from "../src/utils/semver.ts";
 
 await emptyDir("./dist");
@@ -46,16 +33,16 @@ await build({
     "./src/utils/flock.deno.ts": "./src/utils/flock.node.ts"
   },
   package: {
-    name: "@teaxyz/lib",
+    name: "libpkgx",
     version,
     description: "pkging primitives",
     license: "Apache-2.0",
     repository: {
       type: "git",
-      url: "git://github.com/teaxyz/lib.git",
+      url: "git://github.com/pkgxdev/libpkgx.git",
     },
     bugs: {
-      url: "https://github.com/teaxyz/lib/issues",
+      url: "https://github.com/pkgxdev/libpkgx/issues",
     },
     dependencies: {
       "is-what": "^4",
@@ -63,7 +50,7 @@ await build({
     },
     exports: {
       "./src/src/utils/semver": {
-        //TODO remove when gui is updated to use `@teaxyz/lib/semver`
+        //TODO remove when gui is updated to use `libpkgx/semver`
         import: "./src/src/utils/semver.ts"
       },
       "./semver": {

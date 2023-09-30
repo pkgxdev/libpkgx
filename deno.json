@@ -10,11 +10,7 @@
       ]
     }
   },
-  "tea": {
-    "dependencies": {
-      "deno.land": "^1.33.3"
-    }
-  },
+  "pkgx": "deno^1.33.3 npm",
   "tasks": {
     "test": "deno test --unstable -A",
     "typecheck": "deno check --unstable ./mod.ts",

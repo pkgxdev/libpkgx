@@ -24,5 +24,5 @@ function key(stowage: Stowage) {
 }
 
 function url(stowage: Stowage) {
-  return new URL(`https://dist.tea.xyz/${key(stowage)}`)
+  return new URL(`https://dist.pkgx.dev/${key(stowage)}`)
 }

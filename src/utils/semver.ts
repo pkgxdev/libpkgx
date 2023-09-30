@@ -1,4 +1,4 @@
-//HEY YOU! DO NOT CHANGE THIS TO USE deps.ts since it breaks tea/gui
+//HEY YOU! DO NOT CHANGE THIS TO USE deps.ts since it breaks pkgx/gui
 import { isArray, isString } from "https://deno.land/x/is_what@v4.1.15/src/index.ts"
 
 /**

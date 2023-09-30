@@ -18,7 +18,7 @@ Promise.prototype.swallow = function(errorClass?: new (...args: any) => any) {
   })
 }
 
-export class TeaError extends Error {
+export class PkgxError extends Error {
   ctx: any
   constructor(msg: string, ctx?: any) {
     super(msg)

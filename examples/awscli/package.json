@@ -1,8 +1,8 @@
 {
-  "name": "tea-aws-cli",
+  "name": "pkgx-aws-cli",
   "main": "index.mjs",
   "dependencies": {
-    "@teaxyz/lib": "^0.9.1",
+    "libpkgx": "^0.14",
     "aws-cli-js": "^2.2.3"
   }
 }

@@ -8,7 +8,7 @@ import Path from "./src/utils/Path.ts"
 export * as types from "./src/types.ts"
 import * as pkg from "./src/utils/pkg.ts"
 
-import { panic, TeaError } from "./src/utils/error.ts"
+import { panic, PkgxError } from "./src/utils/error.ts"
 import useConfig from "./src/hooks/useConfig.ts"
 import useOffLicense  from "./src/hooks/useOffLicense.ts"
 import useCache from "./src/hooks/useCache.ts"
@@ -24,7 +24,6 @@ import which from "./src/plumbing/which.ts"
 import link from "./src/plumbing/link.ts"
 import install, { ConsoleLogger } from "./src/plumbing/install.ts"
 import resolve, { ResolveError } from "./src/plumbing/resolve.ts"
-import { validatePackageRequirement } from "./src/utils/hacks.ts"
 import useSync from "./src/hooks/useSync.ts"
 import run, { RunError } from "./src/porcelain/run.ts"
 import porcelain_install from "./src/porcelain/install.ts"
@@ -60,14 +59,10 @@ const porcelain = {
   run
 }
 
-const hacks = {
-  validatePackageRequirement
-}
-
 export {
-  utils, hooks, plumbing, porcelain, hacks,
+  utils, hooks, plumbing, porcelain,
   semver,
-  TeaError,
+  PkgxError,
     RunError,
     ResolveError,
     PantryError, PantryParseError, PantryNotFoundError, PackageNotFoundError,

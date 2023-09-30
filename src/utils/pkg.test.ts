@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertFalse, assertThrows } from "deno/testing/asserts.ts"
+import { assert, assertEquals, assertFalse, assertThrows } from "deno/assert/mod.ts"
 import SemVer, { Range } from "./semver.ts"
 import * as pkg from "./pkg.ts"
 

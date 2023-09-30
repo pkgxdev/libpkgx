@@ -19,11 +19,11 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
   const { project, version } = pkg
 
   const cellar = useCellar()
-  const { prefix: tea_prefix, options: { compression } } = useConfig()
+  const { prefix: PKGX_DIR, options: { compression } } = useConfig()
   const stowage = StowageNativeBottle({ pkg: { project, version }, compression })
   const url = useOffLicense('s3').url(stowage)
   const tarball = useCache().path(stowage)
-  const shelf = tea_prefix.join(pkg.project)
+  const shelf = PKGX_DIR.join(pkg.project)
 
   logger?.locking?.(pkg)
   const { rid: fd } = await Deno.open(shelf.mkdir('p').string)
@@ -32,7 +32,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
   try {
     const already_installed = await cellar.has(pkg)
     if (already_installed) {
-      // some other tea instance installed us while we were waiting for the lock
+      // some other pkgx instance installed us while we were waiting for the lock
       // or potentially we were already installed and the caller is naughty
       logger?.installed?.(already_installed)
       return already_installed
@@ -41,9 +41,9 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     logger?.downloading?.({pkg})
 
     const tmpdir = Path.mktemp({
-      dir: tea_prefix.join(".local/tmp").join(pkg.project),
+      dir: PKGX_DIR.join(".local/tmp").join(pkg.project),
       prefix: `v${pkg.version}.`
-      //NOTE ^^ inside tea prefix to avoid TMPDIR is on a different volume problems
+      //NOTE ^^ inside pkgx prefix to avoid TMPDIR is on a different volume problems
     })
     const tar_args = compression == 'xz' ? 'xJ' : 'xz'  // laughably confusing
     const untar = Deno.run({
@@ -86,7 +86,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
 
     if (computed_hash_value != checksum) {
       tarball.rm()
-      console.error("tea: we deleted the invalid tarball. try again?")
+      console.error("pkgx: we deleted the invalid tarball. try again?")
       throw new Error(`sha: expected: ${checksum}, got: ${computed_hash_value}`)
     }
 

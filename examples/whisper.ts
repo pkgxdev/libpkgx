@@ -1,10 +1,10 @@
-#!/usr/bin/env -S deno run --allow-read --allow-write --allow-run --allow-env --unstable --allow-net
+#!/usr/bin/env -S pkgx deno run --allow-read --allow-write --allow-run --allow-env --unstable --allow-net
 
 /*
-    sh <(curl tea.xyz) https://raw.githubusercontent.com/teaxyz/lib/main/examples/whisper.ts
+  sh <(curl pkgx.sh) deno https://raw.githubusercontent.com/pkgxdev/lib/main/examples/whisper.ts
 */
 
-import { porcelain } from "https://raw.github.com/teaxyz/lib/v0/mod.ts"
+import { porcelain } from "https://raw.github.com/pkgxdev/lib/v0/mod.ts"
 import { green } from "https://deno.land/std/fmt/colors.ts"
 const { run } = porcelain
 

@@ -1,5 +1,5 @@
 import { Stowage, StowageNativeBottle } from "../types.ts"
-import { assertEquals } from "deno/testing/asserts.ts"
+import { assertEquals } from "deno/assert/mod.ts"
 import SemVer from "../utils/semver.ts"
 import useConfig from "./useConfig.ts"
 import useCache from "./useCache.ts"

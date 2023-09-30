@@ -1,11 +1,11 @@
 import { Package, PackageRequirement, Installation } from "../types.ts"
-import { TeaError } from "../utils/error.ts"
+import { PkgxError } from "../utils/error.ts"
 import * as pkgutils from "../utils/pkg.ts"
 import SemVer from "../utils/semver.ts"
 import useConfig from "./useConfig.ts"
 import Path from "../utils/Path.ts"
 
-export class InstallationNotFoundError extends TeaError {
+export class InstallationNotFoundError extends PkgxError {
   pkg: Package | PackageRequirement
 
   constructor(pkg: Package | PackageRequirement) {
@@ -17,10 +17,10 @@ export class InstallationNotFoundError extends TeaError {
 export default function useCellar() {
   const config = useConfig()
 
-  /// eg. ~/.tea/deno.land
+  /// eg. ~/.pkgx/deno.land
   const shelf = (project: string) => config.prefix.join(project)
 
-  /// eg. ~/.tea/deno.land/v1.2.3
+  /// eg. ~/.pkgx/deno.land/v1.2.3
   const keg = (pkg: Package) => shelf(pkg.project).join(`v${pkg.version}`)
 
   /// returns the `Installation` if the pkg is installed

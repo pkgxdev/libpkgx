@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertFalse, assertThrows } from "deno/testing/asserts.ts"
+import { assert, assertEquals, assertFalse, assertThrows } from "deno/assert/mod.ts"
 import Path from "./Path.ts"
 
 Deno.test("test Path", async test => {
@@ -6,7 +6,7 @@ Deno.test("test Path", async test => {
     assertEquals(new Path("/a/b/c").components(), ["", "a", "b", "c"])
     assertEquals(new Path("/a/b/c").split(), [new Path("/a/b"), "c"])
 
-    const tmp = Path.mktemp({prefix: "tea-"})
+    const tmp = Path.mktemp({prefix: "pkgx-"})
     assert(tmp.isEmpty())
 
     const child = tmp.join("a/b/c")
@@ -28,7 +28,7 @@ Deno.test("test Path", async test => {
   })
 
   await test.step("write and read", async () => {
-    const tmp = Path.mktemp({prefix: "tea-"})
+    const tmp = Path.mktemp({prefix: "pkgx-"})
 
     const data = tmp.join("test.dat")
     data.write({text: "hello\nworld"})
@@ -44,7 +44,7 @@ Deno.test("test Path", async test => {
   })
 
   await test.step("test walk", async () => {
-    const tmp = Path.mktemp({prefix: "tea-"})
+    const tmp = Path.mktemp({prefix: "pkgx-"})
 
     const a = tmp.join("a").mkdir()
     a.join("a1").touch()
@@ -81,7 +81,7 @@ Deno.test("test Path", async test => {
   })
 
   await test.step("test symlink created", () => {
-    const tmp = Path.mktemp({prefix: "tea-"}).join("foo").mkdir()
+    const tmp = Path.mktemp({prefix: "pkgx-"}).join("foo").mkdir()
     const a = tmp.join("a").touch()
     const b = tmp.join("b")
     b.ln('s', { target: a })
@@ -114,7 +114,7 @@ Deno.test("Path.join()", () => {
 })
 
 Deno.test("Path.isExecutableFile()", () => {
-  const tmp = Path.mktemp({prefix: "tea-"}).mkdir()
+  const tmp = Path.mktemp({prefix: "pkgx-"}).mkdir()
   const executable = tmp.join("executable").touch()
   executable.chmod(0o755)
   const notExecutable = tmp.join("not-executable").touch()
@@ -129,7 +129,7 @@ Deno.test("Path.extname()", () => {
 })
 
 Deno.test("Path.mv()", () => {
-  const tmp = Path.mktemp({prefix: "tea-"})
+  const tmp = Path.mktemp({prefix: "pkgx-"})
   const a = tmp.join("a").touch()
   const b = tmp.join("b")
 
@@ -150,7 +150,7 @@ Deno.test("Path.mv()", () => {
 })
 
 Deno.test("Path.cp()", () => {
-  const tmp = Path.mktemp({prefix: "tea-"}).mkdir()
+  const tmp = Path.mktemp({prefix: "pkgx-"}).mkdir()
   const a = tmp.join("a").touch()
   const b = tmp.join("b").mkdir()
 
@@ -167,7 +167,7 @@ Deno.test("Path.relative()", () => {
 })
 
 Deno.test("Path.realpath()", () => {
-  const tmp = Path.mktemp({prefix: "tea-"}).mkdir()
+  const tmp = Path.mktemp({prefix: "pkgx-"}).mkdir()
   const a = tmp.join("a").touch()
   const b = tmp.join("b").ln('s', { target: a })
 
@@ -175,8 +175,8 @@ Deno.test("Path.realpath()", () => {
 })
 
 Deno.test("Path.prettyLocalString()", () => {
-  const path = Path.home().join(".config/tea/config.toml")
-  assertEquals(path.prettyLocalString(), "~/.config/tea/config.toml")
+  const path = Path.home().join(".config/pkgx/config.toml")
+  assertEquals(path.prettyLocalString(), "~/.config/pkgx/config.toml")
 
   assertEquals(new Path("/a/b").prettyLocalString(), "/a/b")
 })
@@ -190,7 +190,7 @@ Deno.test("Path.chuzzle()", () => {
 })
 
 Deno.test("Path.ls()", async () => {
-  const tmp = Path.mktemp({prefix: "tea-"}).mkdir()
+  const tmp = Path.mktemp({prefix: "pkgx-"}).mkdir()
   tmp.join("a").touch()
   tmp.join("b").touch()
   tmp.join("c").mkdir()

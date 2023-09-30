@@ -2,7 +2,7 @@ import { Package, PackageRequirement, Installation } from "../types.ts"
 import useInventory from "../hooks/useInventory.ts"
 import { str as pkgstr } from "../utils/pkg.ts"
 import useCellar from "../hooks/useCellar.ts"
-import { TeaError } from "../utils/error.ts"
+import { PkgxError } from "../utils/error.ts"
 
 /// NOTE resolves to bottles
 /// NOTE contract there are no duplicate projects in input
@@ -18,7 +18,7 @@ export interface Resolution {
   pending: Package[]
 }
 
-export class ResolveError extends TeaError {
+export class ResolveError extends PkgxError {
   pkg: Package | PackageRequirement
 
   constructor(pkg: Package | PackageRequirement) {

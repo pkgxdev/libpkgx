@@ -65,19 +65,21 @@ Array.prototype.compact = function<T, S>(body?: (t: T) => S | Falsy, opts?: { re
   return rv
 }
 
-export function flatmap<S, T>(t: T | Falsy, body: (t: T) => S | Falsy, opts?: {rescue?: boolean}): S | undefined;
-export function flatmap<S, T>(t: Promise<T | Falsy>, body: (t: T) => Promise<S | Falsy>, opts?: {rescue?: boolean}): Promise<S | undefined>;
-export function flatmap<S, T>(t: Promise<T | Falsy> | (T | Falsy), body: (t: T) => (S | Falsy) | Promise<S | Falsy>, opts?: {rescue?: boolean}): Promise<S | undefined> | (S | undefined) {
+export function flatmap<S, T>(t: T | Falsy, body: (t: T) => S | Falsy, opts?: {rescue: boolean}): S | undefined;
+export function flatmap<S, T>(t: Promise<T | Falsy>, body: (t: T) => Promise<S | Falsy>, opts?: {rescue: boolean}): Promise<S | undefined>;
+export function flatmap<S, T>(t: Promise<T | Falsy> | (T | Falsy), body: (t: T) => (S | Falsy) | Promise<S | Falsy>, opts?: {rescue: boolean}): Promise<S | undefined> | (S | undefined) {
   try {
     if (t instanceof Promise) {
       const foo = t.then(t => {
         if (!t) return
         const s = body(t) as Promise<S | Falsy>
         if (!s) return
-        const bar = s
-          .then(body => body || undefined)
-          .catch(err => { if (!opts?.rescue) throw err; else return undefined } )
-        return bar
+        const bar = s.then(body => body || undefined)
+        if (opts?.rescue) {
+          return bar.catch(() => { return undefined })
+        } else {
+          return bar
+        }
       })
       return foo
     } else {

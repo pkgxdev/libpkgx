@@ -46,7 +46,7 @@ Deno.test("semver", async test => {
   await test.step("satisfies", () => {
     assertEquals(new semver.Range("=3.1.0").max([new SemVer("3.1.0")]), new SemVer("3.1.0"))
 
-    // the following two test for https://github.com/teaxyz/lib/pull/36
+    // the following two test for https://github.com/pkgxdev/lib/pull/36
     assertEquals(new semver.Range("^300").max([new SemVer("3.1.0")]), undefined)
     assertEquals(new semver.Range("@300").max([new SemVer("3.1.0")]), undefined)
   })

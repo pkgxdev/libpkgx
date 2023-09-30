@@ -1,0 +1,35 @@
+name: cd·npm
+
+on:
+  release:
+    types:
+      - published
+
+concurrency:
+  group: cd/vx/${{ github.event.release.tag_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  npm-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: robinraju/release-downloader@v1.8
+        with:
+          releaseId: ${{ github.event.release.id }}
+
+      - run: |
+          mkdir dist
+          tar xf *.tar.xz --directory=dist --strip-components=1
+
+      # if we don’t do this the npm publish step doesn’t work
+      - uses: actions/setup-node@v2
+        with:
+          registry-url: https://registry.npmjs.org
+
+      - run: npm publish --access public
+        working-directory: dist
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -74,7 +74,7 @@ export default async function hydrate(
       for (const dep of await get_deps(current_node.pkg, initial_set.has(current_node.project))) {
         if (children.has(dep.project)) {
           if (!bootstrap.has(dep.project)) {
-            console.warn(`tea: cyclic dep: ${dep.project}: ${current_node.project}`)
+            console.warn(`pkgx: cyclic dep: ${dep.project}: ${current_node.project}`)
             bootstrap.add(dep.project)
           }
         } else {

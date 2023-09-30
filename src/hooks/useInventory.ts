@@ -27,7 +27,7 @@ const select = async (rq: PackageRequirement | Package) => {
 const get = async (rq: PackageRequirement | Package) => {
   const { platform, arch } = host()
 
-  const url = new URL('https://dist.tea.xyz')
+  const url = new URL('https://dist.pkgx.dev')
   url.pathname = Path.root.join(rq.project, platform, arch, 'versions.txt').string
 
   const rsp = await useFetch(url)

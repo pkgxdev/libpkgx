@@ -1,11 +1,10 @@
 import { is_what, PlainObject } from "../deps.ts"
 const { isNumber, isPlainObject, isString, isArray, isPrimitive, isBoolean } = is_what
-import { validatePackageRequirement } from "../utils/hacks.ts"
-import { Package, Installation } from "../types.ts"
+import { Package, Installation, PackageRequirement } from "../types.ts"
+import SemVer, * as semver from "../utils/semver.ts"
 import useMoustaches from "./useMoustaches.ts"
-import { TeaError } from "../utils/error.ts"
+import { PkgxError } from "../utils/error.ts"
 import { validate } from "../utils/misc.ts"
-import SemVer from "../utils/semver.ts"
 import useConfig from "./useConfig.ts"
 import host from "../utils/host.ts"
 import Path from "../utils/Path.ts"
@@ -15,7 +14,7 @@ export interface Interpreter {
   args: string[]
 }
 
-export class PantryError extends TeaError
+export class PantryError extends PkgxError
 {}
 
 export class PantryParseError extends PantryError {
@@ -45,8 +44,7 @@ export class PantryNotFoundError extends PantryError {
 }
 
 export default function usePantry() {
-  const config = useConfig()
-  const prefix = config.prefix.join('tea.xyz/var/pantry/projects')
+  const prefix = useConfig().data.join("pantry/projects")
 
   async function* ls(): AsyncGenerator<LsEntry> {
     const seen = new Set()
@@ -243,7 +241,7 @@ export default function usePantry() {
     if (prefix.isDirectory()) {
       rv.push(prefix)
     }
-    for (const path of config.pantries.reverse()) {
+    for (const path of useConfig().pantries.reverse()) {
       rv.unshift(path.join("projects"))
     }
 
@@ -264,6 +262,24 @@ export function parse_pkgs_node(node: any) {
   return Object.entries(node)
     .compact(([project, constraint]) =>
       validatePackageRequirement(project, constraint))
+}
+
+export function validatePackageRequirement(project: string, constraint: unknown): PackageRequirement {
+  if (isNumber(constraint)) {
+    constraint = `^${constraint}`
+  } else if (!isString(constraint)) {
+    throw new Error(`invalid constraint for ${project}: ${constraint}`)
+  }
+
+  constraint = semver.Range.parse(constraint as string)
+  if (!constraint) {
+    throw new PkgxError("invalid constraint for " + project + ": " + constraint)
+  }
+
+  return {
+    project,
+    constraint: constraint as semver.Range
+  }
 }
 
 /// expands platform specific keys into the object
@@ -331,7 +347,6 @@ export function expand_env_obj(env_: PlainObject, pkg: Package, deps: Installati
       const mm = useMoustaches()
       const home = Path.home().string
       const obj = [
-        { from: 'env.HOME', to: home },  // historic, should be removed at v1
         { from: 'home', to: home }       // remove, stick with just ~
       ]
       obj.push(...mm.tokenize.all(pkg, deps))

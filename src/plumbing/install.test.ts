@@ -1,5 +1,5 @@
 import { useTestConfig as useTestConfigBase } from "../hooks/useTestConfig.ts"
-import { assert, assertEquals, assertFalse } from "deno/testing/asserts.ts"
+import { assert, assertEquals, assertFalse } from "deno/assert/mod.ts"
 import install, { ConsoleLogger, Logger } from "./install.ts"
 import { stub } from "deno/testing/mock.ts"
 import SemVer from "../utils/semver.ts"
@@ -7,8 +7,8 @@ import { Package } from "../types.ts"
 
 Deno.test("install()", async runner => {
   const pkg: Package = {
-    project: "tea.xyz/brewkit",
-    version: new SemVer("0.30.0")
+    project: "darwinsys.com/file",
+    version: new SemVer("5.43.0")
   }
 
   const conf = useTestConfig()
@@ -43,8 +43,8 @@ Deno.test("install()", async runner => {
 
 Deno.test("install locks", async () => {
   const pkg: Package = {
-    project: "tea.xyz/brewkit",
-    version: new SemVer("0.30.0")
+    project: "darwinsys.com/file",
+    version: new SemVer("5.43.0")
   }
 
   const conf = useTestConfig()
@@ -71,5 +71,5 @@ Deno.test("install locks", async () => {
 })
 
 function useTestConfig() {
-  return useTestConfigBase({ TEA_CACHE_DIR: Deno.makeTempDirSync() })
+  return useTestConfigBase({ XDG_CACHE_HOME: Deno.makeTempDirSync() })
 }

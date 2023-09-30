@@ -7,6 +7,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@teaxyz/lib": "file:../../dist"
+    "libpkgx": "file:../../dist"
   }
 }

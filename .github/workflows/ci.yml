@@ -7,42 +7,39 @@ on:
       - '**/*.ts'
       - .github/workflows/ci.yml
   workflow_dispatch:
-  workflow_call:
 
 concurrency:
-  group: ${{ github.ref || github.event.release.name }}
+  group: ${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os:
           - macos-latest
           - ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: teaxyz/setup@v0
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v1
       - run: deno cache mod.ts
 
       - run: deno task test
           --coverage=cov_profile
           --no-check # ⬆signal∶noise & ∵ we have `jobs.typecheck`
 
-      - run: deno coverage cov_profile --lcov --exclude=tests/ --output=cov_profile.lcov
-        if: ${{ github.event_name != 'release' }}
+      - run: deno coverage cov_profile --lcov --output=cov_profile.lcov
 
       - uses: coverallsapp/github-action@v1
-        if: ${{ github.event_name != 'release' }}
         with:
           path-to-lcov: cov_profile.lcov
           parallel: true
           flag-name: ${{ matrix.platform.id }}
 
   upload-coverage:
-    if: ${{ github.event_name != 'release' }}
     needs: tests
     runs-on: ubuntu-latest
     steps:
@@ -54,7 +51,7 @@ jobs:
     # we’re checking no import-map type imports snuck in
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: src
       - uses: denoland/setup-deno@v1
@@ -62,11 +59,10 @@ jobs:
 
   dnt:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'release' }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: teaxyz/setup@v0
-      - run: deno task dnt
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v1
+      - run: deno run -A --unstable .github/deno-to-node.ts
 
       - run: |
           npm i
@@ -77,13 +73,13 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: teaxyz/setup@v0
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v1
       - run: deno lint
 
   typecheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: teaxyz/setup@v0
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v1
       - run: deno task typecheck

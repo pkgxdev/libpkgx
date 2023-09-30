@@ -1,7 +1,7 @@
 import { deno } from "../deps.ts"
 const { crypto: crypto_, streams: { writeAll } } = deno
 const { toHashString, crypto } = crypto_
-import { TeaError, panic } from "../utils/error.ts"
+import { PkgxError, panic } from "../utils/error.ts"
 import useConfig from "./useConfig.ts"
 import useFetch from "./useFetch.ts"
 import Path from "../utils/Path.ts"
@@ -15,7 +15,7 @@ interface DownloadOptions {
   logger?: (info: {src: URL, dst: Path, rcvd?: number, total?: number }) => void
 }
 
-export class DownloadError extends TeaError {
+export class DownloadError extends PkgxError {
   status: number
   src: URL
   headers?: Record<string, string>

@@ -1,11 +1,11 @@
 import { useTestConfig } from "./useTestConfig.ts"
-import { assert } from "deno/testing/asserts.ts"
+import { assert } from "deno/assert/mod.ts"
 import useDownload from "./useDownload.ts"
 
 Deno.test("etag-mtime-check", async runner => {
-  useTestConfig({ TEA_CACHE_DIR: Deno.makeTempDirSync() })
+  useTestConfig({ PKGX_DIR: Deno.makeTempDirSync() })
 
-  const src = new URL("https://dist.tea.xyz/ijg.org/versions.txt")
+  const src = new URL("https://dist.pkgx.dev/ijg.org/versions.txt")
   const { download, cache } = useDownload()
 
   await runner.step("download", async () => {

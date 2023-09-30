@@ -1,5 +1,4 @@
 import { Installation } from "../types.ts"
-import useConfig from "./useConfig.ts"
 import usePantry from "./usePantry.ts"
 import host from "../utils/host.ts"
 
@@ -15,7 +14,7 @@ export const EnvKeys = [
   'DYLD_FALLBACK_LIBRARY_PATH',
   'SSL_CERT_FILE',
   'LDFLAGS',
-  'TEA_PREFIX',
+  'PKGX_DIR',
   'ACLOCAL_PATH'
 ] as const
 export type EnvKey = typeof EnvKeys[number]
@@ -47,7 +46,7 @@ async function map({installations}: Options): Promise<Record<string, string[]>> 
   for (const installation of installations) {
 
     if (!seen.insert(installation.pkg.project).inserted) {
-      console.warn("tea: env is being duped:", installation.pkg.project)
+      console.warn("pkgx: env is being duped:", installation.pkg.project)
     }
 
     for (const key of EnvKeys) {
@@ -105,12 +104,6 @@ async function map({installations}: Options): Promise<Record<string, string[]>> 
     rv[key] = vars[key]!.toArray()
   }
 
-  if (isMac) {
-    // required to link to our libs
-    // tea.xyz/gx/cc automatically adds this, but use of any other compilers will not
-    rv["LDFLAGS"] = [`-Wl,-rpath,${useConfig().prefix}`]
-  }
-
   // don’t break `man` lol
   rv["MANPATH"]?.push("/usr/share/man")
 
@@ -134,7 +127,7 @@ function suffixes(key: EnvKey) {
     case 'CMAKE_PREFIX_PATH':
     case 'SSL_CERT_FILE':
     case 'LDFLAGS':
-    case 'TEA_PREFIX':
+    case 'PKGX_DIR':
     case 'ACLOCAL_PATH':
       return []  // we handle these specially
     default: {

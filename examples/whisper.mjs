@@ -1,9 +1,9 @@
 /*
-    npm install @teaxyz/lib
+    npm install libpkgx
     node whisper.mjs
 */
 
-import { porcelain } from "@teaxyz/lib"
+import { porcelain } from "libpkgx"
 import https from "node:https"
 const { run } = porcelain
 import fs from "node:fs"

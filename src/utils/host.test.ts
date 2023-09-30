@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertThrows, fail } from "deno/testing/asserts.ts"
+import { assert, assertEquals, assertThrows, fail } from "deno/assert/mod.ts"
 import host, { _internals, SupportedPlatform } from "./host.ts"
 import { stub } from "deno/testing/mock.ts"
 

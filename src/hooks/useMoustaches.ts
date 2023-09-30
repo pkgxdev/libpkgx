@@ -1,7 +1,7 @@
-import useConfig from "./useConfig.ts"
-import SemVer from "../utils/semver.ts"
-import useCellar from "./useCellar.ts"
 import { Package, Installation } from "../types.ts"
+import SemVer from "../utils/semver.ts"
+import useConfig from "./useConfig.ts"
+import useCellar from "./useCellar.ts"
 import host from "../utils/host.ts"
 import * as os from "node:os"
 
@@ -62,12 +62,12 @@ export default function() {
     return map
   }
 
-  const tea = () => [{ from: "tea.prefix", to: config.prefix.string }]
+  const pkgx = () => [{ from: "pkgx.prefix", to: config.prefix.string }]
 
   const all = (pkg: Package, deps_: Installation[]) => [
     ...deps(deps_),
     ...tokenizePackage(pkg),
-    ...tea(),
+    ...pkgx(),
     ...base.tokenize.version(pkg.version),
     ...base.tokenize.host(),
   ]
@@ -76,7 +76,7 @@ export default function() {
     apply: base.apply,
     tokenize: {
       ...base.tokenize,
-      deps, tea, all
+      deps, pkgx, all
     }
   }
 }

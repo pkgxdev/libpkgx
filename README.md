@@ -1,49 +1,35 @@
-![tea](https://tea.xyz/banner.png)
+![pkgx.dev](https://pkgx.dev/banner.png)
 
-<p align="center">
-  <a href="https://twitter.com/teaxyz">
-    <img src="https://img.shields.io/badge/-teaxyz-2675f5?logo=twitter&logoColor=fff" alt="Twitter" />
-  </a>
-  <a href="https://discord.tea.xyz">
-    <img src="https://img.shields.io/discord/906608167901876256?label=discord&color=1bcf6f&logo=discord&logoColor=fff" alt="Discord" />
-  </a>
-  <a href='https://coveralls.io/github/teaxyz/lib?branch=main'>
-    <img src='https://coveralls.io/repos/github/teaxyz/lib/badge.svg?branch=main' alt='Coverage Status' />
-  </a>
-  <a href="https://docs.tea.xyz">
-    <img src="https://img.shields.io/badge/-docs-2675f5?logoColor=fff&color=ff00ff&logo=gitbook" alt="Documentation & Manual" />
-  </a>
-</p>
+[![coverage][]][coveralls]
 
+# libpkgx
 
-# libtea
-
-tea aims to provide packaging primitives. This library is a route to that
-goal. libtea can install and provide sandboxed environments for packages that
-have no effect on the wider system without you or your user needing to install
-[tea/cli].
+pkgx aims to provide packaging primitives. This library is a route to that
+goal. libpkgx can create sandboxed environments for
+packages that have no effect on the wider system without you or your user
+needing to install [pkgx].
 
 ## Getting Started
 
 ```sh
-$ npm install @teaxyz/lib
-# ^^ https://npmjs.com/@teaxyz/lib
+$ npm install libpkgx
+# ^^ https://npmjs.com/libpkgx
 ```
 
 Or with [Deno]:
 
 ```ts
-import * as tea from "https://deno.land/x/libtea/mod.ts"
+import * as pkgx from "https://deno.land/x/libpkgx/mod.ts"
 ```
 
 ## Usage
 
 ```ts
-import { porcelain } from "@teaxyz/lib";
+import { porcelain } from "libpkgx";
 const { run } = porcelain;
 
 await run(`python -c 'print("Hello, World!")'`);
-// ^^ installs python and its deps (into ~/.tea/python.org/v3.x.y)
+// ^^ installs python and its deps (into ~/.pkgx/python.org/v3.x.y)
 // ^^ runs the command
 // ^^ output goes to the terminal
 // ^^ throws on execution error or non-zero exit code
@@ -70,7 +56,7 @@ assert(status == 7);  // ^^ didn’t throw!
 > The run function’s options also takes `env` if you need to supplement or
 > replace the inherited environment (which is passed by default).
 
-Need a specific version of something? [tea][tea/cli] can install any version
+Need a specific version of something? [pkgx] can install any version
 of any package:
 
 ```ts
@@ -82,16 +68,16 @@ await run(["node^16", "-e", "console.log(process.version)"]);
 > preferable since shell quoting rules can be tricky. If you pass `string[]`
 > we execute the command directly rather than via `/bin/sh`.
 
-All of tea’s packages are relocatable so you can configure libtea to install
+All of pkgx’s packages are relocatable so you can configure pkgx to install
 wherever you want:
 
 ```ts
-import { hooks, Path, porcelain } from "tea";
+import { hooks, Path, porcelain } from "libpkgx";
 const { install } = porcelain;
 const { useConfig } = hooks;
 
 useConfig({ prefix: Path.home().join(".local/share/my-app") });
-// ^^ must be done **before** any other libtea calls
+// ^^ must be done **before** any other pkgx calls
 
 const go = await install("go.dev");
 // ^^ go.path = /home/you/.local/share/my-app/go.dev/v1.20.4
@@ -113,13 +99,13 @@ Perhaps what you create should go into the porcelain? If so, please open a PR.
 ### Logging
 
 Most functions take an optional `logger` parameter so you can output logging
-information if you so choose. `tea/cli` has a fairly sophisticated logger, so
+information if you so choose. `pkgx` (cli) has a fairly sophisticated logger, so
 go check that out if you want. For our porcelain functions we provide a simple
 debug-friendly logger (`ConsoleLogger`) that will output everything via
 `console.error`:
 
 ```ts
-import { porcelain, plumbing, utils } from "tea"
+import { porcelain, plumbing, utils } from "libpkgx"
 const { ConsoleLogger } = utils
 const { run } = porcelain
 
@@ -131,7 +117,7 @@ await run("youtube-dl youtu.be/xiq5euezOEQ", { logger }).exec()
 
 We have our own implementation of semver because open source has existed for
 decades and Semantic Versioning is much newer than that. Our implementation is
-quite compatible but not completely so. Use our semver with libtea.
+quite compatible but not completely so. Use our semver with libpkgx.
 Our implementation is 100% compatible with strings output from node’s own
 semver.
 
@@ -144,14 +130,14 @@ appreciate your help in fixing it.
 The plumbing has no magic. Libraries need well defined behavior.
 You’ll need to read the docs to use them effectively.
 
-libtea almost certainly will not work in a browser. Potentially it's possible.
+libpkgx almost certainly will not work in a browser. Potentially it's possible.
 The first step would be compiling our bottles to WASM. We could use your help
 with that…
 
 We use a hook-like pattern because it is great. This library is not itself
 designed for React.
 
-We support the same platforms as [tea/cli].
+We support the same platforms as [pkgx].
 
 ## What Packages are Available?
 
@@ -162,7 +148,7 @@ be an easy and enjoyable process. Your contribution is both welcome and
 desired!
 
 To see what is available refer to the [pantry] docs or you can run:
-`tea pkg search foo`.
+`pkgx pkg search foo`.
 
 &nbsp;
 
@@ -186,8 +172,8 @@ We would be thrilled to hear your ideas† or receive your pull requests.
 
 ## Anatomy
 
-The code is written with Deno (just like [tea/cli]) but is compiled to a
-node package for wider accessibility (and ∵ [tea/gui] is node/electron).
+The code is written with Deno (just like [pkgx]) but is compiled to a
+node package for wider accessibility (and ∵ [pkgx] is node/electron).
 
 The library is architected into hooks, plumbing and porcelain. Where the hooks
 represent the low level primitives of pkging, the plumbing glues those
@@ -199,7 +185,7 @@ friendly *façade* pattern for the plumbing.
 We would love to port this code to every language. We are deliberately keeping
 the scope *tight*. Probably we would prefer to have one repo per language.
 
-tea has sensible rules for how packages are defined and installed so writing
+pkgx has sensible rules for how packages are defined and installed so writing
 a port should be simple.
 
 We would love to explore how possible writing this in rust and then compiling
@@ -207,55 +193,11 @@ to WASM for all other languages would be. Can you help?
 
 Open a [discussion] to start.
 
-[discussion]: https://github.com/orgs/teaxyz/discussions
-[tea/cli]: https://github.com/teaxyz/cli
-[tea/gui]: https://github.com/teaxyz/gui
+[discussion]: https://github.com/orgs/pkgxdev/discussions
+[pkgx]: https://github.com/pkgxdev/pkgx
 [Deno]: https://deno.land
-[pantry]: https://github.com/teaxyz/pantry
+[pantry]: https://github.com/pkgxdev/pantry
 [plumbing]: ./plumbing/
 [porcelain]: ./porcelain/
-
-&nbsp;
-
-
-# Tasks
-
-Run eg. `xc coverage` or `xc bump patch`.
-
-## Coverage
-
-```sh
-deno task test --coverage=cov_profile
-deno coverage cov_profile --lcov --output=cov_profile.lcov
-tea genhtml -o cov_profile/html cov_profile.lcov
-open cov_profile/html/index.html
-```
-
-## Bump
-
-Bumps version by creating a pre-release which then engages the deployment
-infra in GitHub Actions.
-
-Inputs: LEVEL
-
-```sh
-if ! git diff-index --quiet HEAD --; then
-  echo "error: dirty working tree" >&2
-  exit 1
-fi
-
-if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
-  echo "error: requires main branch" >&2
-  exit 1
-fi
-
-git fetch origin --tags
-
-V=$(git describe --tags --abbrev=0 --match "v[0-9]*.[0-9]*.[0-9]*")
-V=$(tea semverator bump $V $LEVEL)
-
-git push origin main
-
-# not tagging with a version because deno.land will immutably publish it :/
-tea gh release create prerelease --prerelease --generate-notes --title "v$V"
-```
+[coverage]: https://coveralls.io/repos/github/pkgxdev/lib/badge.svg
+[coveralls]: https://coveralls.io/github/pkgxdev/lib

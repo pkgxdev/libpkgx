@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "deno/testing/asserts.ts"
+import { assertEquals, assertRejects } from "deno/assert/mod.ts"
 import SemVer, * as semver from "../utils/semver.ts"
 import { useTestConfig } from "./useTestConfig.ts"
 import install from "../plumbing/install.ts"
@@ -15,7 +15,7 @@ Deno.test("useCellar.resolve()", async () => {
   await useCellar().resolve({ project: "python.org", constraint: new semver.Range("^3") })
   await useCellar().resolve(installation.path)
 
-  assertRejects(() => useCellar().resolve({ project: "python.org", constraint: new semver.Range("@300")}))
+  await assertRejects(() => useCellar().resolve({ project: "python.org", constraint: new semver.Range("@300")}))
 })
 
 Deno.test("useCellar.has()", async () => {

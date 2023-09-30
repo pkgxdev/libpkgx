@@ -1,4 +1,4 @@
-import { assert, assertArrayIncludes } from "deno/testing/asserts.ts"
+import { assert, assertArrayIncludes } from "deno/assert/mod.ts"
 import { useTestConfig } from "../hooks/useTestConfig.ts"
 import type { Resolution } from "../plumbing/resolve.ts"
 import install, { ConsoleLogger } from "./install.ts"
@@ -7,27 +7,27 @@ import type { Package } from "../types.ts"
 
 Deno.test("porcelain.install.1", async () => {
   useTestConfig()
-  const installations = await install("tea.xyz/brewkit")
+  const installations = await install("darwinsys.com/file")
   const projects = new Set(installations.map(x => x.pkg.project))
-  assert(projects.has("tea.xyz/brewkit"))
+  assert(projects.has("darwinsys.com/file"))
 })
 
 Deno.test("porcelain.install.2", async () => {
   useTestConfig()
-  await install("tea.xyz/brewkit^0.32")
+  await install("darwinsys.com/file^5")
 })
 
 Deno.test("porcelain.install.3", async () => {
   useTestConfig()
-  const installations = await install(["tea.xyz/brewkit@0.31", "zlib.net"])
+  const installations = await install(["darwinsys.com/file@5.45", "zlib.net"])
   const projects = new Set(installations.map(x => x.pkg.project))
-  assert(projects.has("tea.xyz/brewkit"))
+  assert(projects.has("darwinsys.com/file"))
   assert(projects.has("zlib.net"))
 })
 
 Deno.test("porcelain.install.4", async () => {
   useTestConfig()
-    await install([{ project: 'tea.xyz/brewkit', constraint: new semver.Range("^0.31") }])
+    await install([{ project: 'darwinsys.com/file', constraint: new semver.Range("^5.45") }])
 })
 
 Deno.test("porcelain.install.resolved", async () => {
@@ -39,8 +39,8 @@ Deno.test("porcelain.install.resolved", async () => {
     resolved: (r: Resolution) => resolution = r
   }
 
-  await install("tea.xyz/brewkit^0.32", logger)
+  await install("curl.se", logger)
 
   const resolvedProjects = resolution.pkgs.map((p: Package) => p.project)
-  assertArrayIncludes(resolvedProjects, [ "deno.land", "gnu.org/bash", "tea.xyz", "tea.xyz/brewkit"])
+  assertArrayIncludes(resolvedProjects, [ "curl.se/ca-certs", "openssl.org", "curl.se"])
 })

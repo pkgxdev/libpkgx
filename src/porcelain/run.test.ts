@@ -1,4 +1,4 @@
-import { assertEquals, assertMatch, assertRejects } from "deno/testing/asserts.ts"
+import { assertEquals, assertMatch, assertRejects } from "deno/assert/mod.ts"
 import { useTestConfig } from "../hooks/useTestConfig.ts"
 import run from "./run.ts"
 

@@ -27,12 +27,12 @@ export default async function(logger?: Logger) {
   try {
     //TODO if there was already a lock, just wait on it, don’t do the following stuff
 
-    const git_dir = pantry_dir.parent().join("pantries/teaxyz/pantry")
+    const git_dir = pantry_dir.parent().join("pantries/pkgxdev/pantry")
 
     if (git_dir.join("HEAD").isFile()) {
       await git("-C", git_dir, "fetch", "--quiet", "origin", "--force", "main:main")
     } else {
-      await git("clone", "--quiet", "--bare", "--depth=1", "https://github.com/teaxyz/pantry", git_dir)
+      await git("clone", "--quiet", "--bare", "--depth=1", "https://github.com/pkgxdev/pantry", git_dir)
     }
 
     await git("--git-dir", git_dir, "--work-tree", pantry_dir, "checkout", "--quiet", "--force")
@@ -41,7 +41,7 @@ export default async function(logger?: Logger) {
     // git failure or no git installed
     // ∴ download the latest tarball and uncompress over the top
     //FIXME deleted packages will not be removed with this method
-    const src = new URL(`https://github.com/teaxyz/pantry/archive/refs/heads/main.tar.gz`)
+    const src = new URL(`https://github.com/pkgxdev/pantry/archive/refs/heads/main.tar.gz`)
     const proc = Deno.run({
       cmd: ["tar", "xz", "--strip-components=1"],
       cwd: pantry_dir.string,

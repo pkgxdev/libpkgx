@@ -1,8 +1,8 @@
-import * as tea from '@teaxyz/lib';
+import * as pkgx from 'libpkgx';
 import * as awsclijs from 'aws-cli-js';
 
 const { Options, Aws } = awsclijs
-const { porcelain: { install }, hooks: { useShellEnv } } = tea
+const { porcelain: { install }, hooks: { useShellEnv } } = pkgx
 
 const opts = new Options(process.env.AWS_ACCESS_KEY_ID, process.env.AWS_SECRET_ACCESS_KEY)
 
