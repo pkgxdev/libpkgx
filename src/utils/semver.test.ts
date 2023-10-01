@@ -239,8 +239,16 @@ Deno.test("semver", async test => {
 
     await test.step("^0 string is not @0.0.0", () => {
       const a = new semver.Range("^0")
-      console.log(JSON.stringify(a))
       assertEquals(a.toString(), "^0")
+
+      const b = new semver.Range("^0.0")
+      assertEquals(b.toString(), "~0.0") //NOTE strictly should be ~0.0 but this is fine
+
+      const c = new semver.Range("^1")
+      assertEquals(c.toString(), "^1")
+
+      const d = new semver.Range("^1.0")
+      assertEquals(d.toString(), "^1")
     })
 
     //FIXME this *should* work
