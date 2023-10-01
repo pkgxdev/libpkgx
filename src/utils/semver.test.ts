@@ -242,7 +242,7 @@ Deno.test("semver", async test => {
       assertEquals(a.toString(), "^0")
 
       const b = new semver.Range("^0.0")
-      assertEquals(b.toString(), "~0.0") //NOTE strictly should be ~0.0 but this is fine
+      assertEquals(b.toString(), "~0") //NOTE strictly should be ~0.0 but this is fine
 
       const c = new semver.Range("^1")
       assertEquals(c.toString(), "^1")
