@@ -60,7 +60,7 @@ export default async function link(pkg: Package | Installation) {
 
       await Deno.symlink(
         installation.path.basename(),  // makes it relative
-        shelf.join(symname).rm().string,
+        shelf.join(symname).rm({ recursive: true }).string,
         {type: 'dir'})
       } catch (err) {
         if (err instanceof Deno.errors.AlreadyExists || err.code === 'EEXIST') {
