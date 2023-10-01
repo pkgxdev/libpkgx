@@ -5,6 +5,8 @@ import SemVer from "../src/utils/semver.ts";
 
 await emptyDir("./dist");
 
+const test = !Deno.args.includes("--no-test");
+
 const version = (() => {
   try {
     return new SemVer(Deno.args[0]).toString();
@@ -17,6 +19,7 @@ const version = (() => {
 await build({
   entryPoints: ["./mod.ts"],
   outDir: "./dist",
+  test,
   shims: {
     deno: true,
     crypto: true,

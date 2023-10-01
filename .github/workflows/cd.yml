@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pkgxdev/dev@v0
 
-      - run: deno task dnt ${{ inputs.version }}
+      - run: deno task dnt ${{ inputs.version }} --no-test
 
       - run: |
           mv dist libpkgx-${{inputs.version}}
@@ -45,9 +45,8 @@ jobs:
         run:
           gh release upload
             --clobber
+            v${{ inputs.version }}
             libpkgx-${{ inputs.version }}.tar.xz
         env:
-          # using this token rather than github.token due to `release not found` bug
-          # https://github.com/cli/cli/issues/5252
-          GH_TOKEN: ${{ secrets.TEMP_JACOBS_GITHUB_PAT }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_REPO: pkgxdev/libpkgx

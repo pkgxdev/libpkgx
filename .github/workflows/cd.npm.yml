@@ -6,7 +6,7 @@ on:
       - published
 
 concurrency:
-  group: cd/vx/${{ github.event.release.tag_name }}
+  group: cd/npm/${{ github.event.release.tag_name }}
   cancel-in-progress: true
 
 permissions:
