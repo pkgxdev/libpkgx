@@ -26,8 +26,8 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
   const shelf = PKGX_DIR.join(pkg.project)
 
   logger?.locking?.(pkg)
-  const { rid: fd } = await Deno.open(shelf.mkdir('p').string)
-  await flock(fd, 'ex')
+
+  const unflock = await flock(shelf.mkdir('p'))
 
   try {
     const already_installed = await cellar.has(pkg)
@@ -40,18 +40,21 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
 
     logger?.downloading?.({pkg})
 
+    const PATH = Deno.build.os == 'windows' ? "C:\\windows\\system32" : "/usr/bin:/bin"
+
     const tmpdir = Path.mktemp({
+      //TODO dir should not be here ofc
       dir: PKGX_DIR.join(".local/tmp").join(pkg.project),
       prefix: `v${pkg.version}.`
       //NOTE ^^ inside pkgx prefix to avoid TMPDIR is on a different volume problems
     })
-    const tar_args = compression == 'xz' ? 'xJ' : 'xz'  // laughably confusing
+    const tar_args = compression == 'xz' ? 'xJf' : 'xzf'  // laughably confusing
     const untar = Deno.run({
-      cmd: ["tar", tar_args, "--strip-components", (pkg.project.split("/").length + 1).toString()],
+      cmd: ["tar", tar_args, "-", "--strip-components", (pkg.project.split("/").length + 1).toString()],
       stdin: 'piped', stdout: "inherit", stderr: "inherit",
       cwd: tmpdir.string,
       /// hard coding path to ensure we don’t deadlock trying to use ourselves to untar ourselves
-      env: { PATH: "/usr/bin:/bin" }
+      env: { PATH }
     })
     const hasher = createHash("sha256")
     const remote_SHA_promise = remote_SHA(new URL(`${url}.sha256sum`))
@@ -101,8 +104,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     throw err
   } finally {
     logger?.unlocking?.(pkg)
-    await flock(fd, 'un')
-    Deno.close(fd)  // docs aren't clear if we need to do this or not
+    await unflock()
   }
 }
 

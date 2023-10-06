@@ -2,6 +2,8 @@ import { useTestConfig } from "./useTestConfig.ts"
 import { assert } from "deno/assert/mod.ts"
 import useDownload from "./useDownload.ts"
 
+//TODO don’t actually do http obv.
+
 Deno.test("etag-mtime-check", async runner => {
   useTestConfig({ PKGX_DIR: Deno.makeTempDirSync() })
 

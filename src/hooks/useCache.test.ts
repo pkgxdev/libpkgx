@@ -1,12 +1,12 @@
 import { Stowage, StowageNativeBottle } from "../types.ts"
+import { useTestConfig } from "./useTestConfig.ts"
 import { assertEquals } from "deno/assert/mod.ts"
 import SemVer from "../utils/semver.ts"
-import useConfig from "./useConfig.ts"
 import useCache from "./useCache.ts"
 import host from "../utils/host.ts"
 
 Deno.test("useCache", () => {
-  const { cache } = useConfig()
+  const { cache } = useTestConfig()
   const hw = (({ platform, arch }) => `${platform}+${arch}`)(host())
 
   const stowage = StowageNativeBottle({

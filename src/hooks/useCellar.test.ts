@@ -1,14 +1,15 @@
 import { assertEquals, assertRejects } from "deno/assert/mod.ts"
 import SemVer, * as semver from "../utils/semver.ts"
 import { useTestConfig } from "./useTestConfig.ts"
-import install from "../plumbing/install.ts"
 import useCellar from "./useCellar.ts"
 
 Deno.test("useCellar.resolve()", async () => {
   useTestConfig()
 
-  const pkgrq = { project: "python.org", version: new SemVer("3.11.3")}
-  const installation = await install(pkgrq)
+  const pkg = { project: "python.org", version: new SemVer("3.11.3") }
+  const path = useCellar().shelf(pkg.project).join(`v${pkg.version}`).mkdir('p')
+  path.join("cant-be-empty").touch()
+  const installation = { pkg, path }
 
   await useCellar().resolve(installation)
   await useCellar().resolve(installation.pkg)
@@ -21,11 +22,13 @@ Deno.test("useCellar.resolve()", async () => {
 Deno.test("useCellar.has()", async () => {
   useTestConfig()
 
-  const rq = { project: "beyondgrep.com", version: new SemVer("3.6.0") }
+  const pkg = { project: "beyondgrep.com", version: new SemVer("3.6.0") }
 
-  assertEquals(await useCellar().has(rq), undefined)
+  assertEquals(await useCellar().has(pkg), undefined)
 
-  const installation = await install(rq)
+  const path = useCellar().shelf(pkg.project).join(`v${pkg.version}`).mkdir('p')
+  path.join("cant-be-empty").touch()
+  const installation = { pkg, path }
 
-  assertEquals(await useCellar().has(rq), installation)
+  assertEquals(await useCellar().has(pkg), installation)
 })

@@ -23,6 +23,7 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
+          - windows-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -60,7 +61,13 @@ jobs:
       - run: deno run --no-config --unstable src/mod.ts
 
   dnt:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v1
@@ -71,6 +78,7 @@ jobs:
           npm start
         working-directory:
           fixtures/npm-integration-test
+        if: ${{ matrix.os != 'windows-latest' }}  # can't test on Windows yet, we have no pkgs
 
   lint:
     runs-on: ubuntu-latest

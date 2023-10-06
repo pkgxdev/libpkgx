@@ -3,7 +3,7 @@ import { mkdtempSync } from "node:fs"
 import * as sys from "node:path"
 import * as os from "node:os"
 
-const { io: { readLines }, fs, parseYaml } = deno
+const { io: { readLines }, fs, parseYaml, SEP } = deno
 
 // modeled after https://github.com/mxcl/Path.swift
 
@@ -13,6 +13,11 @@ const { io: { readLines }, fs, parseYaml } = deno
 //     await (await foo).bar
 //
 // however we use async versions for “terminators”, eg. `ls()`
+
+
+//NOTE not considered good for general consumption on Windows at this time
+// generally we try to workaround unix isms and there are some quirks
+
 
 export default class Path {
   /// the normalized string representation of the underlying filesystem path
@@ -42,14 +47,45 @@ export default class Path {
   constructor(input: string | Path) {
     if (input instanceof Path) {
       this.string = input.string
-    } else if (!input || input[0] != '/') {
+      return
+    }
+
+    if (!input) {
       throw new Error(`invalid absolute path: ${input}`)
-    } else {
-      this.string = sys.normalize(input)
-      // ^^ seemingly doesn’t normalize trailing slashes away
-      if (this.string != "/") while (this.string.endsWith("/")) {
-        this.string = this.string.slice(0, -1)
+    }
+
+    if (Deno.build.os == 'windows') {
+      if (!input.match(/^[a-zA-Z]:/)) {
+        if (!input.startsWith("/") && !input.startsWith("\\")) {
+          throw new Error(`invalid absolute path: ${input}`)
+        }
+        //TODO shouldn’t be C: necessarily
+        // should it be based on PWD or system default drive?
+        // NOTE also: maybe we shouldn't do this anyway?
+        input = `C:\\${input}`
       }
+      input = input.replace(/\//g, '\\')
+    } else if (input[0] != '/') {
+      throw new Error(`invalid absolute path: ${input}`)
+    }
+
+    this.string = normalize(input)
+
+    function normalize(path: string): string {
+      const segments = path.split(SEP);
+      const result = [];
+
+      const start = Deno.build.os == 'windows' ? (segments.shift() ?? 'C:') + '\\' : '/'
+
+      for (const segment of segments) {
+        if (segment === '..') {
+          result.pop();
+        } else if (segment !== '.' && segment !== '') {
+          result.push(segment);
+        }
+      }
+
+      return start + result.join(SEP);
     }
   }
 
@@ -106,13 +142,20 @@ export default class Path {
   /// rationale: usually if you are trying to join an absolute path it is a bug in your code
   /// TODO should warn tho
   join(...components: string[]): Path {
-    const joined = components.filter(x => x).join("/")
-    if (joined[0] == '/') {
+    const joined = components.filter(x => x).join(SEP)
+    if (isAbsolute(joined)) {
       return new Path(joined)
     } else if (joined) {
-      return new Path(`${this.string}/${joined}`)
+      return new Path(`${this.string}${SEP}${joined}`)
     } else {
       return this
+    }
+    function isAbsolute(part: string) {
+      if (Deno.build.os == 'windows' && part?.match(/^[a-zA-Z]:/)) {
+        return true
+      } else {
+        return part.startsWith('/')
+      }
     }
   }
 
@@ -156,8 +199,14 @@ export default class Path {
 
   isReadableFile(): Path | undefined {
     try {
-      const {mode, isFile} = Deno.statSync(this.string)
-      if (isFile && mode && mode & 0o400) {
+      if (Deno.build.os != 'windows') {
+        const {mode, isFile} = Deno.statSync(this.string)
+        if (isFile && mode && mode & 0o400) {
+          return this
+        }
+      } else {
+        //FIXME not particularly efficient lol
+        Deno.openSync(this.string, { read: true }).close();
         return this
       }
     } catch {
@@ -212,7 +261,7 @@ export default class Path {
   }
 
   components(): string[] {
-    return this.string.split('/')
+    return this.string.split(SEP)
   }
 
   static mktemp(opts?: { prefix?: string, dir?: Path }): Path {
@@ -274,8 +323,8 @@ export default class Path {
 
   //FIXME operates in ”force” mode
   //TODO needs a recursive option
-  cp({into}: {into: Path}): Path {
-    const dst = into.join(this.basename())
+  cp(opts: {into: Path} | {to: Path}): Path {
+    const dst = 'into' in opts ? opts.into.join(this.basename()) : opts.to
     Deno.copyFileSync(this.string, dst.string)
     return dst
   }
@@ -377,7 +426,9 @@ export default class Path {
   }
 
   chmod(mode: number): Path {
-    Deno.chmodSync(this.string, mode)
+    if (Deno.build.os != 'windows') {
+      Deno.chmodSync(this.string, mode)
+    }
     return this
   }
 
@@ -386,11 +437,20 @@ export default class Path {
   }
 
   relative({ to: base }: { to: Path }): string {
-    const pathComps = ['/'].concat(this.string.split("/").filter(x=>x))
-    const baseComps = ['/'].concat(base.string.split("/").filter(x=>x))
+    const pathComps = this.string.split(SEP)
+    const baseComps = base.string.split(SEP)
+
+    if (Deno.build.os == "windows") {
+      if (pathComps[0] != baseComps[0]) {
+        throw new Error("can't compute relative path between paths on different drives")
+      }
+    }
+
+    pathComps[0] = SEP
+    baseComps[0] = SEP
 
     if (this.string.startsWith(base.string)) {
-      return pathComps.slice(baseComps.length).join("/")
+      return pathComps.slice(baseComps.length).join(SEP)
     } else {
       const newPathComps = [...pathComps]
       const newBaseComps = [...baseComps]
@@ -402,7 +462,7 @@ export default class Path {
 
       const relComps = Array.from({ length: newBaseComps.length } , () => "..")
       relComps.push(...newPathComps)
-      return relComps.join("/")
+      return relComps.join(SEP)
     }
   }
 
@@ -411,7 +471,12 @@ export default class Path {
   }
 
   prettyString(): string {
-    return this.string.replace(new RegExp(`^${Path.home()}`), '~')
+    const home = Path.home().string
+    if (this.string.startsWith(home)) {
+      return '~' + this.string.slice(home.length)
+    } else {
+      return this.string
+    }
   }
 
   // if we’re inside the CWD we print that

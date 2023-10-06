@@ -1,6 +1,5 @@
 import { Stowage } from "../types.ts"
 import host from "../utils/host.ts"
-import Path from "../utils/Path.ts"
 
 type Type = 's3'
 
@@ -9,10 +8,10 @@ export default function useOffLicense(_type: Type) {
 }
 
 function key(stowage: Stowage) {
-  let rv = Path.root.join(stowage.pkg.project)
+  const rv = [stowage.pkg.project]
   if (stowage.type == 'bottle') {
     const { platform, arch } = stowage.host ?? host()
-    rv = rv.join(`${platform}/${arch}`)
+    rv.push(`${platform}/${arch}`)
   }
   let fn = `v${stowage.pkg.version}`
   if (stowage.type == 'bottle') {
@@ -20,7 +19,8 @@ function key(stowage: Stowage) {
   } else {
     fn +=  stowage.extname
   }
-  return rv.join(fn).string.slice(1)
+  rv.push(fn)
+  return rv.join("/")
 }
 
 function url(stowage: Stowage) {

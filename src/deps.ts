@@ -13,10 +13,11 @@ import { moveSync } from "https://deno.land/std@0.196.0/fs/move.ts"
 import { readLines } from "https://deno.land/std@0.196.0/io/read_lines.ts"
 import { writeAll } from "https://deno.land/std@0.196.0/streams/write_all.ts"
 import { parse as parseYaml } from "https://deno.land/std@0.196.0/yaml/parse.ts"
+import { SEP } from "https://deno.land/std@0.196.0/path/mod.ts"
 
 const streams = { writeAll }
 const io = { readLines }
 const fs = { moveSync }
-const deno = { readLines, crypto, fs, io, streams, parseYaml }
+const deno = { readLines, crypto, fs, io, streams, parseYaml, SEP }
 
 export { deno }

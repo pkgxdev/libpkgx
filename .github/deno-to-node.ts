@@ -49,7 +49,10 @@ await build({
     },
     dependencies: {
       "is-what": "^4",
-      "outdent": "^0.8",
+      "outdent": "^0.8"
+    },
+    devDependencies: {
+      "@types/proper-lockfile": "^4.1.3",
     },
     exports: {
       "./src/src/utils/semver": {

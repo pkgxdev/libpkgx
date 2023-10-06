@@ -330,6 +330,12 @@ export function expand_env_obj(env_: PlainObject, pkg: Package, deps: Installati
       value = transform(value)
     }
 
+    if (Deno.build.os == 'windows') {
+      // we standardize on UNIX directory separators
+      // NOTE hopefully this won’t break anything :/
+      value = value.replaceAll('/', '\\')
+    }
+
     rv[key] = value
   }
 

@@ -26,9 +26,11 @@ function platform_cache_default() {
   }
 }
 
+const SEP = Deno.build.os == 'windows' ? ';' : ':'
+
 export function ConfigDefault(env = Deno.env.toObject()): Config {
   const prefix = flatmap(env['PKGX_DIR']?.trim(), x => new Path(x)) ?? Path.home().join('.pkgx')
-  const pantries = env['PKGX_PANTRY_PATH']?.split(":").compact(x => flatmap(x.trim(), x => Path.abs(x) ?? Path.cwd().join(x))) ?? []
+  const pantries = env['PKGX_PANTRY_PATH']?.split(SEP).compact(x => flatmap(x.trim(), x => Path.abs(x) ?? Path.cwd().join(x))) ?? []
   const cache = (flatmap(env["XDG_CACHE_HOME"], x => new Path(x)) ?? platform_cache_default()).join("pkgx")
   const isCI = boolize(env['CI']) ?? false
   const UserAgent = flatmap(getv(), v => `libpkgx/${v}`) ?? 'libpkgx'

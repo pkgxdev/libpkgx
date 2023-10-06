@@ -146,9 +146,10 @@ export function expand(env: Record<string, string[]>) {
 }
 
 export function flatten(env: Record<string, string[]>) {
+  const SEP = Deno.build.os == 'windows' ? ';' : ':'
   const rv: Record<string, string> = {}
   for (const [key, value] of Object.entries(env)) {
-    rv[key] = value.join(":")
+    rv[key] = value.join(SEP)
   }
   return rv
 }

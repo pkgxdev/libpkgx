@@ -111,8 +111,6 @@ async function the_meat<T>({ src, logger, headers, dst }: DownloadOptions): Prom
     }
   }
 
-  if (logger) logger({ src, dst })
-
   const rsp = await useFetch(src, { headers })
 
   switch (rsp.status) {

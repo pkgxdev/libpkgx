@@ -2,7 +2,11 @@ import { assert, assertEquals, assertThrows, fail } from "deno/assert/mod.ts"
 import host, { _internals, SupportedPlatform } from "./host.ts"
 import { stub } from "deno/testing/mock.ts"
 
-Deno.test("host()", async () => {
+Deno.test({
+  name:"host()",
+  ignore: Deno.build.os == 'windows',
+  async fn()
+{
   const uname = [await run("uname"), await run("uname -m")]
 
   const { platform, arch } = host()
@@ -37,6 +41,15 @@ Deno.test("host()", async () => {
     const out = await proc.output()
     proc.close()
     return new TextDecoder().decode(out).trim()
+  }
+}})
+
+Deno.test({
+  name: "host()",
+  ignore: Deno.build.os != 'windows',
+  fn() {
+    assertEquals(host().platform, "windows")
+    assertEquals(host().arch, "x86-64")
   }
 })
 
