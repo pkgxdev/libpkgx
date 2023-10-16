@@ -6,6 +6,8 @@ on:
       - deno.json
       - '**/*.ts'
       - .github/workflows/ci.yml
+  push:
+    branches: main
   workflow_dispatch:
 
 concurrency:
