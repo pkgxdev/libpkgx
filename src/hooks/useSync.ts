@@ -78,7 +78,8 @@ export interface RunOptions {
 
 async function run(opts: RunOptions) {
   const cmd = opts.cmd.map(x => `${x}`)
-  const proc = Deno.run({ ...opts, cmd, stdout: 'null', clearEnv: true })
+  const env = (({ HTTP_PROXY, HTTPS_PROXY }) => ({ HTTP_PROXY, HTTPS_PROXY }))(Deno.env.toObject())
+  const proc = Deno.run({ ...opts, cmd, stdout: 'null', clearEnv: true, env })
   try {
     const exit = await proc.status()
     if (!exit.success) throw new Error(`run.exit(${exit.code})`)
