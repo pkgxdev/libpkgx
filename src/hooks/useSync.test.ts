@@ -3,28 +3,35 @@ import { assert } from "deno/assert/mod.ts"
 import usePantry from "./usePantry.ts"
 import useSync from "./useSync.ts"
 
+// NOTE actually syncs from github
+// TODO unit tests should not do actual network calls, instead make an implementation suite
+
 Deno.test("useSync", async runner => {
   await runner.step("w/o git", async () => {
-    const PKGX_DIR = Deno.makeTempDirSync()
-    const conf = useTestConfig({ PKGX_DIR, HOME: `${PKGX_DIR}/home` })
+    const conf = useTestConfig({})
+    usePantry().prefix.rm({ recursive: true })  // we need to delete the fixtured pantry
     assert(conf.git === undefined)
     await test()
   })
 
-  await runner.step("w/git", async () => {
-    const PKGX_DIR = Deno.makeTempDirSync()
-    const conf = useTestConfig({ PKGX_DIR, HOME: `${PKGX_DIR}/home`, PATH: "/usr/bin" })
-    assert(conf.git !== undefined)
-    await test()
+  await runner.step({
+    name: "w/git",
+    ignore: Deno.build.os == 'windows' && !Deno.env.get("CI"),
+    async fn() {
+      const conf = useTestConfig({ PATH: "/usr/bin" })
+      usePantry().prefix.rm({ recursive: true })  // we need to delete the fixtured pantry
+      assert(conf.git !== undefined)
+      await test()
 
-    // test the “already cloned” code-path
-    await useSync()
+      // test the “already cloned” code-path
+      await useSync()
+    }
   })
 
   async function test() {
     let errord = false
     try {
-      await usePantry().project("python.org").available()
+      await usePantry().project("gnu.org/gcc").available()
     } catch {
       errord = true
     }
@@ -32,6 +39,6 @@ Deno.test("useSync", async runner => {
 
     await useSync()
 
-    assert(await usePantry().project("python.org").available())
+    assert(await usePantry().project("gnu.org/gcc").available())
   }
 })

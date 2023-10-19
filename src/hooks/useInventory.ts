@@ -3,7 +3,6 @@ import { DownloadError } from "./useDownload.ts"
 import SemVer from "../utils/semver.ts"
 import useFetch from "./useFetch.ts"
 import host from "../utils/host.ts"
-import Path from "../utils/Path.ts"
 import "../utils/misc.ts"
 
 export interface Inventory {
@@ -26,10 +25,7 @@ const select = async (rq: PackageRequirement | Package) => {
 
 const get = async (rq: PackageRequirement | Package) => {
   const { platform, arch } = host()
-
-  const url = new URL('https://dist.pkgx.dev')
-  url.pathname = Path.root.join(rq.project, platform, arch, 'versions.txt').string
-
+  const url = new URL(`https://dist.pkgx.dev/${rq.project}/${platform}/${arch}/versions.txt`)
   const rsp = await useFetch(url)
 
   if (!rsp.ok) {

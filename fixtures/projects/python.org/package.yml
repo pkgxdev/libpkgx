@@ -1,0 +1,9 @@
+provides:
+  - bin/python
+
+interprets:
+  extensions: py
+  args: python
+
+platforms:
+  - darwin

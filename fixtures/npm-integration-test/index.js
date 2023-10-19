@@ -4,5 +4,4 @@ const { ConsoleLogger } = require("libpkgx/plumbing/install")
 
 console.log(ConfigDefault(), ConsoleLogger())
 
-run("ls -la")
-
+run("ls -h")

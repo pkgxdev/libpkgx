@@ -1,9 +1,11 @@
 import { assert, assertEquals, assertFalse, assertThrows } from "deno/assert/mod.ts"
+import { SEP } from "deno/path/mod.ts"
 import Path from "./Path.ts"
 
 Deno.test("test Path", async test => {
   await test.step("creating files", () => {
-    assertEquals(new Path("/a/b/c").components(), ["", "a", "b", "c"])
+    const start = Deno.build.os == 'windows' ? 'C:' : ''
+    assertEquals(new Path("/a/b/c").components(), [start, "a", "b", "c"])
     assertEquals(new Path("/a/b/c").split(), [new Path("/a/b"), "c"])
 
     const tmp = Path.mktemp({prefix: "pkgx-"})
@@ -21,10 +23,12 @@ Deno.test("test Path", async test => {
 
     assert(child.string.startsWith(tmp.string))
     assertFalse(tmp.isEmpty())
-    assertEquals(child.readlink(), child) // not a link
+    if (Deno.build.os != 'windows') {
+      assertEquals(child.readlink(), child) // not a link
+    }
 
-
-    assertEquals(new Path("/").string, "/")
+    const rs = Deno.build.os === "windows" ? "C:\\" : '/'
+    assertEquals(new Path("/").string, rs)
   })
 
   await test.step("write and read", async () => {
@@ -80,13 +84,17 @@ Deno.test("test Path", async test => {
     ])
   })
 
-  await test.step("test symlink created", () => {
-    const tmp = Path.mktemp({prefix: "pkgx-"}).join("foo").mkdir()
-    const a = tmp.join("a").touch()
-    const b = tmp.join("b")
-    b.ln('s', { target: a })
-    assertEquals(b.readlink(), a)
-    assert(b.isSymlink())
+  await test.step({
+    name: "test symlink created",
+    ignore: Deno.build.os == "windows",
+    fn() {
+      const tmp = Path.mktemp({prefix: "pkgx-"}).join("foo").mkdir()
+      const a = tmp.join("a").touch()
+      const b = tmp.join("b")
+      b.ln('s', { target: a })
+      assertEquals(b.readlink(), a)
+      assert(b.isSymlink())
+    }
   })
 })
 
@@ -96,10 +104,11 @@ Deno.test("Path.cwd", () => {
 })
 
 Deno.test("normalization", () => {
-  assertEquals(new Path("/a/b/").string, "/a/b")
-  assertEquals(new Path("/a/b////").string, "/a/b")
-  assertEquals(new Path("/a/b").string, "/a/b")
-  assertEquals(new Path("/a////b").string, "/a/b")
+  const start = Deno.build.os == 'windows' ? 'C:\\' : SEP
+  assertEquals(new Path("/a/b/").string, `${start}a${SEP}b`)
+  assertEquals(new Path("/a/b////").string, `${start}a${SEP}b`)
+  assertEquals(new Path("/a/b").string, `${start}a${SEP}b`)
+  assertEquals(new Path("/a////b").string, `${start}a${SEP}b`)
 })
 
 Deno.test("new Path(Path)", () => {
@@ -113,14 +122,18 @@ Deno.test("Path.join()", () => {
   assert(path.eq(path.join()))
 })
 
-Deno.test("Path.isExecutableFile()", () => {
-  const tmp = Path.mktemp({prefix: "pkgx-"}).mkdir()
-  const executable = tmp.join("executable").touch()
-  executable.chmod(0o755)
-  const notExecutable = tmp.join("not-executable").touch()
+Deno.test({
+  name: "Path.isExecutableFile()",
+  ignore: Deno.build.os == "windows",
+  fn() {
+    const tmp = Path.mktemp({prefix: "pkgx-"}).mkdir()
+    const executable = tmp.join("executable").touch()
+    executable.chmod(0o755)
+    const notExecutable = tmp.join("not-executable").touch()
 
-  assert(executable.isExecutableFile())
-  assertFalse(notExecutable.isExecutableFile())
+    assert(executable.isExecutableFile())
+    assertFalse(notExecutable.isExecutableFile())
+  }
 })
 
 Deno.test("Path.extname()", () => {
@@ -162,23 +175,28 @@ Deno.test("Path.cp()", () => {
 Deno.test("Path.relative()", () => {
   const a = new Path("/home/user/file.txt")
   const b = new Path("/home/user/dir")
-  assertEquals(a.relative({ to: b }), "../file.txt")
-  assertEquals(b.relative({ to: a }), "../dir")
+  assertEquals(a.relative({ to: b }), `..${SEP}file.txt`)
+  assertEquals(b.relative({ to: a }), `..${SEP}dir`)
 })
 
-Deno.test("Path.realpath()", () => {
-  const tmp = Path.mktemp({prefix: "pkgx-"}).mkdir()
-  const a = tmp.join("a").touch()
-  const b = tmp.join("b").ln('s', { target: a })
+Deno.test({
+  name: "Path.realpath()",
+  ignore: Deno.build.os == "windows",
+  fn() {
+    const tmp = Path.mktemp({prefix: "pkgx-"}).mkdir()
+    const a = tmp.join("a").touch()
+    const b = tmp.join("b").ln('s', { target: a })
 
-  assertEquals(b.realpath(), a.realpath())
+    assertEquals(b.realpath(), a.realpath())
+  }
 })
 
 Deno.test("Path.prettyLocalString()", () => {
   const path = Path.home().join(".config/pkgx/config.toml")
-  assertEquals(path.prettyLocalString(), "~/.config/pkgx/config.toml")
+  assertEquals(path.prettyLocalString(), `~${SEP}.config${SEP}pkgx${SEP}config.toml`)
 
-  assertEquals(new Path("/a/b").prettyLocalString(), "/a/b")
+  const root = Deno.build.os == 'windows' ? 'C:\\' : '/'
+  assertEquals(new Path("/a/b").prettyLocalString(), `${root}a${SEP}b`)
 })
 
 Deno.test("Path.chuzzle()", () => {
@@ -212,4 +230,24 @@ Deno.test("ctor throws", () => {
   assertThrows(() => new Path("   "))
   assertThrows(() => new Path("   \n    "))
   assertThrows(() => new Path("    /   "))
+})
+
+Deno.test({
+  name: "dirname",
+  ignore: Deno.build.os != "windows",
+  fn() {
+    const p = new Path("Y:\\")
+    assertEquals(p.string, "Y:\\")
+    assertEquals(p.parent().string, "Y:\\")
+    assertEquals(p.parent().parent().parent().string, "Y:\\")
+  }
+})
+
+Deno.test("join roots", () => {
+  if (Deno.build.os == "windows") {
+    assertEquals(new Path("C:\\foo").join("D:\\bar").string, "D:\\bar")
+    assertEquals(new Path("C:").join("D:\\bar\baz").string, "D:\\bar\baz")
+  } else {
+    assertEquals(new Path("/foo").join("/bar").string, "/bar")
+  }
 })

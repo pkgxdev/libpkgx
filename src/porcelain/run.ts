@@ -8,8 +8,8 @@ import { spawn } from "node:child_process"
 import useSync from "../hooks/useSync.ts"
 import which from "../plumbing/which.ts"
 import link from "../plumbing/link.ts"
-import Path from "../utils/Path.ts"
 import { is_what } from "../deps.ts"
+import Path from "../utils/Path.ts"
 const { isArray } = is_what
 
 interface OptsEx {
@@ -44,6 +44,10 @@ export default async function run(cmd: Cmd, opts?: Options): Promise<void|{ stdo
       if (i == -1) {
         cmd = []
         return { usesh: false, arg0: s }
+      } else if (Deno.build.os == 'windows') {
+        cmd = cmd.split(/\s+/)
+        const arg0 = cmd.shift()! as string
+        return { usesh: false, arg0 }
       } else {
         const arg0 = s.slice(0, i)
         cmd = s.slice(i + 1)
@@ -72,7 +76,12 @@ export default async function run(cmd: Cmd, opts?: Options): Promise<void|{ stdo
         "pipe",
         opts?.stdout ? 'pipe' : 'inherit',
         opts?.stderr ? 'pipe' : 'inherit'
-      ]
+      ],
+      /// on windows .bat files are not executable unless invoked via a shell
+      /// our provides database deliberately excludes `.bat` so that the same
+      /// filename is used for all platforms, this works since provided we use
+      /// a shell to execute, we don’t need to know the extension
+      shell: Deno.build.os == 'windows'
     })
 
     let stdout = '', stderr = ''
@@ -94,6 +103,7 @@ export default async function run(cmd: Cmd, opts?: Options): Promise<void|{ stdo
 async function setup(cmd: string, env: Record<string, string | undefined>, logger: Logger | undefined) {
   const pantry = usePantry()
   const sh = useShellEnv()
+  const { install, link } = _internals
 
   if (pantry.missing() || pantry.neglected()) {
     await useSync()
@@ -135,4 +145,9 @@ export class RunError extends PkgxError {
     super(message)
     this.code = code
   }
+}
+
+const _internals = {
+  install,
+  link
 }

@@ -4,3 +4,6 @@ runtime:
 
 dependencies:
   bar.com: ^1
+
+provides:
+  - bin/foo

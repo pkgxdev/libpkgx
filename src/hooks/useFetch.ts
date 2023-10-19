@@ -7,5 +7,14 @@ export default function useFetch(input: string | URL | Request, init?: RequestIn
   if (UserAgent) {
     requestInit.headers = { ...requestInit.headers, "User-Agent": UserAgent }
   }
-  return fetch(input, requestInit)
+  return _internals.fetch(input, requestInit)
+}
+
+// wrapped or DNT chokes on typechecking
+function chew(input: string | URL | Request, init?: RequestInit | undefined): Promise<Response> {
+  return fetch(input, init)
+}
+
+export const _internals = {
+  fetch: chew
 }

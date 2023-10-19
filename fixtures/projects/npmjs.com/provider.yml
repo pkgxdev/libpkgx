@@ -1,0 +1,6 @@
+cmds:
+  - truffle
+  - chalk
+args:
+  chalk: npx --yes --package=chalk-cli --
+  ...: [npx, --yes, --]

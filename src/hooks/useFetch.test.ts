@@ -1,31 +1,29 @@
 import { stub, assertSpyCallArgs } from "deno/testing/mock.ts"
-import useConfig, { _internals, ConfigDefault } from "./useConfig.ts"
-import useFetch from "./useFetch.ts"
+import { useTestConfig } from "./useTestConfig.ts";
+import useFetch, { _internals } from "./useFetch.ts"
 
 
-Deno.test("fetch user-agent header check", async () => {
-  /// doesn't work inside DNT because fetch is shimmed to undici
-  if (Deno.env.get("NODE")) return
+Deno.test({
+  name: "fetch user-agent header check",
+  async fn() {
+    const UserAgent = "tests/1.2.3"
+    useTestConfig({ UserAgent })
 
-  const UserAgent = "tests/1.2.3"
+    const url = "https://example.com";
+    const fetchStub = stub(
+      _internals,
+      "fetch",
+      () => Promise.resolve(new Response("")),
+    );
 
-  _internals.reset()
-  useConfig({...ConfigDefault(), UserAgent});
+    try {
+      await useFetch(url, {});
+    } finally {
+      fetchStub.restore();
+    }
 
-  const url = "https://example.com";
-  const fetchStub = stub(
-    globalThis,
-    "fetch",
-    () => Promise.resolve(new Response("")),
-  );
-
-  try {
-    await useFetch(url, {});
-  } finally {
-    fetchStub.restore();
+    assertSpyCallArgs(fetchStub, 0, [url, {
+      headers: {"User-Agent": UserAgent}
+    }]);
   }
-
-  assertSpyCallArgs(fetchStub, 0, [url, {
-    headers: {"User-Agent": UserAgent}
-  }]);
 });

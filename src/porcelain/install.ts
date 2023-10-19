@@ -29,6 +29,8 @@ export function ConsoleLogger(prefix?: any): Logger {
 /// eg. install("python.org~3.10")
 export default async function(pkgs: PackageSpecification[] | string[] | string, logger?: Logger): Promise<Installation[]> {
 
+  const { hydrate, resolve, install, link, useSync } = _internals
+
   if (isString(pkgs)) pkgs = pkgs.split(/\s+/)
   pkgs = pkgs.map(pkg => isString(pkg) ? parse(pkg) : pkg)
 
@@ -48,7 +50,9 @@ export default async function(pkgs: PackageSpecification[] | string[] | string, 
   logger = WrapperLogger(pending, logger)
   const installers = pending
     .map(pkg => install(pkg, logger)
-      .then(i => link(i).then(() => i)))
+      .then(i => Deno.build.os != 'windows'
+        ? link(i).then(() => i)
+        : i))
 
   installed.push(...await Promise.all(installers))
 
@@ -99,4 +103,12 @@ function WrapperLogger(pending: PackageSpecification[], logger?: Logger): Logger
       logger!.progress!(total_untard_bytes / grand_total)
     }
   }
+}
+
+export const _internals = {
+  hydrate,
+  resolve,
+  install,
+  link,
+  useSync
 }

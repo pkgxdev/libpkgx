@@ -12,8 +12,15 @@ Deno.test("useConfig", () => {
     assertEquals(config.UserAgent, "libpkgx")
   }
 
-  config = ConfigDefault({ PKGX_PANTRY_PATH: "/foo:/bar", CI: "true" })
-  assertEquals(config.pantries.map(x => x.string), ["/foo", "/bar"])
+
+  const PKGX_PANTRY_PATH = Deno.build.os == 'windows' ? "C:\\foo;D:\\bar" : "/foo:/bar"
+
+  config = ConfigDefault({ PKGX_PANTRY_PATH, CI: "true" })
+  if (Deno.build.os == 'windows') {
+    assertEquals(config.pantries.map(x => x.string), ["C:\\foo", "D:\\bar"])
+  } else {
+    assertEquals(config.pantries.map(x => x.string), ["/foo", "/bar"])
+  }
   assertEquals(config.options.compression, "gz")
 
   assertFalse(_internals.boolize("false"))
@@ -34,6 +41,7 @@ Deno.test("useConfig empty PKGX_DIR is ignored", () => {
 })
 
 Deno.test("useConfig empty PKGX_PANTRY_PATH is ignored", () => {
+  const SEP = Deno.build.os == 'windows' ? ';' : ':'
   assertEquals(ConfigDefault({ PKGX_PANTRY_PATH: "" }).pantries, [])
-  assertEquals(ConfigDefault({ PKGX_PANTRY_PATH: "  : :" }).pantries, [])
+  assertEquals(ConfigDefault({ PKGX_PANTRY_PATH: `  ${SEP} ${SEP}` }).pantries, [])
 })

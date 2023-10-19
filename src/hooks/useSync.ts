@@ -21,8 +21,7 @@ export default async function(logger?: Logger) {
 
   logger?.syncing(pantry_dir)
 
-  const { rid } = await Deno.open(pantry_dir.mkdir('p').string)
-  await flock(rid, 'ex')
+  const unflock = await flock(pantry_dir.mkdir('p'))
 
   try {
     //TODO if there was already a lock, just wait on it, don’t do the following stuff
@@ -43,7 +42,7 @@ export default async function(logger?: Logger) {
     //FIXME deleted packages will not be removed with this method
     const src = new URL(`https://github.com/pkgxdev/pantry/archive/refs/heads/main.tar.gz`)
     const proc = Deno.run({
-      cmd: ["tar", "xz", "--strip-components=1"],
+      cmd: ["tar", "xzf", "-", "--strip-components=1"],
       cwd: pantry_dir.string,
       stdin: "piped"
     })
@@ -57,8 +56,7 @@ export default async function(logger?: Logger) {
     proc.close()
 
   } finally {
-    await flock(rid, 'un')
-    Deno.close(rid)  // docs aren't clear if we need to do this or not
+    await unflock()
   }
 
   logger?.syncd(pantry_dir)
@@ -78,7 +76,8 @@ export interface RunOptions {
 
 async function run(opts: RunOptions) {
   const cmd = opts.cmd.map(x => `${x}`)
-  const proc = Deno.run({ ...opts, cmd, stdout: 'null', clearEnv: true })
+  const env = (({ HTTP_PROXY, HTTPS_PROXY }) => ({ HTTP_PROXY, HTTPS_PROXY }))(Deno.env.toObject())
+  const proc = Deno.run({ ...opts, cmd, stdout: 'null', clearEnv: true, env })
   try {
     const exit = await proc.status()
     if (!exit.success) throw new Error(`run.exit(${exit.code})`)
