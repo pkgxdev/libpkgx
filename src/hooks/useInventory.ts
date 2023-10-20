@@ -33,9 +33,9 @@ const get = async (rq: PackageRequirement | Package) => {
   }
 
   const releases = await rsp.text()
-  let versions = releases.split("\n").compact(x => new SemVer(x))
+  let versions = releases ? releases.split("\n").compact(x => new SemVer(x)) : []
 
-  if (versions.length < 1) throw new Error()
+  if (versions.length < 1) throw new Error(`No versions for ${rq.project}`)
 
   if (rq.project == 'openssl.org') {
     // workaround our previous sins

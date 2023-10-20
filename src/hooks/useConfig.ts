@@ -86,26 +86,22 @@ export default function useConfig(input?: Config): Config {
 
 function boolize(input: string | undefined): boolean | undefined {
   switch (input?.trim()?.toLowerCase()) {
-    case '0':
-    case 'false':
-    case 'no':
-      return false
-    case '1':
-    case 'true':
-    case 'yes':
-      return true
+  case '0':
+  case 'false':
+  case 'no':
+    return false
+  case '1':
+  case 'true':
+  case 'yes':
+    return true
   }
-}
-
-function reset() {
-  return delete gt.sh_pkgx_config
 }
 
 function initialized() {
   return gt.sh_pkgx_config !== undefined
 }
 
-export const _internals = { reset, initialized, boolize }
+export const _internals = { initialized, boolize }
 
 
 /// we support a pkgx installed or system installed git, nothing else
