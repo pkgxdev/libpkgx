@@ -59,10 +59,14 @@ export default class Path {
         if (!input.startsWith("/") && !input.startsWith("\\")) {
           throw new Error(`invalid absolute path: ${input}`)
         }
-        //TODO shouldn’t be C: necessarily
-        // should it be based on PWD or system default drive?
-        // NOTE also: maybe we shouldn't do this anyway?
-        input = `C:\\${input}`
+        if (!input.startsWith('\\\\')) {
+          // ^^ \\network\drive is valid path notation on windows
+
+          //TODO shouldn’t be C: necessarily
+          // should it be based on PWD or system default drive?
+          // NOTE also: maybe we shouldn't do this anyway?
+          input = `C:\\${input}`
+        }
       }
       input = input.replace(/\//g, '\\')
     } else if (input[0] != '/') {
@@ -72,10 +76,10 @@ export default class Path {
     this.string = normalize(input)
 
     function normalize(path: string): string {
-      const segments = path.split(SEP);
-      const result = [];
+      const segments = path.split(SEP)
+      const result = []
 
-      const start = Deno.build.os == 'windows' ? (segments.shift() ?? 'C:') + '\\' : '/'
+      const start = Deno.build.os == 'windows' ? (segments.shift() || '\\') + '\\' : '/'
 
       for (const segment of segments) {
         if (segment === '..') {
@@ -151,7 +155,7 @@ export default class Path {
       return this
     }
     function isAbsolute(part: string) {
-      if (Deno.build.os == 'windows' && part?.match(/^[a-zA-Z]:/)) {
+      if (Deno.build.os == 'windows' && (part?.match(/^[a-zA-Z]:/) || part?.startsWith("\\\\"))) {
         return true
       } else {
         return part.startsWith('/')

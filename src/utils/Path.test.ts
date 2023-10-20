@@ -240,6 +240,12 @@ Deno.test({
     assertEquals(p.string, "Y:\\")
     assertEquals(p.parent().string, "Y:\\")
     assertEquals(p.parent().parent().parent().string, "Y:\\")
+
+    const q = new Path("\\\\bar\\foo\\baz")
+
+    assertEquals(q.string, "\\\\bar\\foo\\baz")
+    assertEquals(q.parent().string, "\\\\bar\\foo")
+    assertEquals(q.parent().parent().parent().string, "\\\\bar\\foo")  // the first path after the hostname is actually a root
   }
 })
 
@@ -247,6 +253,9 @@ Deno.test("join roots", () => {
   if (Deno.build.os == "windows") {
     assertEquals(new Path("C:\\foo").join("D:\\bar").string, "D:\\bar")
     assertEquals(new Path("C:").join("D:\\bar\baz").string, "D:\\bar\baz")
+
+    assertEquals(new Path("c:\\foo\bar").join("\\\\bar\\baz").string, "\\\\bar\\baz")
+
   } else {
     assertEquals(new Path("/foo").join("/bar").string, "/bar")
   }

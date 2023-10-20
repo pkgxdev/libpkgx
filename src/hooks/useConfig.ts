@@ -1,4 +1,5 @@
 import { flatmap } from "../utils/misc.ts"
+import { deno } from "../deps.ts"
 import host from "../utils/host.ts"
 import Path from "../utils/Path.ts"
 
@@ -64,8 +65,7 @@ export function ConfigDefault(env = Deno.env.toObject()): Config {
 
 function getv(): string | undefined {
   if (typeof Deno === 'undefined') {
-    const url = new URL(import.meta.url)
-    const path = new Path(url.pathname).parent().parent().parent().join("package.json")
+    const path = new Path(deno.fromFileUrl(import.meta.url)).parent().parent().parent().join("package.json")
     const blob = Deno.readFileSync(path.string)
     const txt = new TextDecoder().decode(blob)
     const { version } = JSON.parse(txt)

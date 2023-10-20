@@ -1,4 +1,5 @@
 import useConfig, { ConfigDefault } from "./useConfig.ts"
+import { fromFileUrl } from "deno/path/from_file_url.ts"
 import Path from "../utils/Path.ts"
 
 export function useBaseTestConfig(env?: Record<string, string>) {
@@ -31,11 +32,7 @@ export const srcroot = (() => {
   if (Path.cwd().parent().parent().join("fixtures").isDirectory()) {
     return Path.cwd().parent().parent()
   } else {
-    let path = new URL(import.meta.url).pathname
-    if (Deno.build.os == 'windows') {
-      path = path.slice(1) // /D:/foo/bar -> D:/foo/bar
-    }
-    return new Path(path).parent().parent().parent()
+    return new Path(fromFileUrl(import.meta.url)).parent().parent().parent()
   }
 })()
 
