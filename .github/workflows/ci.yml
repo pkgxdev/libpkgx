@@ -4,10 +4,18 @@ on:
   pull_request:
     paths:
       - deno.json
+      - deno.lock
       - '**/*.ts'
+      - fixtures
       - .github/workflows/ci.yml
   push:
     branches: main
+    paths:
+      - deno.json
+      - deno.lock
+      - '**/*.ts'
+      - fixtures
+      - .github/workflows/ci.yml
   workflow_dispatch:
 
 concurrency:

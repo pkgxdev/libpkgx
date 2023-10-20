@@ -199,5 +199,5 @@ Open a [discussion] to start.
 [pantry]: https://github.com/pkgxdev/pantry
 [plumbing]: ./plumbing/
 [porcelain]: ./porcelain/
-[coverage]: https://coveralls.io/repos/github/pkgxdev/lib/badge.svg
-[coveralls]: https://coveralls.io/github/pkgxdev/lib
+[coverage]: https://coveralls.io/repos/github/pkgxdev/libpkgx/badge.svg
+[coveralls]: https://coveralls.io/github/pkgxdev/libpkgx
