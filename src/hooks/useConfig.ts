@@ -20,9 +20,12 @@ export interface Config {
 }
 
 function platform_cache_default() {
-  if (host().platform == 'darwin') {
+  switch (Deno.build.os) {
+  case 'darwin':
     return Path.home().join('Library/Caches')
-  } else {
+  case 'windows':
+    return flatmap(Deno.env.get("LOCALAPPDATA"), Path.abs) ?? Path.home().join('AppData/Local')
+  default:
     return Path.home().join('.cache')
   }
 }
