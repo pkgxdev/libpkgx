@@ -30,25 +30,31 @@ function platform_cache_default() {
   }
 }
 
+function platform_data_home_default() {
+  switch (host().platform) {
+  case 'darwin':
+    return Path.home().join("Library/Application Support")
+  case 'windows': {
+    const LOCALAPPDATA = Deno.env.get('LOCALAPPDATA')
+    if (LOCALAPPDATA) {
+      return new Path(LOCALAPPDATA).join("pkgx")
+    } else {
+      return Path.home().join("AppData/Local/pkgx")
+    }}
+  default:
+    return Path.home().join(".local/share")
+  }
+}
+
 const SEP = Deno.build.os == 'windows' ? ';' : ':'
 
 export function ConfigDefault(env = Deno.env.toObject()): Config {
   const prefix = flatmap(env['PKGX_DIR']?.trim(), x => new Path(x)) ?? Path.home().join('.pkgx')
   const pantries = env['PKGX_PANTRY_PATH']?.split(SEP).compact(x => flatmap(x.trim(), x => Path.abs(x) ?? Path.cwd().join(x))) ?? []
-  const cache = (flatmap(env["XDG_CACHE_HOME"], x => new Path(x)) ?? platform_cache_default()).join("pkgx")
+  const cache = (flatmap(env["XDG_CACHE_HOME"], Path.abs) ?? platform_cache_default()).join("pkgx")
+  const data = (flatmap(env["XDG_DATA_HOME"], Path.abs) ?? platform_data_home_default()).join("pkgx")
   const isCI = boolize(env['CI']) ?? false
   const UserAgent = flatmap(getv(), v => `libpkgx/${v}`) ?? 'libpkgx'
-
-  const data = (() => {
-    const xdg = env["XDG_DATA_HOME"]
-    if (xdg) {
-      return new Path(xdg)
-    } else if (host().platform == "darwin") {
-      return Path.home().join("Library/Application Support")
-    } else {
-      return Path.home().join(".local/share")
-    }
-  })().join("pkgx")
 
   //TODO prefer 'xz' on Linux (as well) if supported
   const compression = !isCI && host().platform == 'darwin' ? 'xz' : 'gz'
