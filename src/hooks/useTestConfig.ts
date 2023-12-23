@@ -6,10 +6,7 @@ export function useBaseTestConfig(env?: Record<string, string>) {
   env ??= {}
 
   /// always prefer a new prefix
-  env.HOME ??= Path.mktemp().string
-  env.PKGX_DIR ??= Path.mktemp().string
-  env.XDG_DATA_HOME ??= Path.mktemp().string
-  env.XDG_CACHE_HOME ??= Path.mktemp().string
+  env.PKGX_HOME ??= Path.mktemp().string
 
   const config = ConfigDefault(env)
   if ('UserAgent' in env) {
