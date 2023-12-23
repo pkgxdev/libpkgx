@@ -19,8 +19,8 @@ jobs:
     strategy:
       matrix:
         os:
-          - [self-hosted, macOS, X64]
-          - [self-hosted, linux, X64]
+          - macos-latest
+          - ubuntu-latest
           - [self-hosted, macOS, ARM64]
           - [self-hosted, linux, ARM64]
     steps:
