@@ -330,8 +330,10 @@ function zip<T, U>(a: T[], b: U[]) {
 
 
 function _compare(a: SemVer, b: SemVer): number {
-  for (const [c,d] of zip(cmpcomponents(a), cmpcomponents(b))) {
-    if (c != d) return (c ?? 0) - (d ?? 0)
+  for (let [c,d] of zip(cmpcomponents(a), cmpcomponents(b))) {
+    c ??= 0
+    d ??= 0
+    if (c !== d) return c - d
   }
   return 0
 

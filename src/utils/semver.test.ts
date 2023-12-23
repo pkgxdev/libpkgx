@@ -258,6 +258,17 @@ Deno.test("semver", async test => {
     //   const c = semver.intersect(a, b)
     //   assertEquals(c.toString(), "^11.3,^12.2")
     // })
+
+    /* https://github.com/pkgxdev/libpkgx/issues/42 */
+    await test.step(">=1<1.0.19", async test => {
+      await test.step("1", () => { new semver.Range(">=1<1.0.19") })
+      await test.step("2", () => { new semver.Range(">=1.0<1.0.19") })
+      await test.step("3", () => {
+        assertEquals(new semver.Range(">=1<2").toString(), "^1")
+      })
+
+      assert(new SemVer("1").lt(new SemVer("1.0.19")), "1.0.0 is less than 1.0.19")
+    })
   })
 })
 
