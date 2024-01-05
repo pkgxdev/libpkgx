@@ -174,8 +174,10 @@ export default function usePantry() {
         rv.push(proj)
         continue
       }
-      const yaml = await proj.yaml()
-      if (yaml["display-name"]?.toLowerCase() == name) {
+      const yaml = await proj.yaml().swallow()
+      if (!yaml) {
+        console.warn("warn: parse failure:", pkg.project)
+      } else if (yaml["display-name"]?.toLowerCase() == name) {
         rv.push(proj)
       } else if ((await proj.provides()).map(x => x.toLowerCase()).includes(name)) {
         rv.push(proj)
