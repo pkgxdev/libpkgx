@@ -2,8 +2,6 @@ import { Package, Installation } from "../types.ts"
 import SemVer from "../utils/semver.ts"
 import useConfig from "./useConfig.ts"
 import useCellar from "./useCellar.ts"
-import host from "../utils/host.ts"
-import * as os from "node:os"
 
 function tokenizePackage(pkg: Package) {
   return [{ from: "prefix", to: useCellar().keg(pkg).string }]
@@ -25,17 +23,6 @@ function tokenizeVersion(version: SemVer, prefix = 'version') {
   return rv
 }
 
-//TODO replace `hw` with `host`
-function tokenizeHost() {
-  const { arch, target, platform } = host()
-  return [
-    { from: "hw.arch",        to: arch },
-    { from: "hw.target",      to: target },
-    { from: "hw.platform",    to: platform },
-    { from: "hw.concurrency", to: os.cpus().length.toString() }
-  ]
-}
-
 function apply(input: string, map: { from: string, to: string }[]) {
   return map.reduce((acc, {from, to}) =>
     acc.replace(new RegExp(`(^\\$)?{{\\s*${from}\\s*}}`, "g"), to),
@@ -48,7 +35,6 @@ export default function() {
     apply,
     tokenize: {
       version: tokenizeVersion,
-      host: tokenizeHost,
       pkg: tokenizePackage
     }
   }
@@ -69,7 +55,6 @@ export default function() {
     ...tokenizePackage(pkg),
     ...pkgx(),
     ...base.tokenize.version(pkg.version),
-    ...base.tokenize.host(),
   ]
 
   return {
