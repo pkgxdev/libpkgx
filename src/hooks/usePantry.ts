@@ -100,14 +100,14 @@ export default function usePantry() {
       let node = (await yaml())["provides"]
       if (!node) return []
       if (isPlainObject(node)) {
-        node = node[host().platform]
+        const rv: string[] = []
+        if (isArray(node[host().platform])) rv.push(...node[host().platform])
+        if (isArray(node['*'])) rv.push(...node['*'])
+        node = rv
       }
       if (!isArray(node)) throw new PantryParseError(project)
 
       return node.compact(x => {
-        if (isPlainObject(x)) {
-          x = x["executable"]
-        }
         if (isString(x)) {
           if (x.startsWith("bin/")) return x.slice(4)
           if (x.startsWith("sbin/")) return x.slice(5)

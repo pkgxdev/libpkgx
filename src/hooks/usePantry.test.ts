@@ -1,14 +1,22 @@
 import { assert, assertEquals, assertThrows } from "deno/assert/mod.ts"
 import usePantry, { validatePackageRequirement } from "./usePantry.ts"
 import { useTestConfig, srcroot } from "./useTestConfig.ts"
-import { _internals } from "../utils/host.ts"
+import host, { _internals } from "../utils/host.ts"
 import { stub } from "deno/testing/mock.ts"
 import SemVer from "../utils/semver.ts"
 
-Deno.test("provides()", async () => {
-  useTestConfig()
-  const exenames = await usePantry().project("python.org").provides()
-  assert(exenames.includes("python"))
+Deno.test("provides()", async test => {
+  await test.step('array', async () => {
+    useTestConfig()
+    const exenames = await usePantry().project("python.org").provides()
+    assert(exenames.includes("python"))
+  })
+  await test.step('platform specific', async () => {
+    useTestConfig()
+    const exenames = await usePantry().project("npmjs.com").provides()
+    assert(exenames.includes("npm"))
+    assert(exenames.includes(`npm-${host().platform}`))
+  })
 })
 
 Deno.test("which()", async () => {

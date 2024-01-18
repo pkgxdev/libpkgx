@@ -1,2 +1,9 @@
 provides:
-  - bin/npm
+  '*':
+    - bin/npm
+  darwin:
+    - bin/npm-darwin
+  linux:
+    - bin/npm-linux
+  windows:
+    - bin/npm-windows
