@@ -16,6 +16,17 @@ const version = (() => {
   }
 })()
 
+const mappings: Record<string, string> = {
+  "https://deno.land/x/is_what@v4.1.15/src/index.ts": "is-what",
+  "https://deno.land/x/outdent@v0.8.0/mod.ts": "outdent",
+  "./src/utils/flock.deno.ts": "./src/utils/flock.node.ts",
+  "./src/hooks/useSyncCache.ts": "./src/hooks/useSyncCache.node.ts"
+}
+
+if (test) {
+  mappings["./src/hooks/useSyncCache.test.ts"] = "./src/hooks/useCache.test.ts"  // no other easy way to skip the test
+}
+
 await build({
   entryPoints: ["./mod.ts"],
   outDir: "./dist",
@@ -30,11 +41,7 @@ await build({
     }],
   },
   importMap: "deno.json",
-  mappings: {
-    "https://deno.land/x/is_what@v4.1.15/src/index.ts": "is-what",
-    "https://deno.land/x/outdent@v0.8.0/mod.ts": "outdent",
-    "./src/utils/flock.deno.ts": "./src/utils/flock.node.ts"
-  },
+  mappings,
   package: {
     name: "libpkgx",
     version,

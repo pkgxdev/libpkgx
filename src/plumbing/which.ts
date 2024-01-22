@@ -1,11 +1,11 @@
-import { PackageRequirement } from "../types.ts"
+import { provides as cache_provides, available as cache_available } from "../hooks/useSyncCache.ts"
 import usePantry, { PantryError } from "../hooks/usePantry.ts"
+import { PackageRequirement } from "../types.ts"
 import * as semver from "../utils/semver.ts"
 
 export type WhichResult = PackageRequirement & {
   shebang: string[]
 }
-
 
 export default async function which(arg0: string, opts?: { providers?: boolean }): Promise<WhichResult | undefined>;
 export default async function which(arg0: string, opts: { providers?: boolean, all: false }): Promise<WhichResult | undefined>;
@@ -36,6 +36,19 @@ async function *_which(arg0: string, opts: { providers: boolean }): AsyncGenerat
 
   const pantry = usePantry()
   let found: WhichResult[] = []
+
+  // don't use the cache if PKGX_PANTRY_PATH is set
+  if (cache_available()) {
+    const cached = await cache_provides(arg0)
+    if (cached) {
+      for (const project of cached) {
+        yield { project, constraint: new semver.Range("*"), shebang: [arg0] }
+      }
+      // NOTE probs wrong, but we need a rewrite
+      if (cached.length) return
+    }
+  }
+
   const promises: Promise<void>[] = []
 
   for await (const entry of pantry.ls()) {
@@ -92,9 +105,10 @@ async function *_which(arg0: string, opts: { providers: boolean }): AsyncGenerat
     }
   }
 
+  await Promise.all(promises)
+
   // if we didn’t find anything yet then we have to wait on the promises
   // otherwise we can ignore them
-  await Promise.all(promises)
 
   for (const f of found) {
     yield f

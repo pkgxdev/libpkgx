@@ -85,3 +85,10 @@ Deno.test("validatePackageRequirement - number constraint", () => {
   const result = validatePackageRequirement("pkgx.sh/test", 1)
   assertEquals(result?.constraint.toString(), "^1")
 })
+
+Deno.test("find", async () => {
+  useTestConfig()
+  const foo = await usePantry().find("python@3.11")
+  assertEquals(foo.length, 1)
+  assertEquals(foo[0].project, "python.org")
+})

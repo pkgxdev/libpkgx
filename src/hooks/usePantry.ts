@@ -1,10 +1,12 @@
 import { is_what, PlainObject } from "../deps.ts"
 const { isNumber, isPlainObject, isString, isArray, isPrimitive, isBoolean } = is_what
 import { Package, Installation, PackageRequirement } from "../types.ts"
+import { provides as cache_provides, available as cache_available, runtime_env as cache_runtime_env, companions as cache_companions, dependencies as cache_dependencies } from "./useSyncCache.ts";
 import SemVer, * as semver from "../utils/semver.ts"
 import useMoustaches from "./useMoustaches.ts"
 import { PkgxError } from "../utils/error.ts"
 import { validate } from "../utils/misc.ts"
+import * as pkgutils from "../utils/pkg.ts"
 import useConfig from "./useConfig.ts"
 import host from "../utils/host.ts"
 import Path from "../utils/Path.ts"
@@ -45,6 +47,7 @@ export class PantryNotFoundError extends PantryError {
 
 export default function usePantry() {
   const prefix = useConfig().data.join("pantry/projects")
+  const is_cache_available = cache_available() && pantry_paths().length == 1
 
   async function* ls(): AsyncGenerator<LsEntry> {
     const seen = new Set()
@@ -78,11 +81,23 @@ export default function usePantry() {
       throw new PackageNotFoundError(project)
     })()
 
-    const companions = async () => parse_pkgs_node((await yaml())["companions"])
+    const companions = async () => {
+      if (is_cache_available) {
+        return await cache_companions(project) ?? parse_pkgs_node((await yaml())["companions"])
+      } else {
+        return parse_pkgs_node((await yaml())["companions"])
+      }
+    }
 
     const runtime_env = async (version: SemVer, deps: Installation[]) => {
-      const yml = await yaml()
-      const obj = validate.obj(yml["runtime"]?.["env"] ?? {})
+      const obj = await (async () => {
+        if (is_cache_available) {
+          const cached = await cache_runtime_env(project)
+          if (cached) return cached
+        }
+        const yml = await yaml()
+        return validate.obj(yml["runtime"]?.["env"] ?? {})
+      })()
       return expand_env_obj(obj, { project, version }, deps)
     }
 
@@ -94,7 +109,13 @@ export default function usePantry() {
       return platforms.includes(host().platform) ||platforms.includes(`${host().platform}/${host().arch}`)
     }
 
-    const drydeps = async () => parse_pkgs_node((await yaml()).dependencies)
+    const drydeps = async () => {
+      if (is_cache_available) {
+        return await cache_dependencies(project) ?? parse_pkgs_node((await yaml()).dependencies)
+      } else {
+        return parse_pkgs_node((await yaml()).dependencies)
+      }
+    }
 
     const provides = async () => {
       let node = (await yaml())["provides"]
@@ -163,6 +184,27 @@ export default function usePantry() {
   /// - Returns: Project[] since there may by multiple matches, if you want a single match you should use `project()`
   async function find(name: string) {
     type Foo = ReturnType<typeof project> & LsEntry
+
+    //lol FIXME
+    name = pkgutils.parse(name).project
+
+    if (prefix.join(name).isDirectory()) {
+      const foo = project(name)
+      return [{...foo, project: name }]
+    }
+
+    /// only use cache if PKGX_PANTRY_PATH is not set
+    if (is_cache_available) {
+      const cached = await cache_provides(name)
+      if (cached?.length) {
+        return cached.map(x => ({
+          ...project(x),
+          project: x
+        }))
+      }
+
+      // else we need to still check for display-names
+    }
 
     name = name.toLowerCase()
 
@@ -234,7 +276,8 @@ export default function usePantry() {
     parse_pkgs_node,
     expand_env_obj,
     missing,
-    neglected
+    neglected,
+    pantry_paths
   }
 
   function pantry_paths(): Path[] {
