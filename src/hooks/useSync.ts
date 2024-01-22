@@ -7,12 +7,14 @@ import useDownload from "./useDownload.ts"
 import usePantry from "./usePantry.ts"
 import useConfig from "./useConfig.ts"
 import Path from "../utils/Path.ts"
+import useSyncCache from "./useSyncCache.ts";
 
 //FIXME tar is fetched from PATH :/ we want control
 //FIXME run in general is not controllable since it delegates to the shell
 
 interface Logger {
   syncing(path: Path): void
+  caching(path: Path): void
   syncd(path: Path): void
 }
 
@@ -23,6 +25,27 @@ export default async function(logger?: Logger) {
 
   const unflock = await flock(pantry_dir.mkdir('p'))
 
+  try {
+    await _internals.sync(pantry_dir)
+    try {
+      logger?.caching(pantry_dir)
+      await _internals.cache()
+    } catch (err) {
+      console.warn("failed to cache pantry")
+      console.error(err)
+    }
+  } finally {
+    await unflock()
+  }
+
+  logger?.syncd(pantry_dir)
+}
+
+export const _internals = {
+  sync, cache: useSyncCache
+}
+
+async function sync(pantry_dir: Path) {
   try {
     //TODO if there was already a lock, just wait on it, don’t do the following stuff
 
@@ -55,11 +78,7 @@ export default async function(logger?: Logger) {
 
     proc.close()
 
-  } finally {
-    await unflock()
   }
-
-  logger?.syncd(pantry_dir)
 }
 
 //////////////////////// utils

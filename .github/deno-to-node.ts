@@ -33,7 +33,9 @@ await build({
   mappings: {
     "https://deno.land/x/is_what@v4.1.15/src/index.ts": "is-what",
     "https://deno.land/x/outdent@v0.8.0/mod.ts": "outdent",
-    "./src/utils/flock.deno.ts": "./src/utils/flock.node.ts"
+    "./src/utils/flock.deno.ts": "./src/utils/flock.node.ts",
+    "./src/hooks/useSyncCache.ts": "./src/hooks/useSyncCache.node.ts",
+    "./src/hooks/useSyncCache.test.ts": "./src/hooks/useCache.test.ts"  // no other easy way to skip the test
   },
   package: {
     name: "libpkgx",

@@ -12,7 +12,7 @@
   },
   "pkgx": "deno~1.39 npm",
   "tasks": {
-    "test": "deno test --parallel --unstable --allow-env --allow-read --allow-net=dist.pkgx.dev,github.com,codeload.github.com --allow-write --allow-run=tar,uname,/bin/sh,foo,'C:\\Windows\\system32\\cmd.exe'",
+    "test": "deno test --parallel --unstable --allow-env --allow-read --allow-ffi --allow-net=dist.pkgx.dev,github.com,codeload.github.com --allow-write --allow-run=tar,uname,/bin/sh,foo,'C:\\Windows\\system32\\cmd.exe'",
     "typecheck": "deno check --unstable ./mod.ts",
     "dnt": ".github/deno-to-node.ts"
   },
