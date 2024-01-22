@@ -3,6 +3,8 @@ import * as semver from "./semver.ts"
 
 /// allows inputs `nodejs.org@16` when `semver.parse` would reject
 export function parse(input: string): PackageRequirement {
+  input = input.trim()
+
   const match = input.match(/^(.+?)([\^=~<>@].+)?$/)
   if (!match) throw new Error(`invalid pkgspec: ${input}`)
   if (!match[2]) match[2] = "*"
