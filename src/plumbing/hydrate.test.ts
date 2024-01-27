@@ -1,4 +1,4 @@
-import { assertEquals } from "deno/assert/mod.ts"
+import { assert, assertEquals, assertRejects } from "deno/assert/mod.ts"
 import { describe, it } from "deno/testing/bdd.ts"
 import { PackageRequirement } from "../types.ts"
 import * as semver from "../utils/semver.ts"
@@ -79,5 +79,51 @@ describe("hydrate()", () => {
     }
 
     assertEquals(nodes, 1)
+  })
+
+  it("hydrates.unicode.org", async function() {
+    const pkgs = [
+      { project: 'npmjs.com', constraint: new semver.Range('*') },
+      { project: 'python.org', constraint: new semver.Range('~3.9') }
+    ]
+
+    const rv = await hydrate(pkgs, (pkg: PackageRequirement, _dry: boolean) => {
+      if (pkg.project === 'python.org') {
+        return Promise.resolve([
+          { project: 'unicode.org', constraint: new semver.Range('^73') }
+        ])
+      } else {
+        return Promise.resolve([
+          { project: 'unicode.org', constraint: new semver.Range('^71') }
+        ])
+      }
+    })
+
+    const unicodes = rv.pkgs.filter(x => x.project === 'unicode.org')
+    const constraints = new Set(unicodes.map(x => x.constraint.toString()))
+    assertEquals(constraints.size, 2)
+    assert(constraints.has("^71"))
+    assert(constraints.has("^73"))
+  })
+
+  it("hydrates.cannot-intersect", async function() {
+    const pkgs = [
+      { project: 'npmjs.com', constraint: new semver.Range('*') },
+      { project: 'python.org', constraint: new semver.Range('~3.9') }
+    ]
+
+    const rv = hydrate(pkgs, (pkg: PackageRequirement, _dry: boolean) => {
+      if (pkg.project === 'python.org') {
+        return Promise.resolve([
+          { project: 'nodejs.com', constraint: new semver.Range('^73') }
+        ])
+      } else {
+        return Promise.resolve([
+          { project: 'nodejs.com', constraint: new semver.Range('^71') }
+        ])
+      }
+    })
+
+    await assertRejects(() => rv)
   })
 })
