@@ -55,6 +55,8 @@ export default async function hydrate(
   const initial_set = new Set(dry.map(x => x.project))
   const stack: Node[] = []
 
+  const additional_unicodes: semver.Range[] = []
+
   // Starting the DFS loop for each package in the dry list
   for (const pkg of dry) {
     let new_node = graph[pkg.project]
@@ -80,8 +82,19 @@ export default async function hydrate(
         } else {
           let child_node = graph[dep.project]
           if (child_node) {
-            // Intersect constraints
-            child_node.pkg.constraint = semver.intersect(child_node.pkg.constraint, dep.constraint)
+            try {
+              // Intersect constraints
+              child_node.pkg.constraint = semver.intersect(child_node.pkg.constraint, dep.constraint)
+            } catch (e) {
+              if (dep.project == 'unicode.org') {
+                // we handle unicode.org for now to allow situations like:
+                // https://github.com/pkgxdev/pantry/issues/4104
+                // https://github.com/pkgxdev/pkgx/issues/899
+                additional_unicodes.push(dep.constraint)
+              } else {
+                throw e
+              }
+            }
           } else {
             child_node = new Node(dep, current_node)
             graph[dep.project] = child_node
@@ -97,6 +110,9 @@ export default async function hydrate(
   const pkgs = Object.values(graph)
     .sort((a, b) => b.count() - a.count())
     .map(({pkg}) => pkg)
+
+  // see above explanation
+  pkgs.push(...additional_unicodes.map(constraint => ({ project: "unicode.org", constraint })))
 
   //TODO strictly we need to record precisely the bootstrap version constraint
   const bootstrap_required = new Set(pkgs.compact(({project}) => bootstrap.has(project) && project))

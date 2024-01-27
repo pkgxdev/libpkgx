@@ -1,2 +1,5 @@
 provides:
   - bin/npm
+
+dependencies:
+  unicode.org: ^73

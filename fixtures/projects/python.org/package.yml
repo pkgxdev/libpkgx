@@ -7,3 +7,6 @@ interprets:
 
 platforms:
   - darwin
+
+dependencies:
+  unicode.org: ^71
