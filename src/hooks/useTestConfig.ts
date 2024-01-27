@@ -1,5 +1,5 @@
 import useConfig, { ConfigDefault } from "./useConfig.ts"
-import { fromFileUrl } from "deno/path/from_file_url.ts"
+import { fromFileUrl } from "deno/path/mod.ts"
 import Path from "../utils/Path.ts"
 
 export function useBaseTestConfig(env?: Record<string, string>) {

@@ -8,13 +8,13 @@ import * as outdent from "https://deno.land/x/outdent@v0.8.0/mod.ts"
 export { outdent }
 
 // importing super specifically to reduce final npm bundle size
-import * as crypto from "https://deno.land/std@0.204.0/crypto/mod.ts"
-import { moveSync } from "https://deno.land/std@0.204.0/fs/move.ts"
-import { readLines } from "https://deno.land/std@0.204.0/io/read_lines.ts"
-import { writeAll } from "https://deno.land/std@0.204.0/streams/write_all.ts"
-import { parse as parseYaml } from "https://deno.land/std@0.204.0/yaml/parse.ts"
-import { SEP } from "https://deno.land/std@0.204.0/path/mod.ts"
-import { fromFileUrl } from "https://deno.land/std@0.204.0/path/from_file_url.ts"
+import * as crypto from "https://deno.land/std@0.196.0/crypto/mod.ts"
+import { moveSync } from "https://deno.land/std@0.196.0/fs/move.ts"
+import { readLines } from "https://deno.land/std@0.196.0/io/read_lines.ts"
+import { writeAll } from "https://deno.land/std@0.196.0/streams/write_all.ts"
+import { parse as parseYaml } from "https://deno.land/std@0.196.0/yaml/parse.ts"
+import { SEP } from "https://deno.land/std@0.196.0/path/mod.ts"
+import { fromFileUrl } from "https://deno.land/std@0.196.0/path/mod.ts"
 
 const streams = { writeAll }
 const io = { readLines }
