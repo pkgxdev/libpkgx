@@ -1,6 +1,6 @@
 #!/usr/bin/env -S pkgx +npm deno run --allow-env --allow-read --allow-write --allow-net --allow-run
 
-import { build, emptyDir } from "https://deno.land/x/dnt@0.38.1/mod.ts";
+import { build, emptyDir } from "https://deno.land/x/dnt@0.39.0/mod.ts";
 import SemVer from "../src/utils/semver.ts";
 
 await emptyDir("./dist");
