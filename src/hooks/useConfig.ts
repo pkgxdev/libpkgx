@@ -135,8 +135,10 @@ function git(_prefix: Path, PATH?: string): Path | undefined {
       case "linux":
         return rv
       case "windows":
-        //FIXME this is GitHub Actions specific
-        return new Path('C:\Program Files\Git\cmd\git.exe')
+        if (PATH) {
+          //FIXME this is GitHub Actions specific
+          return new Path('C:\Program Files\Git\cmd\git.exe')
+        }
       }
     })()?.join("bin/git")
   }
