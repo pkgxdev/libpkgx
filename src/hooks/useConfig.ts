@@ -124,14 +124,22 @@ function git(_prefix: Path, PATH?: string): Path | undefined {
     // only return /usr/bin if in the PATH so user can explicitly override this
     const rv = PATH?.split(":")?.includes("/usr/bin") ? new Path("/usr") : undefined
 
-    /// don’t cause macOS to abort and then prompt the user to install the XcodeCLT
-    //FIXME test! but this is hard to test without docker images or something!
-    if (host().platform == 'darwin') {
-      if (new Path("/Library/Developer/CommandLineTools/usr/bin/git").isExecutableFile()) return rv
-      if (new Path("/Applications/Xcode.app").isDirectory()) return rv
-      return  // don’t use `git`
-    }
-
-    return rv?.join("bin/git")
+    return (() => {
+      /// don’t cause macOS to abort and then prompt the user to install the XcodeCLT
+      //FIXME test! but this is hard to test without docker images or something!
+      switch (host().platform) {
+      case 'darwin':
+        if (new Path("/Library/Developer/CommandLineTools/usr/bin/git").isExecutableFile()) return rv
+        if (new Path("/Applications/Xcode.app").isDirectory()) return rv
+        return  // probably won’t work without prompting the user to install the XcodeCLT
+      case "linux":
+        return rv
+      case "windows":
+        if (PATH) {
+          //FIXME this is GitHub Actions specific
+          return new Path('C:\Program Files\Git\cmd\git.exe')
+        }
+      }
+    })()?.join("bin/git")
   }
 }
