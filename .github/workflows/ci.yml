@@ -44,17 +44,17 @@ jobs:
 
       - run: deno coverage cov_profile --lcov --output=cov_profile.lcov
 
-      - uses: coverallsapp/github-action@v1
+      - uses: coverallsapp/github-action@v2
         with:
           path-to-lcov: cov_profile.lcov
           parallel: true
-          flag-name: ${{ matrix.platform.id }}
+          flag-name: ${{ matrix.os }}
 
   upload-coverage:
     needs: tests
     runs-on: ubuntu-latest
     steps:
-    - uses: coverallsapp/github-action@v1
+    - uses: coverallsapp/github-action@v2
       with:
         parallel-finished: true
 
