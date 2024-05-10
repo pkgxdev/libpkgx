@@ -9,6 +9,8 @@ export interface Config {
   cache: Path
   data: Path
 
+  dist: string
+
   options: {
     /// prefer xz or gz for bottle downloads
     compression: 'xz' | 'gz'
@@ -53,6 +55,7 @@ export function ConfigDefault(env = Deno.env.toObject()): Config {
   const pantries = env['PKGX_PANTRY_PATH']?.split(SEP).compact(x => flatmap(x.trim(), x => Path.abs(x) ?? Path.cwd().join(x))) ?? []
   const cache = (flatmap(env["XDG_CACHE_HOME"], Path.abs) ?? platform_cache_default(home, env)).join("pkgx")
   const data = (flatmap(env["XDG_DATA_HOME"], Path.abs) ?? platform_data_home_default(home, env)).join("pkgx")
+  const dist = env['PKGX_DIST_URL']?.trim() ?? 'https://dist.pkgx.dev'
   const isCI = boolize(env['CI']) ?? false
   const UserAgent = flatmap(getv(), v => `libpkgx/${v}`) ?? 'libpkgx'
   //TODO prefer 'xz' on Linux (as well) if supported
@@ -63,6 +66,7 @@ export function ConfigDefault(env = Deno.env.toObject()): Config {
     pantries,
     cache,
     data,
+    dist,
     UserAgent,
     options: {
       compression,

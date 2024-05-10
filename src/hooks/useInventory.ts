@@ -4,6 +4,7 @@ import SemVer from "../utils/semver.ts"
 import useFetch from "./useFetch.ts"
 import host from "../utils/host.ts"
 import "../utils/misc.ts"
+import useConfig from "./useConfig.ts";
 
 export interface Inventory {
   [project: string]: {
@@ -25,7 +26,7 @@ const select = async (rq: PackageRequirement | Package) => {
 
 const get = async (rq: PackageRequirement | Package) => {
   const { platform, arch } = host()
-  const url = new URL(`https://dist.pkgx.dev/${rq.project}/${platform}/${arch}/versions.txt`)
+  const url = new URL(`${useConfig().dist}/${rq.project}/${platform}/${arch}/versions.txt`)
   const rsp = await useFetch(url)
 
   if (!rsp.ok) {
