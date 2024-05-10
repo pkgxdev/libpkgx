@@ -1,5 +1,6 @@
 import { Stowage } from "../types.ts"
 import host from "../utils/host.ts"
+import useConfig from "./useConfig.ts";
 
 type Type = 's3'
 
@@ -24,5 +25,5 @@ function key(stowage: Stowage) {
 }
 
 function url(stowage: Stowage) {
-  return new URL(`https://dist.pkgx.dev/${key(stowage)}`)
+  return new URL(`${useConfig().dist}/${key(stowage)}`)
 }
