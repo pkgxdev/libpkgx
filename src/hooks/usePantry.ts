@@ -261,10 +261,11 @@ export default function usePantry() {
   }
 
   const neglected = () => {
-    if (!prefix.exists()) return true
-    const stat = Deno.statSync(prefix.string)
-    if (!stat.mtime) return true
-    return (Date.now() - stat.mtime.getTime()) > 24 * 60 * 60 * 1000
+    const last_sync_file = prefix.join(".last_sync")
+    if (!last_sync_file.exists()) return true
+    const last_sync_date = new Date(Deno.readTextFileSync(last_sync_file.string).trim());
+    if (!last_sync_date) return true
+    return (Date.now() - last_sync_date.getTime()) > 24 * 60 * 60 * 1000
   }
 
   return {

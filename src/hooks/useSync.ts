@@ -79,6 +79,10 @@ async function sync(pantry_dir: Path) {
     proc.close()
 
   }
+  // Write a file indicating last sync time
+  const now = new Date().toISOString()
+  const last_sync_file = pantry_dir.join("projects").join(".last_sync")
+  await Deno.writeTextFile(last_sync_file.string, now)
 }
 
 //////////////////////// utils
