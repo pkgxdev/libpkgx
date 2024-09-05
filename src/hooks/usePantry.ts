@@ -260,13 +260,6 @@ export default function usePantry() {
     }
   }
 
-  const neglected = () => {
-    if (!prefix.exists()) return true
-    const stat = Deno.statSync(prefix.string)
-    if (!stat.mtime) return true
-    return (Date.now() - stat.mtime.getTime()) > 24 * 60 * 60 * 1000
-  }
-
   return {
     prefix,
     which,
@@ -276,7 +269,6 @@ export default function usePantry() {
     parse_pkgs_node,
     expand_env_obj,
     missing,
-    neglected,
     pantry_paths
   }
 

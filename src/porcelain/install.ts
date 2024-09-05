@@ -36,7 +36,7 @@ export default async function(pkgs: PackageSpecification[] | string[] | string, 
 
   const pantry = usePantry()
 
-  if (pantry.missing() || pantry.neglected()) {
+  if (pantry.missing()) {
     await useSync()
   }
 

@@ -105,7 +105,7 @@ async function setup(cmd: string, env: Record<string, string | undefined>, logge
   const sh = useShellEnv()
   const { install, link } = _internals
 
-  if (pantry.missing() || pantry.neglected()) {
+  if (pantry.missing()) {
     await useSync()
   }
 
