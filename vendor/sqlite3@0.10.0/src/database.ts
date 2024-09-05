@@ -189,9 +189,9 @@ export class Database {
       }
     }
 
-    const pHandle = new Uint32Array(2);
+    const pHandle = new BigUint64Array(1);
     const result = sqlite3_open_v2(toCString(this.#path), pHandle, flags, null);
-    this.#handle = Deno.UnsafePointer.create(pHandle[0] + 2 ** 32 * pHandle[1]);
+    this.#handle = Deno.UnsafePointer.create(pHandle[0]);
     if (result !== 0) sqlite3_close_v2(this.#handle);
     unwrap(result);
 
@@ -264,7 +264,7 @@ export class Database {
     const { sqlite3_exec, sqlite3_free, sqlite3_changes } = ffi()
 
     if (params.length === 0) {
-      const pErr = new Uint32Array(2);
+      const pErr = new BigUint64Array(1);
       sqlite3_exec(
         this.#handle,
         toCString(sql),
@@ -272,7 +272,7 @@ export class Database {
         null,
         new Uint8Array(pErr.buffer),
       );
-      const errPtr = Deno.UnsafePointer.create(pErr[0] + 2 ** 32 * pErr[1]);
+      const errPtr = Deno.UnsafePointer.create(pErr[0]);
       if (errPtr !== null) {
         const err = readCstr(errPtr);
         sqlite3_free(errPtr);
@@ -405,7 +405,7 @@ export class Database {
         const args: any[] = [];
         for (let i = 0; i < nArgs; i++) {
           const arg = Deno.UnsafePointer.create(
-            Number(argptr.getBigUint64(i * 8)),
+            argptr.getBigUint64(i * 8),
           );
           const type = sqlite3_value_type(arg);
           switch (type) {
@@ -459,15 +459,16 @@ export class Database {
         } else if (typeof result === "boolean") {
           sqlite3_result_int(ctx, result ? 1 : 0);
         } else if (typeof result === "number") {
-          if (Number.isSafeInteger(result)) sqlite3_result_int64(ctx, result);
-          else sqlite3_result_double(ctx, result);
+          if (Number.isSafeInteger(result)) {
+            sqlite3_result_int64(ctx, BigInt(result));
+          } else sqlite3_result_double(ctx, result);
         } else if (typeof result === "bigint") {
           sqlite3_result_int64(ctx, result);
         } else if (typeof result === "string") {
           const buffer = new TextEncoder().encode(result);
-          sqlite3_result_text(ctx, buffer, buffer.byteLength, 0);
+          sqlite3_result_text(ctx, buffer, buffer.byteLength, 0n);
         } else if (result instanceof Uint8Array) {
-          sqlite3_result_blob(ctx, result, result.length, -1);
+          sqlite3_result_blob(ctx, result, result.length, -1n);
         } else {
           const buffer = new TextEncoder().encode(
             `Invalid return value: ${Deno.inspect(result)}`,
