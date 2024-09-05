@@ -1,6 +1,7 @@
 import { deno } from "../deps.ts"
 const { crypto: crypto_, streams: { writeAll } } = deno
-const { toHashString, crypto } = crypto_
+const { crypto } = crypto_
+import { encodeHex } from "deno/encoding/hex.ts"
 import { PkgxError, panic } from "../utils/error.ts"
 import useConfig from "./useConfig.ts"
 import useFetch from "./useFetch.ts"
@@ -75,7 +76,7 @@ function cache({ for: url }: {for: URL}): Path {
     if (url.search) key += `?${url.search}`
     const blob = new TextEncoder().encode(key)
     const hash = crypto.subtle.digestSync("SHA-256", blob)
-    return toHashString(hash)
+    return encodeHex(hash)
   }
 }
 
