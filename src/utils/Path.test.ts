@@ -1,5 +1,5 @@
 import { assert, assertEquals, assertFalse, assertThrows } from "deno/assert/mod.ts"
-import { SEP } from "deno/path/mod.ts"
+import { SEPARATOR as SEP } from "deno/path/mod.ts"
 import Path from "./Path.ts"
 
 Deno.test("test Path", async test => {
