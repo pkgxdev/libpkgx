@@ -2,7 +2,7 @@
 // ^^ Deno.Command is not implemented for dnt shims yet
 import { deno } from "../deps.ts"
 const { streams: { writeAll } } = deno
-import { flock } from "../utils/flock.deno.ts"
+import { flock } from "../utils/flock.ts"
 import useDownload from "./useDownload.ts"
 import usePantry from "./usePantry.ts"
 import useConfig from "./useConfig.ts"

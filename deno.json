@@ -10,11 +10,10 @@
       ]
     }
   },
-  "pkgx": "deno^1.40 npm",
+  "pkgx": "deno^1.40",
   "tasks": {
     "test": "deno test --parallel --unstable-fs --unstable-ffi --allow-env --allow-read --allow-ffi --allow-net=dist.pkgx.dev,github.com,codeload.github.com --allow-write --allow-run=tar,uname,/bin/sh,foo,'C:\\Windows\\system32\\cmd.exe'",
-    "typecheck": "deno check ./mod.ts",
-    "dnt": ".github/deno-to-node.ts"
+    "typecheck": "deno check ./mod.ts"
   },
   "lint": {
     "include": ["src/"],

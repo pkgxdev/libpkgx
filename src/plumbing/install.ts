@@ -4,7 +4,7 @@
 import { Package, Installation, StowageNativeBottle } from "../types.ts"
 import useOffLicense from "../hooks/useOffLicense.ts"
 import useDownload from "../hooks/useDownload.ts"
-import { flock } from "../utils/flock.deno.ts"
+import { flock } from "../utils/flock.ts"
 import useConfig from "../hooks/useConfig.ts"
 import useCellar from "../hooks/useCellar.ts"
 import useCache from "../hooks/useCache.ts"

@@ -67,26 +67,6 @@ jobs:
       - uses: denoland/setup-deno@v1
       - run: deno run --no-config --unstable --allow-all src/mod.ts
 
-  dnt:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: denoland/setup-deno@v1
-      - run: deno run -A --unstable .github/deno-to-node.ts
-
-      - run: |
-          npm i
-          npm start
-        working-directory:
-          fixtures/npm-integration-test
-        if: ${{ matrix.os != 'windows-latest' }}  # can't test on Windows yet, we have no pkgs
-
   lint:
     runs-on: ubuntu-latest
     steps:
