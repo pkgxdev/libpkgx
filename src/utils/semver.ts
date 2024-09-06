@@ -1,5 +1,5 @@
-//HEY YOU! DO NOT CHANGE THIS TO USE deps.ts since it breaks pkgx/gui
-import { isArray, isString } from "is-what"
+//HEY YOU! DO NOT CHANGE THIS TO USE deps.ts since it breaks pkgx/gui and scripts ’n’ shit
+import { isArray, isString } from "https://deno.land/x/is_what@v4.1.16/src/index.ts"
 
 /**
  * we have our own implementation because open source is full of weird
