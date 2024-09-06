@@ -1,0 +1,2 @@
+build:
+  # this node to prevent failure when parsing null YAML
