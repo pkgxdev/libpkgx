@@ -106,6 +106,8 @@ async function map({installations}: Options): Promise<Record<string, string[]>> 
 
   // don’t break `man` lol
   rv["MANPATH"]?.push("/usr/share/man")
+  // https://github.com/pkgxdev/libpkgx/issues/70
+  rv['XDG_DATA_DIRS']?.push('/usr/local/share:/usr/share')
 
   return rv
 }
