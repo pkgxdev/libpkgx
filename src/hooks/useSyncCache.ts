@@ -16,6 +16,13 @@ export default async function() {
   // unique or don’t insert what is already there or just dump tables first perhaps
 
   try {
+    // speeds up by using memory as much as possible
+    db.exec(`
+      PRAGMA synchronous = OFF;
+      PRAGMA journal_mode = MEMORY;
+      PRAGMA temp_store = MEMORY;
+      `);
+
     await db.transaction(async () => {
       db.exec(`
         DROP TABLE IF EXISTS provides;
