@@ -8,9 +8,6 @@ import useCache from "../hooks/useCache.ts"
 import useFetch from "../hooks/useFetch.ts"
 import { createHash } from "node:crypto"
 import Path from "../utils/Path.ts"
-import { deno } from "../deps.ts"
-
-const { streams: { writeAll } } = deno
 
 export default async function install(pkg: Package, logger?: Logger): Promise<Installation> {
   const { project, version } = pkg
