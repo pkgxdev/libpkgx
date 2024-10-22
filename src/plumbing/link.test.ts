@@ -1,5 +1,5 @@
 import { useTestConfig } from "../hooks/useTestConfig.ts"
-import { assert } from "deno/assert/mod.ts"
+import { assert } from "jsr:@std/assert"
 import SemVer from "../utils/semver.ts"
 import link from "./link.ts";
 

@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { assert, assertEquals, assertFalse, assertThrows } from "deno/assert/mod.ts"
+import { assert, assertEquals, assertFalse, assertThrows } from "jsr:@std/assert"
 import SemVer, * as semver from "./semver.ts"
 
 

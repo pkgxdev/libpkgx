@@ -1,4 +1,4 @@
-import { stub, assertSpyCallArgs } from "deno/testing/mock.ts"
+import { stub, assertSpyCallArgs } from "jsr:@std/testing/mock"
 import { useTestConfig } from "./useTestConfig.ts";
 import useFetch, { _internals } from "./useFetch.ts"
 

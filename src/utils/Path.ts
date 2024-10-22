@@ -116,12 +116,14 @@ export default class Path {
       const output = Deno.readLinkSync(this.string)
       return this.parent().join(output)
     } catch (err) {
-      const code = err.code
-      switch (code) {
-      case 'EINVAL':
-        return this // is file
-      case 'ENOENT':
-        throw err   // there is no symlink at this path
+      if (err instanceof Error && "code" in err) {
+        const code = err.code
+        switch (code) {
+        case 'EINVAL':
+          return this // is file
+        case 'ENOENT':
+          throw err   // there is no symlink at this path
+        }
       }
       throw err
     }
@@ -399,9 +401,11 @@ export default class Path {
   async readYAML(): Promise<unknown> {
     try {
       const txt = await this.read()
-      return parseYaml(txt, { filename: this.string /*improves err msgs*/ })
+      return parseYaml(txt)
     } catch (err) {
-      err.cause = this.string
+      if (err instanceof Error) {
+        err.cause = this.string
+      }
       throw err
     }
   }

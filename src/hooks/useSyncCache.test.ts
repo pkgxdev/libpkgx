@@ -1,6 +1,6 @@
 import specimen, { provides, dependencies, available, runtime_env, completion, companions  } from "./useSyncCache.ts"
 import { useTestConfig } from "./useTestConfig.ts"
-import { assert, assertEquals } from "deno/assert/mod.ts"
+import { assert, assertEquals } from "jsr:@std/assert"
 import { _internals } from "./useSync.ts"
 import usePantry from "./usePantry.ts"
 

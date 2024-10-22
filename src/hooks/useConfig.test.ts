@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertFalse, assertThrows, assertMatch } from "deno/assert/mod.ts"
+import { assert, assertEquals, assertFalse, assertThrows, assertMatch } from "jsr:@std/assert"
 import { _internals, ConfigDefault } from "./useConfig.ts"
 import { useTestConfig } from "./useTestConfig.ts"
 import Path from "../utils/Path.ts"

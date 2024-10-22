@@ -1,5 +1,5 @@
 import { useTestConfig } from "./useTestConfig.ts"
-import { assert } from "deno/assert/mod.ts"
+import { assert } from "jsr:@std/assert"
 import useDownload from "./useDownload.ts"
 
 //TODO don’t actually do http obv.

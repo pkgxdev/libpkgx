@@ -1,5 +1,5 @@
 import useConfig, { ConfigDefault } from "./useConfig.ts"
-import { fromFileUrl } from "deno/path/mod.ts"
+import { fromFileUrl } from "jsr:@std/path"
 import Path from "../utils/Path.ts"
 
 export function useBaseTestConfig(env?: Record<string, string>) {
@@ -33,7 +33,7 @@ export const srcroot = (() => {
   }
 })()
 
-import { walkSync } from 'deno/fs/mod.ts'
+import { walkSync } from 'jsr:@std/fs'
 
 // deno/dnt has a broken shim for this function
 function copyDirectory(src: string, dest: string) {

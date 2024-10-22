@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects, assertThrows } from "deno/assert/mod.ts"
+import { assertEquals, assertRejects, assertThrows } from "jsr:@std/assert"
 import { flatmap, validate } from "./misc.ts"
 import { isNumber } from "is-what"
 

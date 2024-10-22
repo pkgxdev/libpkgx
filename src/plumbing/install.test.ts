@@ -1,8 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
 import { useTestConfig, srcroot } from "../hooks/useTestConfig.ts"
-import { assert, assertEquals, assertFalse } from "deno/assert/mod.ts"
+import { assert, assertEquals, assertFalse } from "jsr:@std/assert"
 import install, { ConsoleLogger, Logger } from "./install.ts"
-import { stub } from "deno/testing/mock.ts"
+import { stub } from "jsr:@std/testing/mock"
 import SemVer from "../utils/semver.ts"
 import { Package } from "../types.ts"
 import host from "../utils/host.ts";

@@ -1,7 +1,7 @@
 import { deno } from "../deps.ts"
 const { crypto: crypto_, streams: { writeAll } } = deno
 const { crypto } = crypto_
-import { encodeHex } from "deno/encoding/hex.ts"
+import { encodeHex } from "jsr:@std/encoding"
 import { PkgxError, panic } from "../utils/error.ts"
 import useConfig from "./useConfig.ts"
 import useFetch from "./useFetch.ts"

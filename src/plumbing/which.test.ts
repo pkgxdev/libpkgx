@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "deno/assert/mod.ts"
+import { assert, assertEquals } from "jsr:@std/assert"
 import { isArray } from "is-what"
 import which from "./which.ts"
 import { useTestConfig } from "../hooks/useTestConfig.ts";

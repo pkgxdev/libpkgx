@@ -1,5 +1,5 @@
 import { useTestConfig } from "../hooks/useTestConfig.ts"
-import { assertEquals, assertRejects } from "deno/assert/mod.ts"
+import { assertEquals, assertRejects } from "jsr:@std/assert"
 import undent from "outdent"
 import run from "./run.ts"
 

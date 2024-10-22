@@ -1,12 +1,12 @@
 // deno-lint-ignore-file require-await
-import { assert, assertEquals, fail, assertRejects } from "deno/assert/mod.ts"
+import { assert, assertEquals, fail, assertRejects } from "jsr:@std/assert"
 import { Installation, Package, PackageRequirement } from "../types.ts"
 import { useTestConfig } from "../hooks/useTestConfig.ts"
 import useInventory from "../hooks/useInventory.ts"
 import resolve, { _internals } from "./resolve.ts"
 import useCellar from "../hooks/useCellar.ts"
 import * as semver from "../utils/semver.ts"
-import { stub } from "deno/testing/mock.ts"
+import { stub } from "jsr:@std/testing/mock"
 import SemVer from "../utils/semver.ts"
 import Path from "../utils/Path.ts"
 

@@ -2,11 +2,11 @@
 import { useTestConfig } from "../hooks/useTestConfig.ts"
 import SemVer, * as semver from "../utils/semver.ts"
 import install, { ConsoleLogger, _internals } from "./install.ts"
-import { assert, assertEquals } from "deno/assert/mod.ts"
+import { assert, assertEquals } from "jsr:@std/assert"
 import type { Installation } from "../types.ts"
 import usePantry from "../hooks/usePantry.ts"
 import useConfig from "../hooks/useConfig.ts"
-import { stub } from "deno/testing/mock.ts"
+import { stub } from "jsr:@std/testing/mock"
 import Path from "../utils/Path.ts";
 
 Deno.test("porcelain.install", async () => {
