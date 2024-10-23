@@ -54,7 +54,7 @@ export default async function link(pkg: Package | Installation) {
         } catch (err) {
           // we were deleted by another thing linking simultaneously
           //FIXME our flock should surround the link step too
-          if (err.code != 'ENOENT') throw err
+          if (err instanceof Error && "code" in err && err.code != 'ENOENT') throw err
         }
       }
 
@@ -63,7 +63,7 @@ export default async function link(pkg: Package | Installation) {
         shelf.join(symname).rm().string,
         {type: 'dir'})
       } catch (err) {
-        if (err instanceof Deno.errors.AlreadyExists || err.code === 'EEXIST') {
+        if (err instanceof Deno.errors.AlreadyExists || err instanceof Error && "code" in err && err.code === 'EEXIST') {
           //FIXME race condition for installing the same pkg simultaneously
           // real fix is to lock around the entire download/untar/link process
           return

@@ -8,17 +8,14 @@ import * as outdent from "outdent"
 export { outdent }
 
 // importing super specifically to reduce final npm bundle size
-import * as crypto from "deno/crypto/mod.ts"
-import { moveSync } from "deno/fs/move.ts"
-import { readLines } from "deno/io/read_lines.ts"
-import { writeAll } from "deno/io/write_all.ts"
-import { parse as parseYaml } from "deno/yaml/parse.ts"
-import { SEPARATOR as SEP } from "deno/path/mod.ts"
-import { fromFileUrl } from "deno/path/mod.ts"
+import * as crypto from "jsr:@std/crypto@1"
+import { moveSync } from "jsr:@std/fs@1"
+import { writeAll } from "jsr:@std/io@^0.225.0"
+import { parse as parseYaml } from "jsr:@std/yaml@1"
+import { SEPARATOR as SEP, fromFileUrl } from "jsr:@std/path@1"
 
 const streams = { writeAll }
-const io = { readLines }
 const fs = { moveSync }
-const deno = { readLines, crypto, fs, io, streams, parseYaml, SEP, fromFileUrl }
+const deno = { crypto, fs, streams, parseYaml, SEP, fromFileUrl }
 
 export { deno }

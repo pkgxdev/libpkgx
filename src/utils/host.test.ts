@@ -1,6 +1,6 @@
-import { assert, assertEquals, assertThrows, fail } from "deno/assert/mod.ts"
+import { assert, assertEquals, assertThrows, fail } from "@std/assert"
 import host, { _internals, SupportedPlatform } from "./host.ts"
-import { stub } from "deno/testing/mock.ts"
+import { stub } from "@std/testing/mock"
 
 Deno.test({
   name:"host()",
@@ -34,13 +34,12 @@ Deno.test({
   }
 
   async function run(cmd: string) {
-    // deno’s shims don’t support Deno.Command yet
-    // deno-lint-ignore no-deprecated-deno-api
-    const proc = Deno.run({ cmd: cmd.split(" "), stdout: "piped" })
-    assert((await proc.status()).success)
-    const out = await proc.output()
-    proc.close()
-    return new TextDecoder().decode(out).trim()
+    const parts = cmd.split(" ")
+    const out = await new Deno.Command(parts[0], {
+      args: parts.slice(1),
+      stdout: "piped",
+    }).output()
+    return new TextDecoder().decode(out.stdout).trim()
   }
 }})
 

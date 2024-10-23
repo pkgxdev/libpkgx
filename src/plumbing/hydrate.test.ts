@@ -1,5 +1,5 @@
-import { assert, assertEquals, assertRejects } from "deno/assert/mod.ts"
-import { describe, it } from "deno/testing/bdd.ts"
+import { assert, assertEquals, assertRejects } from "@std/assert"
+import { describe, it } from "@std/testing/bdd"
 import { PackageRequirement } from "../types.ts"
 import * as semver from "../utils/semver.ts"
 import hydrate from "./hydrate.ts"

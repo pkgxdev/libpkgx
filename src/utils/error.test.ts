@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects, assertThrows } from "deno/assert/mod.ts"
+import { assertEquals, assertRejects, assertThrows } from "@std/assert"
 import { PkgxError, panic } from "../utils/error.ts"
 
 Deno.test("errors", async test => {

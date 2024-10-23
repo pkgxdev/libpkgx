@@ -1,8 +1,7 @@
 // deno-lint-ignore-file require-await no-explicit-any
-import { assertEquals } from "deno/assert/assert_equals.ts"
+import { assertEquals, assertRejects } from "@std/assert"
 import SemVer, * as semver from "../utils/semver.ts"
-import { assertRejects } from "deno/assert/mod.ts"
-import * as mock from "deno/testing/mock.ts"
+import * as mock from "@std/testing/mock"
 import { _internals } from "./useFetch.ts"
 import specimen from "./useInventory.ts"
 

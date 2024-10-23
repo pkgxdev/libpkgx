@@ -1,7 +1,7 @@
 import specimen, { _internals } from "./useSync.ts"
 import { useTestConfig } from "./useTestConfig.ts"
-import * as mock from "deno/testing/mock.ts"
-import { assert } from "deno/assert/mod.ts"
+import * as mock from "@std/testing/mock"
+import { assert } from "@std/assert"
 import usePantry from "./usePantry.ts"
 
 // NOTE actually syncs from github

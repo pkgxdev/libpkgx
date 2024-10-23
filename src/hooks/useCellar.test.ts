@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "deno/assert/mod.ts"
+import { assertEquals, assertRejects } from "@std/assert"
 import SemVer, * as semver from "../utils/semver.ts"
 import { useTestConfig } from "./useTestConfig.ts"
 import useCellar from "./useCellar.ts"

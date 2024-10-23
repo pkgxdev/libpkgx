@@ -1,7 +1,3 @@
-// deno-lint-ignore-file no-deprecated-deno-api
-// ^^ Deno.Command is not implemented for dnt shims yet
-import { deno } from "../deps.ts"
-const { streams: { writeAll } } = deno
 import { flock } from "../utils/flock.ts"
 import useDownload from "./useDownload.ts"
 import usePantry from "./usePantry.ts"
@@ -64,20 +60,18 @@ async function sync(pantry_dir: Path) {
     // ∴ download the latest tarball and uncompress over the top
     //FIXME deleted packages will not be removed with this method
     const src = new URL(`https://github.com/pkgxdev/pantry/archive/refs/heads/main.tar.gz`)
-    const proc = Deno.run({
-      cmd: ["tar", "xzf", "-", "--strip-components=1"],
+    const proc = new Deno.Command("tar", {
+      args: ["xzf", "-", "--strip-components=1"],
       cwd: pantry_dir.string,
-      stdin: "piped"
-    })
-    await useDownload().download({ src }, blob => writeAll(proc.stdin, blob))
-    proc.stdin.close()
+      stdin: "piped",
+    }).spawn()
+    const writer = proc.stdin.getWriter()
+    await useDownload().download({ src }, blob => writer.write(blob))
+    writer.close()
 
-    if (!(await proc.status()).success) {
+    if (!(await proc.status).success) {
       throw new Error("untar failed")
     }
-
-    proc.close()
-
   }
 }
 
@@ -94,16 +88,28 @@ export interface RunOptions {
 }
 
 async function run(opts: RunOptions) {
-  const cmd = opts.cmd.map(x => `${x}`)
-  const env = (({ HTTP_PROXY, HTTPS_PROXY }) => ({ HTTP_PROXY, HTTPS_PROXY }))(Deno.env.toObject())
-  const proc = Deno.run({ ...opts, cmd, stdout: 'null', clearEnv: true, env })
+  const cmd = opts.cmd.map(x => `${x}`);
+  const env = (({ HTTP_PROXY, HTTPS_PROXY }) => ({ HTTP_PROXY, HTTPS_PROXY }))(Deno.env.toObject());
+
+  const proc = new Deno.Command(cmd[0], {
+    args: cmd.slice(1),
+    stdout: 'null',
+    clearEnv: true,
+    env,
+    ...opts,
+  });
+
+  const child = proc.spawn();
+
   try {
-    const exit = await proc.status()
-    if (!exit.success) throw new Error(`run.exit(${exit.code})`)
+    const status = await child.status;
+    if (!status.success) {
+      throw new Error(`run.exit(${status.code})`);
+    }
   } catch (err) {
-    err.cause = proc
-    throw err
-  } finally {
-    proc.close()
+    if (err instanceof Error) {
+      err.cause = child;
+    }
+    throw err;
   }
 }

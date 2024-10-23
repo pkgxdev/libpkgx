@@ -1,6 +1,3 @@
-// deno-lint-ignore-file no-deprecated-deno-api
-// ^^ dnt doesn’t support Deno.Command yet so we’re stuck with the deprecated Deno.run for now
-
 import { Package, Installation, StowageNativeBottle } from "../types.ts"
 import useOffLicense from "../hooks/useOffLicense.ts"
 import useDownload from "../hooks/useDownload.ts"
@@ -11,9 +8,6 @@ import useCache from "../hooks/useCache.ts"
 import useFetch from "../hooks/useFetch.ts"
 import { createHash } from "node:crypto"
 import Path from "../utils/Path.ts"
-import { deno } from "../deps.ts"
-
-const { streams: { writeAll } } = deno
 
 export default async function install(pkg: Package, logger?: Logger): Promise<Installation> {
   const { project, version } = pkg
@@ -49,15 +43,16 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
       //NOTE ^^ inside pkgx prefix to avoid TMPDIR is on a different volume problems
     })
     const tar_args = compression == 'xz' ? 'xJf' : 'xzf'  // laughably confusing
-    const untar = Deno.run({
-      cmd: ["tar", tar_args, "-", "--strip-components", (pkg.project.split("/").length + 1).toString()],
+    const untar = new Deno.Command("tar", {
+      args: [tar_args, "-", "--strip-components", (pkg.project.split("/").length + 1).toString()],
       stdin: 'piped', stdout: "inherit", stderr: "inherit",
       cwd: tmpdir.string,
       /// hard coding path to ensure we don’t deadlock trying to use ourselves to untar ourselves
       env: { PATH }
-    })
+    }).spawn()
     const hasher = createHash("sha256")
     const remote_SHA_promise = remote_SHA(new URL(`${url}.sha256sum`))
+    const writer = untar.stdin.getWriter()
 
     let total: number | undefined
     let n = 0
@@ -72,16 +67,14 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
       n += blob.length
       hasher.update(blob)
       logger?.installing?.({ pkg, progress: total ? n / total : total })
-      return writeAll(untar.stdin, blob)
+      return writer.write(blob)
     })
 
-    untar.stdin.close()
+    writer.close()
 
-    const untar_exit_status = await untar.status()
+    const untar_exit_status = await untar.status
     if (!untar_exit_status.success) {
       throw new Error(`tar exited with status ${untar_exit_status.code}`)
-    } else {
-      untar.close()  //TODO should we do this for the error case too or what?
     }
 
     const computed_hash_value = hasher.digest("hex")

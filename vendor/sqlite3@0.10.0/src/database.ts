@@ -449,7 +449,7 @@ export class Database {
         try {
           result = fn(...args);
         } catch (err) {
-          const buf = new TextEncoder().encode(err.message);
+          const buf = new TextEncoder().encode(err instanceof Error ? err.message : `${err}`);
           sqlite3_result_error(ctx, buf, buf.byteLength);
           return;
         }

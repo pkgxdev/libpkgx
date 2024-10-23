@@ -1,8 +1,8 @@
-import { assert, assertEquals, assertThrows } from "deno/assert/mod.ts"
+import { assert, assertEquals, assertThrows } from "@std/assert"
 import usePantry, { validatePackageRequirement } from "./usePantry.ts"
 import { useTestConfig, srcroot } from "./useTestConfig.ts"
 import { _internals } from "../utils/host.ts"
-import { stub } from "deno/testing/mock.ts"
+import { stub } from "@std/testing/mock"
 import SemVer from "../utils/semver.ts"
 
 Deno.test("provides()", async () => {

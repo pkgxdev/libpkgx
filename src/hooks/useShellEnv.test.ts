@@ -1,4 +1,4 @@
-import { assertEquals } from "deno/assert/assert_equals.ts"
+import { assertEquals } from "@std/assert"
 import { useTestConfig } from "./useTestConfig.ts"
 import useShellEnv from "./useShellEnv.ts"
 import SemVer from "../utils/semver.ts"

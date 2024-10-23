@@ -1,4 +1,4 @@
-import { assertEquals } from "deno/assert/mod.ts"
+import { assertEquals } from "@std/assert"
 import { useTestConfig } from "./useTestConfig.ts"
 import useMoustaches from "./useMoustaches.ts"
 import { Package } from "../types.ts"

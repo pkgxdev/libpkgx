@@ -13,16 +13,12 @@ export async function flock(path: Path) {
   }
 
   const file = await Deno.open(path.string, opts)
-  // denolint-disable-next-line deno-deprecated-deno-api
-  await Deno.flock(file.rid, true)
+
+  await file.lock(true)
 
   return async () => {
-    try {
-      // denolint-disable-next-line deno-deprecated-deno-api
-      await Deno.funlock(file.rid)
-    } finally {
-      file.close()
-    }
+    await file.unlock()
+    file.close()
     if (Deno.build.os == 'windows') path.rm()
   }
 }
