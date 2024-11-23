@@ -161,13 +161,18 @@ export async function runtime_env(project: string) {
 import useCellar from "./useCellar.ts"
 
 async function _db() {
-  if (Deno.build.os == 'windows') return
-  const path = useConfig().cache.join('pantry.db')
-  if (!path.isFile()) return
-  const sqlite = await useCellar().has({ project: "sqlite.org", constraint: new semver.Range('*') })
-  if (!sqlite) return
-  const ext = host().platform == 'darwin' ? 'dylib' : 'so'
-  return new Database(path.string, {readonly: true, sqlite3: sqlite.path.join(`lib/libsqlite3.${ext}`).string})
+  try {
+    if (Deno.build.os == 'windows') return
+    const path = useConfig().cache.join('pantry.db')
+    if (!path.isFile()) return
+    const sqlite = await useCellar().has({ project: "sqlite.org", constraint: new semver.Range('*') })
+    if (!sqlite) return
+    const ext = host().platform == 'darwin' ? 'dylib' : 'so'
+    return new Database(path.string, {readonly: true, sqlite3: sqlite.path.join(`lib/libsqlite3.${ext}`).string})
+  } catch {
+    console.warn("couldn’t load pantry.db")
+    return
+  }
 }
 
 import install from "../porcelain/install.ts"

@@ -3,7 +3,7 @@
     "allowJs": false,
     "strict": true
   },
-  "pkgx": "deno^2.0",
+  "pkgx": "deno~2.0",
   "tasks": {
     "test": "deno test --parallel --unstable-fs --unstable-ffi --allow-all",
     "typecheck": "deno check ./mod.ts"
