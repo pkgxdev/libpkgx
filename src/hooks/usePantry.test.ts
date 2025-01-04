@@ -48,12 +48,17 @@ Deno.test("runtime.env", async () => {
   assertEquals(env.BAZ, prefix.join("bar.com/v1.2.3/baz").string)
 })
 
-Deno.test("missing()", () => {
+Deno.test("missing - without cache", () => {
   useTestConfig()
   usePantry().prefix.rm({ recursive: true })
   assert(usePantry().missing())
 })
 
+Deno.test("missing - with cache", () => {
+  useTestConfig().cache.mkdir("p").join('pantry.db').touch()
+  usePantry().prefix.rm({ recursive: true })
+  assert(usePantry().missing())
+})
 
 Deno.test("validatePackageRequirement - valid input", () => {
   const result = validatePackageRequirement("pkgx.sh/test", "^1.0.0")
