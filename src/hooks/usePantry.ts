@@ -275,15 +275,9 @@ export default function usePantry() {
   function pantry_paths(): Path[] {
     const rv: Path[] = []
 
-    if (prefix.isDirectory()) {
-      rv.push(prefix)
-    }
+    rv.push(prefix)
     for (const path of useConfig().pantries.reverse()) {
       rv.unshift(path.join("projects"))
-    }
-
-    if (rv.length == 0) {
-      throw new PantryNotFoundError(prefix)
     }
 
     return rv
