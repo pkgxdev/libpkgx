@@ -51,10 +51,18 @@ const SEP = Deno.build.os == 'windows' ? ';' : ':'
 
 export function ConfigDefault(env = Deno.env.toObject()): Config {
   const home = flatmap(env['PKGX_HOME'], x => new Path(x)) ?? Path.home()
-  const prefix = flatmap(env['PKGX_DIR']?.trim(), x => new Path(x)) ?? home.join('.pkgx')
+  const prefix = flatmap(env['PKGX_DIR']?.trim(), x => new Path(x)) ??
+    flatmap(env['XDG_DATA_HOME'], x => new Path(x).join("pkgx")) ??
+    home.join('.pkgx')
   const pantries = env['PKGX_PANTRY_PATH']?.split(SEP).compact(x => flatmap(x.trim(), x => Path.abs(x) ?? Path.cwd().join(x))) ?? []
-  const cache = (flatmap(env["XDG_CACHE_HOME"], Path.abs) ?? platform_cache_default(home, env)).join("pkgx")
-  const data = (flatmap(env["XDG_DATA_HOME"], Path.abs) ?? platform_data_home_default(home, env)).join("pkgx")
+  const cache = (
+    (Deno.build.os == 'linux' ? flatmap(env["XDG_CACHE_HOME"], Path.abs) : undefined)
+    ?? platform_cache_default(home, env)
+  ).join("pkgx")
+  const data = (
+    (Deno.build.os == 'linux' ? flatmap(env["XDG_DATA_HOME"], Path.abs) : undefined)
+    ?? platform_data_home_default(home, env)
+  ).join("pkgx")
   const dist = env['PKGX_DIST_URL']?.trim() ?? 'https://dist.pkgx.dev'
   const isCI = boolize(env['CI']) ?? false
   const UserAgent = flatmap(getv(), v => `libpkgx/${v}`) ?? 'libpkgx'
