@@ -1,6 +1,3 @@
-//HEY YOU! DO NOT CHANGE THIS TO USE deps.ts since it breaks pkgx/gui and scripts ’n’ shit
-import { isArray, isString } from "https://deno.land/x/is_what@v4.1.15/src/index.ts"
-
 /**
  * we have our own implementation because open source is full of weird
  * but *almost* valid semver schemes, eg:
@@ -129,7 +126,7 @@ export class Range {
   constructor(input: string | ([SemVer, SemVer] | SemVer)[]) {
     if (input === "*") {
       this.set = '*'
-    } else if (!isString(input)) {
+    } else if (typeof input !== 'string') {
       this.set = input
     } else {
       input = input.trim()
@@ -193,7 +190,7 @@ export class Range {
       if (this.set.length == 0) throw err()
 
       for (const i of this.set) {
-        if (isArray(i) && !i[0].lt(i[1])) throw err()
+        if (Array.isArray(i) && !i[0].lt(i[1])) throw err()
       }
     }
   }
@@ -203,7 +200,7 @@ export class Range {
       return '*'
     } else {
       return this.set.map(v => {
-        if (!isArray(v)) return `=${v.toString()}`
+        if (!Array.isArray(v)) return `=${v.toString()}`
         const [v1, v2] = v
         if (v2.major == v1.major + 1 && v2.minor == 0 && v2.patch == 0) {
           const v = chomp(v1)
@@ -294,7 +291,7 @@ export class Range {
       return true
     } else {
       return this.set.some(v => {
-        if (isArray(v)) {
+        if (Array.isArray(v)) {
           const [v1, v2] = v
           return version.compare(v1) >= 0 && version.compare(v2) < 0
         } else {
@@ -311,7 +308,7 @@ export class Range {
   single(): SemVer | undefined {
     if (this.set === '*') return
     if (this.set.length > 1) return
-    return isArray(this.set[0]) ? undefined : this.set[0]
+    return Array.isArray(this.set[0]) ? undefined : this.set[0]
   }
 
   [Symbol.for("Deno.customInspect")]() {
@@ -359,12 +356,12 @@ export function intersect(a: Range, b: Range): Range {
 
   for (const aa of a.set) {
     for (const bb of b.set) {
-      if (!isArray(aa) && !isArray(bb)) {
+      if (!Array.isArray(aa) && !Array.isArray(bb)) {
         if (aa.eq(bb)) set.push(aa)
-      } else if (!isArray(aa)) {
+      } else if (!Array.isArray(aa)) {
         const bbb = bb as [SemVer, SemVer]
         if (aa.compare(bbb[0]) >= 0 && aa.lt(bbb[1])) set.push(aa)
-      } else if (!isArray(bb)) {
+      } else if (!Array.isArray(bb)) {
         const aaa = aa as [SemVer, SemVer]
         if (bb.compare(aaa[0]) >= 0 && bb.lt(aaa[1])) set.push(bb)
       } else {
