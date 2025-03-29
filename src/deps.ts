@@ -11,11 +11,11 @@ export { outdent }
 import * as crypto from "jsr:@std/crypto@1"
 import { moveSync } from "jsr:@std/fs@1"
 import { writeAll } from "jsr:@std/io@^0.225.0"
-import { parse as parseYaml } from "jsr:@std/yaml@1"
+import { parse as parseYaml, parseAll as parseYamlALL } from "jsr:@std/yaml@1"
 import { SEPARATOR as SEP, fromFileUrl } from "jsr:@std/path@1"
 
 const streams = { writeAll }
 const fs = { moveSync }
-const deno = { crypto, fs, streams, parseYaml, SEP, fromFileUrl }
+const deno = { crypto, fs, streams, parseYaml, parseYamlALL, SEP, fromFileUrl }
 
 export { deno }

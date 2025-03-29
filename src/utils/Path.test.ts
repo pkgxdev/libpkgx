@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertFalse, assertThrows } from "@std/assert"
+import { assert, assertEquals, assertFalse, assertThrows, fail } from "@std/assert"
 import { SEPARATOR as SEP } from "jsr:@std/path@1"
 import Path from "./Path.ts"
 
@@ -198,6 +198,42 @@ Deno.test("Path.prettyLocalString()", () => {
   const root = Deno.build.os == 'windows' ? 'C:\\' : '/'
   assertEquals(new Path("/a/b").prettyLocalString(), `${root}a${SEP}b`)
 })
+
+Deno.test("Path.readYAMLAll()", async () => {
+  const path = Path.cwd().join("./fixtures/pathtests/readYAMLAll.yaml");
+
+  try {
+    const yamlData = await path.readYAMLAll(); // ✅ Use await
+
+    assertEquals(Array.isArray(yamlData), true, "Expected yamlData to be an array");
+
+    if (!Array.isArray(yamlData)) {
+      fail("Expected an array");
+      return;
+    }
+
+    assertEquals(yamlData.length, 2, "Expected exactly 2 YAML documents");
+    assertEquals(yamlData, [{ abc: "xyz" }, { ijk: "lmn" }], "YAML content mismatch");
+
+  } catch (err) {
+    console.error("Error reading YAML:", err);
+    fail("Error reading YAML");
+  }
+});
+
+Deno.test("Path.readYAMLAllErr()", async () => {
+  const path = Path.cwd().join("./fixtures/pathtests/invalid.yaml");
+  try {
+    await path.readYAMLAll();
+    fail("invalid file should not reach here")
+  } catch (err) {
+    if (err instanceof Error) {
+      assertEquals(err.name, "NotFound")
+    } else{
+      throw err;
+    }
+  }
+});
 
 Deno.test("Path.chuzzle()", () => {
   const path = Path.mktemp().join("file.txt").touch()

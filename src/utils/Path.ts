@@ -4,7 +4,7 @@ import { mkdtempSync } from "node:fs"
 import * as sys from "node:path"
 import * as os from "node:os"
 
-const { fs, parseYaml, SEP } = deno
+const { fs, parseYaml, parseYamlALL, SEP } = deno
 
 // modeled after https://github.com/mxcl/Path.swift
 
@@ -403,6 +403,18 @@ export default class Path {
     try {
       const txt = await this.read()
       return parseYaml(txt)
+    } catch (err) {
+      if (err instanceof Error) {
+        err.cause = this.string
+      }
+      throw err
+    }
+  }
+
+  async readYAMLAll(): Promise<unknown> {
+    try {
+      const txt = await this.read()
+      return parseYamlALL(txt)
     } catch (err) {
       if (err instanceof Error) {
         err.cause = this.string
