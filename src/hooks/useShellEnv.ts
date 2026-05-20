@@ -19,6 +19,21 @@ export const EnvKeys = [
 ] as const
 export type EnvKey = typeof EnvKeys[number]
 
+/// Projects whose `lib/` MUST NOT be auto-added to LIBRARY_PATH /
+/// LD_LIBRARY_PATH for consumers, because their `lib/` *is* the libc
+/// (libc.so.6, libm.so.6, ld-linux*.so) — adding it to consumers'
+/// dynamic-linker search path forces every executable in the same
+/// pkgx env to load this bottle's libc, which fails the moment the
+/// host's own ld-linux is older than what the bottle's libc requires.
+///
+/// This set lists projects that legitimately ship libc itself. It is
+/// intentionally small and hardcoded; long-term the per-package opt
+/// should be expressed in the bottle's own metadata so the pantry
+/// doesn't need a coordinated libpkgx release for new entries.
+const NO_LIB_EXPORT: ReadonlySet<string> = new Set([
+  'gnu.org/glibc',
+])
+
 interface Options {
   installations: Installation[]
 }
@@ -55,7 +70,14 @@ async function map({installations}: Options): Promise<Record<string, string[]>> 
       }
     }
 
-    if (archaic) {
+    // libc-style projects (see NO_LIB_EXPORT) MUST NOT have their
+    // lib/ added to LIBRARY_PATH / LD_LIBRARY_PATH: adding a glibc
+    // bottle's lib/ to LD_LIBRARY_PATH would force every executable
+    // in the same pkgx env to load THIS bottle's libc.so.6, which
+    // breaks on hosts whose own ld-linux is older than the bottle's
+    // libc requires. Also skip the CPATH/include auto-add for the
+    // same reason (compile-time vs runtime libc skew).
+    if (archaic && !NO_LIB_EXPORT.has(installation.pkg.project)) {
       vars.LIBRARY_PATH = compact_add(vars.LIBRARY_PATH, installation.path.join("lib").chuzzle()?.string)
       vars.CPATH = compact_add(vars.CPATH, installation.path.join("include").chuzzle()?.string)
     }
