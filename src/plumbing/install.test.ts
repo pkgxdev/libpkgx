@@ -18,7 +18,10 @@ Deno.test("install", async runner => {
 
   // deno-lint-ignore require-await
   const fetch_stub = stub(_internals, "fetch", async opts => {
-    if ((opts as URL).pathname.endsWith("sha256sum")) {
+    const path = (opts as URL).pathname
+    if (path.endsWith(".tar.xz.sha256sum")) {
+      return new Response(undefined, { status: 404 })
+    } else if (path.endsWith("sha256sum")) {
       return {
         ok: true,
         status: 200,
@@ -33,12 +36,12 @@ Deno.test("install", async runner => {
 
   try {
     await runner.step("install()", async runner => {
-      const conf = useTestConfig({ CI: "1" }) // CI to force .gz compression
+      const conf = useTestConfig()
 
       /// download() will use the cached version and not do http
       srcroot.join("fixtures/foo.com-5.43.0.tgz").cp({ to:
         conf.cache.mkdir('p').join(`foo.com-5.43.0+${platform}+${arch}.tar.gz`)
-      })
+      }) // only gzip is cached to exercise fallback from the xz default
 
       await runner.step("download & install", async () => {
         // for coverage
@@ -71,12 +74,12 @@ Deno.test("install", async runner => {
 
     await runner.step("install locks", async () => {
 
-      const conf = useTestConfig({ CI: "1" })
+      const conf = useTestConfig()
 
       /// download() will use the cached version and not do http
       srcroot.join("fixtures/foo.com-5.43.0.tgz").cp({ to:
         conf.cache.mkdir('p').join(`foo.com-5.43.0+${platform}+${arch}.tar.gz`)
-      })
+      }) // only gzip is cached to exercise fallback from the xz default
 
       let unlocked_once = false
       const logger: Logger = {

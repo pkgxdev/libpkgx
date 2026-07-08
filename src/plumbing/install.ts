@@ -1,6 +1,6 @@
 import { Package, Installation, StowageNativeBottle } from "../types.ts"
 import useOffLicense from "../hooks/useOffLicense.ts"
-import useDownload from "../hooks/useDownload.ts"
+import useDownload, { DownloadError } from "../hooks/useDownload.ts"
 import { flock } from "../utils/flock.ts"
 import useConfig from "../hooks/useConfig.ts"
 import useCellar from "../hooks/useCellar.ts"
@@ -9,14 +9,11 @@ import useFetch from "../hooks/useFetch.ts"
 import { createHash } from "node:crypto"
 import Path from "../utils/Path.ts"
 
-export default async function install(pkg: Package, logger?: Logger): Promise<Installation> {
-  const { project, version } = pkg
+type Compression = 'xz' | 'gz'
 
+export default async function install(pkg: Package, logger?: Logger): Promise<Installation> {
   const cellar = useCellar()
   const { prefix: PKGX_DIR, options: { compression } } = useConfig()
-  const stowage = StowageNativeBottle({ pkg: { project, version }, compression })
-  const url = useOffLicense('s3').url(stowage)
-  const tarball = useCache().path(stowage)
   const shelf = PKGX_DIR.join(pkg.project)
 
   logger?.locking?.(pkg)
@@ -32,28 +29,64 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
       return already_installed
     }
 
-    logger?.downloading?.({pkg})
+    let last_err: unknown
+    for (const candidate of compressions(compression)) {
+      try {
+        return await install_bottle(pkg, { compression: candidate, PKGX_DIR, logger })
+      } catch (err) {
+        if (!is_not_found(err)) throw err
+        last_err = err
+      }
+    }
+    throw last_err
+  } finally {
+    logger?.unlocking?.(pkg)
+    await unflock()
+  }
+}
 
-    const PATH = Deno.build.os == 'windows' ? "C:\\windows\\system32" : "/usr/bin:/bin"
+async function remote_SHA(url: URL) {
+  const rsp = await useFetch(url)
+  if (!rsp.ok) throw rsp
+  const txt = await rsp.text()
+  return txt.split(' ')[0]
+}
 
-    const tmpdir = Path.mktemp({
-      //TODO dir should not be here ofc
-      dir: PKGX_DIR.join(".local/tmp").join(pkg.project),
-      prefix: `v${pkg.version}.`
-      //NOTE ^^ inside pkgx prefix to avoid TMPDIR is on a different volume problems
-    })
-    const tar_args = compression == 'xz' ? 'xJf' : 'xzf'  // laughably confusing
-    const untar = new Deno.Command("tar", {
-      args: [tar_args, "-", "--strip-components", (pkg.project.split("/").length + 1).toString()],
-      stdin: 'piped', stdout: "inherit", stderr: "inherit",
-      cwd: tmpdir.string,
-      /// hard coding path to ensure we don’t deadlock trying to use ourselves to untar ourselves
-      env: { PATH }
-    }).spawn()
-    const hasher = createHash("sha256")
-    const remote_SHA_promise = remote_SHA(new URL(`${url}.sha256sum`))
-    const writer = untar.stdin.getWriter()
+async function install_bottle(pkg: Package, opts: {
+  compression: Compression
+  PKGX_DIR: Path
+  logger?: Logger
+}): Promise<Installation> {
+  const { project, version } = pkg
+  const { compression, PKGX_DIR, logger } = opts
+  const stowage = StowageNativeBottle({ pkg: { project, version }, compression })
+  const url = useOffLicense('s3').url(stowage)
+  const tarball = useCache().path(stowage)
+  const shelf = PKGX_DIR.join(pkg.project)
 
+  logger?.downloading?.({pkg})
+
+  const checksum = await remote_SHA(new URL(`${url}.sha256sum`))
+  const PATH = Deno.build.os == 'windows' ? "C:\\windows\\system32" : "/usr/bin:/bin"
+
+  const tmpdir = Path.mktemp({
+    //TODO dir should not be here ofc
+    dir: PKGX_DIR.join(".local/tmp").join(pkg.project),
+    prefix: `v${pkg.version}.`
+    //NOTE ^^ inside pkgx prefix to avoid TMPDIR is on a different volume problems
+  })
+  const tar_args = compression == 'xz' ? 'xJf' : 'xzf'  // laughably confusing
+  const untar = new Deno.Command("tar", {
+    args: [tar_args, "-", "--strip-components", (pkg.project.split("/").length + 1).toString()],
+    stdin: 'piped', stdout: "inherit", stderr: "inherit",
+    cwd: tmpdir.string,
+    /// hard coding path to ensure we don’t deadlock trying to use ourselves to untar ourselves
+    env: { PATH }
+  }).spawn()
+  const hasher = createHash("sha256")
+  const writer = untar.stdin.getWriter()
+
+  try {
     let total: number | undefined
     let n = 0
     await useDownload().download({
@@ -70,7 +103,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
       return writer.write(blob)
     })
 
-    writer.close()
+    await writer.close()
 
     const untar_exit_status = await untar.status
     if (!untar_exit_status.success) {
@@ -78,7 +111,6 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     }
 
     const computed_hash_value = hasher.digest("hex")
-    const checksum = await remote_SHA_promise
 
     if (computed_hash_value != checksum) {
       tarball.rm()
@@ -93,19 +125,28 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
 
     return install
   } catch (err) {
+    try { await writer.close() } catch { /* already closed */ }
+    await untar.status
     tarball.rm()  //FIXME resumable downloads!
+    tmpdir.rm({ recursive: true })
     throw err
-  } finally {
-    logger?.unlocking?.(pkg)
-    await unflock()
   }
 }
 
-async function remote_SHA(url: URL) {
-  const rsp = await useFetch(url)
-  if (!rsp.ok) throw rsp
-  const txt = await rsp.text()
-  return txt.split(' ')[0]
+function compressions(preferred: Compression): Compression[] {
+  switch (preferred) {
+  case 'xz':
+    return ['xz', 'gz']
+  case 'gz':
+    return ['gz', 'xz']
+  }
+}
+
+function is_not_found(err: unknown): boolean {
+  return (
+    err instanceof DownloadError && err.status == 404 ||
+    err instanceof Response && err.status == 404
+  )
 }
 
 

@@ -20,7 +20,7 @@ Deno.test("useConfig", () => {
   } else {
     assertEquals(config.pantries.map(x => x.string), ["/foo", "/bar"])
   }
-  assertEquals(config.options.compression, "gz")
+  assertEquals(config.options.compression, "xz")
 
   assertFalse(_internals.boolize("false"))
   assertFalse(_internals.boolize("0"))

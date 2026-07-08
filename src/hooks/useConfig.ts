@@ -64,10 +64,8 @@ export function ConfigDefault(env = Deno.env.toObject()): Config {
     ?? platform_data_home_default(home, env)
   ).join("pkgx")
   const dist = env['PKGX_DIST_URL']?.trim() ?? 'https://dist.pkgx.dev'
-  const isCI = boolize(env['CI']) ?? false
   const UserAgent = flatmap(getv(), v => `libpkgx/${v}`) ?? 'libpkgx'
-  //TODO prefer 'xz' on Linux (as well) if supported
-  const compression = !isCI && host().platform == 'darwin' ? 'xz' : 'gz'
+  const compression = 'xz'
 
   return {
     prefix,
