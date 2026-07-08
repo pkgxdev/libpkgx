@@ -43,6 +43,11 @@ jobs:
 
       - run: deno coverage cov_profile --lcov --output=cov_profile.lcov
 
+      # errors on macOS
+      - run: |
+          brew tap coverallsapp/coveralls
+          brew trust --formula coverallsapp/coveralls/coveralls
+        if: matrix.os == 'macos-latest'
       - uses: coverallsapp/github-action@v2
         with:
           path-to-lcov: cov_profile.lcov
