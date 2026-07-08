@@ -8,13 +8,20 @@ import useCache from "../hooks/useCache.ts"
 import useFetch from "../hooks/useFetch.ts"
 import { createHash } from "node:crypto"
 import Path from "../utils/Path.ts"
+import SemVer from "../utils/semver.ts"
 
 type Compression = 'xz' | 'gz'
+const SYSTEM_PATH = Deno.build.os == 'windows' ? "C:\\windows\\system32" : "/usr/bin:/bin"
+const XZ_BOOTSTRAP: Package = {
+  project: "tukaani.org/xz",
+  version: new SemVer("5.8.3")
+}
 
 export default async function install(pkg: Package, logger?: Logger): Promise<Installation> {
   const cellar = useCellar()
   const { prefix: PKGX_DIR, options: { compression } } = useConfig()
   const shelf = PKGX_DIR.join(pkg.project)
+  const candidates: Compression[] = is_xz_bootstrap(pkg) && !has_xz(SYSTEM_PATH) ? ['gz'] : compressions(compression)
 
   logger?.locking?.(pkg)
 
@@ -30,7 +37,7 @@ export default async function install(pkg: Package, logger?: Logger): Promise<In
     }
 
     let last_err: unknown
-    for (const candidate of compressions(compression)) {
+    for (const candidate of candidates) {
       try {
         return await install_bottle(pkg, { compression: candidate, PKGX_DIR, logger })
       } catch (err) {
@@ -67,7 +74,7 @@ async function install_bottle(pkg: Package, opts: {
   logger?.downloading?.({pkg})
 
   const checksum = await remote_SHA(new URL(`${url}.sha256sum`))
-  const PATH = Deno.build.os == 'windows' ? "C:\\windows\\system32" : "/usr/bin:/bin"
+  const env = await extractor_env({ compression, PKGX_DIR, logger })
 
   const tmpdir = Path.mktemp({
     //TODO dir should not be here ofc
@@ -81,7 +88,7 @@ async function install_bottle(pkg: Package, opts: {
     stdin: 'piped', stdout: "inherit", stderr: "inherit",
     cwd: tmpdir.string,
     /// hard coding path to ensure we don’t deadlock trying to use ourselves to untar ourselves
-    env: { PATH }
+    env
   }).spawn()
   const hasher = createHash("sha256")
   const writer = untar.stdin.getWriter()
@@ -140,6 +147,37 @@ function compressions(preferred: Compression): Compression[] {
   case 'gz':
     return ['gz', 'xz']
   }
+}
+
+function is_xz_bootstrap(pkg: Package): boolean {
+  return pkg.project == XZ_BOOTSTRAP.project && pkg.version.eq(XZ_BOOTSTRAP.version)
+}
+
+async function extractor_env(opts: {
+  compression: Compression
+  PKGX_DIR: Path
+  logger?: Logger
+}): Promise<Record<string, string>> {
+  const env: Record<string, string> = { PATH: SYSTEM_PATH }
+
+  if (opts.compression != 'xz') return env
+  if (has_xz(SYSTEM_PATH)) return env
+
+  const xz = await install(XZ_BOOTSTRAP, opts.logger)
+  env.PATH = `${xz.path.join("bin")}:${SYSTEM_PATH}`
+  if (Deno.build.os == 'linux') {
+    env.LD_LIBRARY_PATH = xz.path.join("lib").string
+  }
+  return env
+}
+
+function has_xz(PATH: string): boolean {
+  const sep = Deno.build.os == 'windows' ? ';' : ':'
+  const ext = Deno.build.os == 'windows' ? '.exe' : ''
+  for (const part of PATH.split(sep)) {
+    if (new Path(part).join(`xz${ext}`).isExecutableFile()) return true
+  }
+  return false
 }
 
 function is_not_found(err: unknown): boolean {
