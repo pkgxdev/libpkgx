@@ -1,12 +1,13 @@
-import { Stowage } from "../types.ts"
+import type { Stowage } from "../types.ts"
 import useConfig from "./useConfig.ts"
 import host from "../utils/host.ts"
+import type Path from "../utils/Path.ts"
 
-export default function useCache() {
+export default function useCache(): { path: (stowage: Stowage) => Path } {
   return { path }
 }
 
-const path = (stowage: Stowage) => {
+const path = (stowage: Stowage): Path => {
   const { pkg, type } = stowage
   const stem = pkg.project.replaceAll("/", "∕")
 

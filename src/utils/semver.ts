@@ -98,14 +98,14 @@ export default class SemVer {
     return _compare(this, that)
   }
 
-  [Symbol.for("Deno.customInspect")]() {
+  [Symbol.for("Deno.customInspect")](): string {
     return this.toString()
   }
 }
 
 /// the same as the constructor but swallows the error returning undefined instead
 /// also slightly more tolerant parsing
-export function parse(input: string) {
+export function parse(input: string): SemVer | undefined {
   try {
     return new SemVer(input)
   } catch {
@@ -114,7 +114,7 @@ export function parse(input: string) {
 }
 
 /// determines if the input is in fact a valid semantic version
-export function isValid(input: string) {
+export function isValid(input: string): boolean {
   return parse(input) !== undefined
 }
 
@@ -311,7 +311,7 @@ export class Range {
     return Array.isArray(this.set[0]) ? undefined : this.set[0]
   }
 
-  [Symbol.for("Deno.customInspect")]() {
+  [Symbol.for("Deno.customInspect")](): string {
     return this.toString()
   }
 }

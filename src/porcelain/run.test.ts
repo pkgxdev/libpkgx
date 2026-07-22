@@ -1,6 +1,6 @@
 import { useTestConfig } from "../hooks/useTestConfig.ts"
 import { assertEquals, assertRejects } from "@std/assert"
-import undent from "outdent"
+import { outdent as undent } from "outdent"
 import run from "./run.ts"
 
 Deno.test("porcelain.run", async runner => {

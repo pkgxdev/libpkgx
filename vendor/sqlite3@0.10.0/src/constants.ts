@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Result Codes
 export const SQLITE3_OK = 0;
 export const SQLITE3_ERROR = 1;

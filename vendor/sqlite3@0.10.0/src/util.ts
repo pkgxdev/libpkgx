@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { SQLITE3_DONE, SQLITE3_MISUSE, SQLITE3_OK } from "./constants.ts";
 import ffi from "./ffi.ts";
 

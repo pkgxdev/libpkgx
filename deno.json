@@ -1,16 +1,53 @@
 {
+  "name": "@pkgx/libpkgx",
+  "version": "0.23.0",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./hooks/useConfig.ts": "./src/hooks/useConfig.ts",
+    "./hooks/usePantry.ts": "./src/hooks/usePantry.ts",
+    "./utils/error.ts": "./src/utils/error.ts",
+    "./utils/host.ts": "./src/utils/host.ts",
+    "./utils/read-lines.ts": "./src/utils/read-lines.ts",
+    "./utils/semver.ts": "./src/utils/semver.ts",
+    "./plumbing/hydrate.ts": "./src/plumbing/hydrate.ts"
+  },
+  "publish": {
+    "include": [
+      "LICENSE.txt",
+      "README.md",
+      "mod.ts",
+      "src/**/*.ts",
+      "vendor/**"
+    ],
+    "exclude": [
+      "src/**/*.test.ts",
+      "src/hooks/useTestConfig.ts",
+      "fixtures",
+      "examples",
+      "scripts",
+      "dist",
+      ".github"
+    ]
+  },
   "compilerOptions": {
-    "allowJs": false,
     "strict": true
   },
   "pkgx": "deno~2.0",
   "tasks": {
     "test": "deno test --parallel --unstable-fs --unstable-ffi --allow-all",
-    "typecheck": "deno check ./mod.ts"
+    "typecheck": "deno check ./mod.ts",
+    "publish:dry": "deno publish --dry-run --allow-slow-types --no-check --allow-dirty --unstable-fs --unstable-ffi"
   },
   "lint": {
-    "include": ["src/"],
-    "exclude": ["**/*.test.ts"]
+    "include": ["src/", "mod.ts"],
+    "exclude": ["**/*.test.ts", "vendor/", "src/hooks/useTestConfig.ts"],
+    "rules": {
+      // Prototype extensions (Array.compact, Promise.swallow, etc.) use
+      // `declare global`, which JSR forbids without --allow-slow-types.
+      // Explicit public return types are fixed; globals are a larger refactor.
+      "exclude": ["no-slow-types"]
+    }
   },
   "test": {
     "include": ["src/"],
@@ -18,8 +55,15 @@
   },
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.6",
+    "@std/crypto": "jsr:@std/crypto@^1",
+    "@std/encoding": "jsr:@std/encoding@^1",
+    "@std/fs": "jsr:@std/fs@^1",
+    "@std/io": "jsr:@std/io@^0.225.0",
+    "@std/io/write-all": "jsr:@std/io@^0.225.0/write-all",
+    "@std/path": "jsr:@std/path@^1",
     "@std/testing": "jsr:@std/testing@^1.0.3",
-    "is-what": "https://deno.land/x/is_what@v4.1.15/src/index.ts",
-    "outdent": "https://deno.land/x/outdent@v0.8.0/mod.ts"
+    "@std/yaml": "jsr:@std/yaml@^1",
+    "is-what": "npm:is-what@4.1.15",
+    "outdent": "npm:outdent@0.8.0"
   }
 }

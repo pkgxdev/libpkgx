@@ -1,4 +1,4 @@
-import { Package, PackageRequirement } from "../types.ts"
+import type { Package, PackageRequirement } from "../types.ts"
 import * as semver from "./semver.ts"
 
 /// allows inputs `nodejs.org@16` when `semver.parse` would reject

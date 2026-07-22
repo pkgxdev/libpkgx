@@ -1,4 +1,4 @@
-import install, { Logger } from "../plumbing/install.ts"
+import install, { type Logger } from "../plumbing/install.ts"
 import useShellEnv from '../hooks/useShellEnv.ts'
 import usePantry from '../hooks/usePantry.ts'
 import hydrate from "../plumbing/hydrate.ts"
@@ -9,7 +9,7 @@ import useSync from "../hooks/useSync.ts"
 import which from "../plumbing/which.ts"
 import link from "../plumbing/link.ts"
 import { is_what } from "../deps.ts"
-import Path from "../utils/Path.ts"
+import type Path from "../utils/Path.ts"
 const { isArray } = is_what
 
 interface OptsEx {

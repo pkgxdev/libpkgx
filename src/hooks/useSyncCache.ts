@@ -177,7 +177,7 @@ async function _db() {
 
 import install from "../porcelain/install.ts"
 import host from "../utils/host.ts";
-import Path from "../utils/Path.ts";
+import type Path from "../utils/Path.ts";
 import { semver } from "../../mod.ts";
 
 async function install_sqlite(): Promise<Path | undefined> {

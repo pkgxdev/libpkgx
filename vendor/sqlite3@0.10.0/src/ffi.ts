@@ -1,3 +1,4 @@
+// @ts-nocheck
 const symbols = {
   sqlite3_open_v2: {
     parameters: [

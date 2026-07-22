@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Database } from "./database.ts";
 import { readCstr, toCString, unwrap } from "./util.ts";
 import ffi from "./ffi.ts";

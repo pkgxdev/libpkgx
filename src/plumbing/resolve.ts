@@ -1,4 +1,4 @@
-import { Package, PackageRequirement, Installation } from "../types.ts"
+import type { Package, PackageRequirement, Installation } from "../types.ts"
 import useInventory from "../hooks/useInventory.ts"
 import { str as pkgstr } from "../utils/pkg.ts"
 import useCellar from "../hooks/useCellar.ts"

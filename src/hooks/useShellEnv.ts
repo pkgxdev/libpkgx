@@ -1,4 +1,4 @@
-import { Installation } from "../types.ts"
+import type { Installation } from "../types.ts"
 import usePantry from "./usePantry.ts"
 import host from "../utils/host.ts"
 
@@ -38,7 +38,11 @@ interface Options {
   installations: Installation[]
 }
 
-export default function() {
+export default function(): {
+  map: (opts: Options) => Promise<Record<string, string[]>>
+  expand: (env: Record<string, string[]>) => string
+  flatten: (env: Record<string, string[]>) => Record<string, string>
+} {
   return {
     map,
     expand,
@@ -160,7 +164,7 @@ function suffixes(key: EnvKey) {
   }}
 }
 
-export function expand(env: Record<string, string[]>) {
+export function expand(env: Record<string, string[]>): string {
   let rv = ''
   for (const [key, value] of Object.entries(env)) {
     if (value.length == 0) continue
@@ -169,7 +173,7 @@ export function expand(env: Record<string, string[]>) {
   return rv
 }
 
-export function flatten(env: Record<string, string[]>) {
+export function flatten(env: Record<string, string[]>): Record<string, string> {
   const SEP = Deno.build.os == 'windows' ? ';' : ':'
   const rv: Record<string, string> = {}
   for (const [key, value] of Object.entries(env)) {
