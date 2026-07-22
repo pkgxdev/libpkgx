@@ -1,5 +1,5 @@
 import type { Package, PackageRequirement, Installation } from "../types.ts"
-import { PkgxError } from "../utils/error.ts"
+import { PkgxError, swallow } from "../utils/error.ts"
 import * as pkgutils from "../utils/pkg.ts"
 import SemVer from "../utils/semver.ts"
 import useConfig from "./useConfig.ts"
@@ -32,7 +32,7 @@ export default function useCellar(): UseCellar {
   const keg = (pkg: Package) => shelf(pkg.project).join(`v${pkg.version}`)
 
   /// returns the `Installation` if the pkg is installed
-  const has = (pkg: Package | PackageRequirement | Path) => resolve(pkg).swallow(InstallationNotFoundError)
+  const has = (pkg: Package | PackageRequirement | Path) => swallow(resolve(pkg), InstallationNotFoundError)
 
   return {
     has,

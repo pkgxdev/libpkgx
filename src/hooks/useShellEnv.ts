@@ -1,4 +1,5 @@
 import type { Installation } from "../types.ts"
+import { insert } from "../utils/misc.ts"
 import usePantry from "./usePantry.ts"
 import host from "../utils/host.ts"
 
@@ -64,7 +65,7 @@ async function map({installations}: Options): Promise<Record<string, string[]>> 
 
   for (const installation of installations) {
 
-    if (!seen.insert(installation.pkg.project).inserted) {
+    if (!insert(seen, installation.pkg.project).inserted) {
       console.warn("pkgx: env is being duped:", installation.pkg.project)
     }
 

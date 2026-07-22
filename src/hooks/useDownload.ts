@@ -3,11 +3,11 @@ const { crypto: crypto_, streams: { writeAll } } = deno
 const { crypto } = crypto_
 import { encodeHex } from "@std/encoding"
 import { PkgxError, panic } from "../utils/error.ts"
+import { chuzzle } from "../utils/misc.ts"
 import useConfig from "./useConfig.ts"
 import useFetch from "./useFetch.ts"
 import Path from "../utils/Path.ts"
 import * as fs from "node:fs"
-import "../utils/misc.ts"
 
 interface DownloadOptions {
   src: URL
@@ -119,7 +119,7 @@ async function the_meat<T>({ src, logger, headers, dst }: DownloadOptions): Prom
 
   switch (rsp.status) {
   case 200: {
-    const sz = parseInt(rsp.headers.get("Content-Length")!).chuzzle()
+    const sz = chuzzle(parseInt(rsp.headers.get("Content-Length")!))
 
     if (logger) logger({ src, dst, total: sz })
 

@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects, assertThrows } from "@std/assert"
-import { PkgxError, panic } from "../utils/error.ts"
+import { PkgxError, panic, swallow } from "../utils/error.ts"
 
 Deno.test("errors", async test => {
 
@@ -8,9 +8,9 @@ Deno.test("errors", async test => {
   })
 
   await test.step("swallow", async () => {
-    await new Promise((_, reject) => reject(new BarError())).swallow(BarError)
-    await new Promise((_, reject) => reject(new BazError())).swallow(BarError)
-    assertRejects(() => new Promise((_, reject) => reject(new FooError())).swallow(BarError))
+    await swallow(new Promise((_, reject) => reject(new BarError())), BarError)
+    await swallow(new Promise((_, reject) => reject(new BazError())), BarError)
+    assertRejects(() => swallow(new Promise((_, reject) => reject(new FooError())), BarError))
   })
 
   await test.step("new PkgxError()", () => {

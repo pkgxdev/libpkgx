@@ -1,5 +1,4 @@
-import "./src/utils/misc.ts"
-import { flatmap, validate } from "./src/utils/misc.ts"
+import { chuzzle, compact, flatmap, insert, validate } from "./src/utils/misc.ts"
 
 import host from "./src/utils/host.ts"
 import type { SupportedArchitecture, SupportedPlatform } from "./src/utils/host.ts"
@@ -9,7 +8,7 @@ import Path from "./src/utils/Path.ts"
 export * as types from "./src/types.ts"
 import * as pkg from "./src/utils/pkg.ts"
 
-import { panic, PkgxError } from "./src/utils/error.ts"
+import { panic, PkgxError, swallow } from "./src/utils/error.ts"
 import useConfig from "./src/hooks/useConfig.ts"
 import useOffLicense  from "./src/hooks/useOffLicense.ts"
 import useCache from "./src/hooks/useCache.ts"
@@ -30,7 +29,7 @@ import run, { RunError } from "./src/porcelain/run.ts"
 import porcelain_install from "./src/porcelain/install.ts"
 
 const utils = {
-  pkg, host, flatmap, validate, panic, ConsoleLogger
+  pkg, host, flatmap, validate, panic, ConsoleLogger, swallow, compact, insert, chuzzle
 }
 
 const hooks = {

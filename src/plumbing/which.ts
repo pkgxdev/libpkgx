@@ -1,6 +1,7 @@
 import { provides as cache_provides, available as cache_available } from "../hooks/useSyncCache.ts"
 import usePantry, { PantryError } from "../hooks/usePantry.ts"
 import type { PackageRequirement } from "../types.ts"
+import { swallow } from "../utils/error.ts"
 import * as semver from "../utils/semver.ts"
 
 export type WhichResult = PackageRequirement & {
@@ -56,7 +57,7 @@ async function *_which(arg0: string, opts: { providers: boolean }): AsyncGenerat
       for (const f of found) yield f
       found = []
     }
-    const p = pantry.project(entry).provides().then(providers => {
+    const p = swallow(pantry.project(entry).provides().then(providers => {
       for (const provider of providers) {
         if (provider == arg0) {
           const constraint = new semver.Range("*")
@@ -87,7 +88,7 @@ async function *_which(arg0: string, opts: { providers: boolean }): AsyncGenerat
           }
         }
       }
-    }).swallow(PantryError)
+    }), PantryError)
 
     promises.push(p)
 
