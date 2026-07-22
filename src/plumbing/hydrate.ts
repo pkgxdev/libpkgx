@@ -12,6 +12,18 @@ const { isArray } = is_what
 //FIXME actually we are not refining the constraints currently
 //TODO we are not actually restricting subsequent asks, eg. deno^1 but then deno^1.2
 
+/// Projects whose distinct version lines are parallel-installable (different
+/// sonames / ICU majors / abseil LTS namespaces). When constraints cannot
+/// intersect we keep multiple nodes instead of failing the graph.
+///
+/// - unicode.org: ICU major ABI (see pantry#4104, pkgx#899)
+/// - openssl.org: libssl.so.1.1 vs libssl.so.3
+/// - abseil.io: LTS inline-namespace + soversion (20250127 vs 20250512, …)
+export const MULTI_VERSION_PROJECTS = new Set([
+  "unicode.org",
+  "openssl.org",
+  "abseil.io",
+])
 
 interface ReturnValue {
   /// full list topologically sorted (ie dry + wet)
@@ -55,14 +67,34 @@ export default async function hydrate(
   const initial_set = new Set(dry.map(x => x.project))
   const stack: Node[] = []
 
-  const additional_unicodes: semver.Range[] = []
+  // extra constraints for multi-version projects that could not intersect
+  const additional: PackageRequirement[] = []
+
+  const pushAdditional = (pkg: PackageRequirement) => {
+    for (const existing of additional.filter(p => p.project === pkg.project)) {
+      try {
+        existing.constraint = semver.intersect(existing.constraint, pkg.constraint)
+        return
+      } catch {
+        // try next sibling line
+      }
+    }
+    additional.push(pkg)
+  }
 
   // Starting the DFS loop for each package in the dry list
   for (const pkg of dry) {
     let new_node = graph[pkg.project]
     if (new_node) {
-      // Intersect constraints for existing nodes
-      new_node.pkg.constraint = semver.intersect(new_node.pkg.constraint, pkg.constraint)
+      try {
+        new_node.pkg.constraint = semver.intersect(new_node.pkg.constraint, pkg.constraint)
+      } catch (e) {
+        if (MULTI_VERSION_PROJECTS.has(pkg.project)) {
+          pushAdditional(pkg)
+          continue
+        }
+        throw e
+      }
     } else {
       new_node = new Node(pkg)
       graph[pkg.project] = new_node
@@ -86,11 +118,9 @@ export default async function hydrate(
               // Intersect constraints
               child_node.pkg.constraint = semver.intersect(child_node.pkg.constraint, dep.constraint)
             } catch (e) {
-              if (dep.project == 'unicode.org') {
-                // we handle unicode.org for now to allow situations like:
-                // https://github.com/pkgxdev/pantry/issues/4104
-                // https://github.com/pkgxdev/pkgx/issues/899
-                additional_unicodes.push(dep.constraint)
+              if (MULTI_VERSION_PROJECTS.has(dep.project)) {
+                // keep both version lines; bottles/rpaths disambiguate at runtime
+                pushAdditional(dep)
               } else {
                 throw e
               }
@@ -111,8 +141,7 @@ export default async function hydrate(
     .sort((a, b) => b.count() - a.count())
     .map(({pkg}) => pkg)
 
-  // see above explanation
-  pkgs.push(...additional_unicodes.map(constraint => ({ project: "unicode.org", constraint })))
+  pkgs.push(...additional)
 
   //TODO strictly we need to record precisely the bootstrap version constraint
   const bootstrap_required = new Set(pkgs.compact(({project}) => bootstrap.has(project) && project))
@@ -130,7 +159,26 @@ function condense(pkgs: PackageRequirement[]) {
   for (const pkg of pkgs) {
     const found = out.find(x => x.project === pkg.project)
     if (found) {
-      found.constraint = semver.intersect(found.constraint, pkg.constraint)
+      try {
+        found.constraint = semver.intersect(found.constraint, pkg.constraint)
+      } catch (e) {
+        if (MULTI_VERSION_PROJECTS.has(pkg.project)) {
+          // merge into a later non-intersecting sibling if possible
+          let merged = false
+          for (const sibling of out.filter(p => p.project === pkg.project).slice(1)) {
+            try {
+              sibling.constraint = semver.intersect(sibling.constraint, pkg.constraint)
+              merged = true
+              break
+            } catch {
+              // try next
+            }
+          }
+          if (!merged) out.push(pkg)
+        } else {
+          throw e
+        }
+      }
     } else {
       out.push(pkg)
     }
