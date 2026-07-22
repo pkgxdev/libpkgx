@@ -1,4 +1,4 @@
-import { flatmap } from "../utils/misc.ts"
+import { compact, flatmap } from "../utils/misc.ts"
 import { deno } from "../deps.ts"
 import host from "../utils/host.ts"
 import Path from "../utils/Path.ts"
@@ -54,7 +54,7 @@ export function ConfigDefault(env: Record<string, string> = Deno.env.toObject())
   const prefix = flatmap(env['PKGX_DIR']?.trim(), x => new Path(x)) ??
     flatmap(env['XDG_DATA_HOME'], x => new Path(x).join("pkgx")) ??
     home.join('.pkgx')
-  const pantries = env['PKGX_PANTRY_PATH']?.split(SEP).compact(x => flatmap(x.trim(), x => Path.abs(x) ?? Path.cwd().join(x))) ?? []
+  const pantries = compact(env['PKGX_PANTRY_PATH']?.split(SEP) ?? [], x => flatmap(x.trim(), x => Path.abs(x) ?? Path.cwd().join(x)))
   const cache = (
     (Deno.build.os == 'linux' ? flatmap(env["XDG_CACHE_HOME"], Path.abs) : undefined)
     ?? platform_cache_default(home, env)

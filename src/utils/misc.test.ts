@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects, assertThrows } from "@std/assert"
-import { flatmap, validate } from "./misc.ts"
+import { chuzzle, compact, flatmap, insert, validate } from "./misc.ts"
 import { isNumber } from "is-what"
 
 Deno.test("validate string", () => {
@@ -45,17 +45,17 @@ Deno.test("async flatmap", async () => {
 })
 
 Deno.test("chuzzle", () => {
-  assertEquals("".chuzzle(), undefined)
-  assertEquals("test".chuzzle(), "test")
-  assertEquals((1).chuzzle(), 1)
-  assertEquals(NaN.chuzzle(), undefined)
+  assertEquals(chuzzle(""), undefined)
+  assertEquals(chuzzle("test"), "test")
+  assertEquals(chuzzle(1), 1)
+  assertEquals(chuzzle(NaN), undefined)
 })
 
 Deno.test("set insert", () => {
   const s = new Set([1, 2, 3])
 
-  assertEquals(s.insert(1), {inserted: false})
-  assertEquals(s.insert(4), {inserted: true})
+  assertEquals(insert(s, 1), {inserted: false})
+  assertEquals(insert(s, 4), {inserted: true})
   assertEquals(s.size, 4)
 
   assertEquals(s.has(1), true)
@@ -63,19 +63,19 @@ Deno.test("set insert", () => {
 })
 
 Deno.test("array compact", () => {
-  assertEquals([1, 2, undefined, null, false, 3].compact(), [1, 2, 3])
-  assertEquals([1, 2, undefined, null, false, 3].compact((n) => isNumber(n) && n * 2), [2, 4, 6])
+  assertEquals(compact([1, 2, undefined, null, false, 3]), [1, 2, 3])
+  assertEquals(compact([1, 2, undefined, null, false, 3], (n) => isNumber(n) && n * 2), [2, 4, 6])
 
   // will fail to compile if the compiler cannot infer the type of the compact() return
-  assertEquals([1, 2, undefined, null, false as false | number, 3].compact()[0] + 1, 2)
+  assertEquals(compact([1, 2, undefined, null, false as false | number, 3])[0] + 1, 2)
 
   // verifies transforming the type gives singular type return
-  const foo = [1, 2, undefined, null, false, 3].compact((n) => isNumber(n) && `${n * 2}`)
+  const foo = compact([1, 2, undefined, null, false, 3], (n) => isNumber(n) && `${n * 2}`)
   assertEquals(foo, ["2", "4", "6"])
 
   const throws = () => {
     throw Error("test error")
   }
-  assertEquals([()=>1, ()=>2, throws, ()=>3].compact((n) => n() * 2, { rescue: true }), [2, 4, 6])
-  assertThrows(() => [()=>1, ()=>2, throws, ()=>3].compact((n) => n() * 2))
+  assertEquals(compact([()=>1, ()=>2, throws, ()=>3], (n) => n() * 2, { rescue: true }), [2, 4, 6])
+  assertThrows(() => compact([()=>1, ()=>2, throws, ()=>3], (n) => n() * 2))
 })

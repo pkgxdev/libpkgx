@@ -1,4 +1,5 @@
 import type { PackageRequirement, Package } from "../types.ts"
+import { compact } from "../utils/misc.ts"
 import * as semver from "../utils/semver.ts"
 import usePantry from "../hooks/usePantry.ts"
 import { is_what } from "../deps.ts"
@@ -144,7 +145,7 @@ export default async function hydrate(
   pkgs.push(...additional)
 
   //TODO strictly we need to record precisely the bootstrap version constraint
-  const bootstrap_required = new Set(pkgs.compact(({project}) => bootstrap.has(project) && project))
+  const bootstrap_required = new Set(compact(pkgs, ({project}) => bootstrap.has(project) && project))
 
   return {
     pkgs,

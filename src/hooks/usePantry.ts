@@ -5,8 +5,8 @@ import { provides as cache_provides, available as cache_available, runtime_env a
 import type SemVer from "../utils/semver.ts"
 import * as semver from "../utils/semver.ts"
 import useMoustaches from "./useMoustaches.ts"
-import { PkgxError } from "../utils/error.ts"
-import { validate } from "../utils/misc.ts"
+import { PkgxError, swallow } from "../utils/error.ts"
+import { compact, insert, validate } from "../utils/misc.ts"
 import * as pkgutils from "../utils/pkg.ts"
 import useConfig from "./useConfig.ts"
 import host from "../utils/host.ts"
@@ -79,7 +79,7 @@ export default function usePantry(): {
     for (const prefix of pantry_paths()) {
       for await (const path of _ls_pantry(prefix)) {
         const project = path.parent().relative({ to: prefix })
-        if (seen.insert(project).inserted) {
+        if (insert(seen, project).inserted) {
           yield { project, path }
         }
       }
@@ -149,7 +149,7 @@ export default function usePantry(): {
       }
       if (!isArray(node)) throw new PantryParseError(project)
 
-      return node.compact(x => {
+      return compact(node, x => {
         if (isPlainObject(x)) {
           x = x["executable"]
         }
@@ -241,7 +241,7 @@ export default function usePantry(): {
         rv.push(proj)
         continue
       }
-      const yaml = await proj.yaml().swallow()
+      const yaml = await swallow(proj.yaml())
       if (!yaml) {
         console.warn("warn: parse failure:", pkg.project)
       } else if (yaml["display-name"]?.toLowerCase() == name) {
@@ -315,8 +315,7 @@ export function parse_pkgs_node(node: any): PackageRequirement[] {
   node = validate.obj(node)
   platform_reduce(node)
 
-  return Object.entries(node)
-    .compact(([project, constraint]) =>
+  return compact(Object.entries(node), ([project, constraint]) =>
       validatePackageRequirement(project, constraint))
 }
 

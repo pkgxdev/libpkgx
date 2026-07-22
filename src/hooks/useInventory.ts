@@ -3,7 +3,6 @@ import { DownloadError } from "./useDownload.ts"
 import SemVer from "../utils/semver.ts"
 import useFetch from "./useFetch.ts"
 import host from "../utils/host.ts"
-import "../utils/misc.ts"
 import useConfig from "./useConfig.ts";
 
 export interface Inventory {

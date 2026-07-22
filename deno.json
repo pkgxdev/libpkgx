@@ -37,17 +37,11 @@
   "tasks": {
     "test": "deno test --parallel --unstable-fs --unstable-ffi --allow-all",
     "typecheck": "deno check ./mod.ts",
-    "publish:dry": "deno publish --dry-run --allow-slow-types --no-check --allow-dirty --unstable-fs --unstable-ffi"
+    "publish:dry": "deno publish --dry-run --allow-dirty --unstable-fs --unstable-ffi"
   },
   "lint": {
     "include": ["src/", "mod.ts"],
-    "exclude": ["**/*.test.ts", "vendor/", "src/hooks/useTestConfig.ts"],
-    "rules": {
-      // Prototype extensions (Array.compact, Promise.swallow, etc.) use
-      // `declare global`, which JSR forbids without --allow-slow-types.
-      // Explicit public return types are fixed; globals are a larger refactor.
-      "exclude": ["no-slow-types"]
-    }
+    "exclude": ["**/*.test.ts", "vendor/", "src/hooks/useTestConfig.ts"]
   },
   "test": {
     "include": ["src/"],

@@ -4,17 +4,15 @@ export function panic(message?: string): never {
   throw new Error(message)
 }
 
-declare global {
-  interface Promise<T> {
-    swallow(errorClass?: new (...args: any) => any): Promise<T | undefined>
-  }
-}
-
-Promise.prototype.swallow = function(errorClass?: new (...args: any) => any) {
-  return this.catch((err: unknown) => {
+export function swallow<T>(
+  promise: Promise<T>,
+  errorClass?: new (...args: any) => any,
+): Promise<T | undefined> {
+  return promise.catch((err: unknown) => {
     if (errorClass && !(err instanceof errorClass)) {
-      throw err;
+      throw err
     }
+    return undefined
   })
 }
 

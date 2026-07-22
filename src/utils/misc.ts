@@ -20,6 +20,7 @@ function validate_arr<T>(input: unknown): Array<T> {
   return input
 }
 
+
 const validate = {
   str: validate_str,
   obj: validate_plain_obj,
@@ -28,36 +29,28 @@ const validate = {
 
 export { validate }
 
+
 ////////////////////////////////////////////////////////////// base extensions
-type Falsy = false | 0 | '' | null | undefined;
+type Falsy = false | 0 | '' | null | undefined
 
-declare global {
-  interface Array<T> {
-    compact(): Array<Exclude<T, Falsy>>;
-    compact<S>(body: (t: T) => S | Falsy): Array<S>
-    compact<S>(body?: (t: T) => S | T | Falsy, opts?: { rescue: boolean }): Array<S | T>
-  }
-
-  interface Set<T> {
-    insert(t: T): { inserted: boolean }
-  }
-}
-
-Set.prototype.insert = function<T>(t: T) {
-  if (this.has(t)) {
+export function insert<T>(set: Set<T>, t: T): { inserted: boolean } {
+  if (set.has(t)) {
     return {inserted: false}
   } else {
-    this.add(t)
+    set.add(t)
     return {inserted: true}
   }
 }
 
-Array.prototype.compact = function<T, S>(body?: (t: T) => S | Falsy, opts?: { rescue: boolean }): S[] {
-  const rv: S[] = []
-  for (const e of this) {
+export function compact<T>(arr: Array<T>): Array<Exclude<T, Falsy>>
+export function compact<T, S>(arr: Array<T>, body: (t: T) => S | Falsy, opts?: { rescue: boolean }): Array<S>
+export function compact<T, S>(arr: Array<T>, body?: (t: T) => S | T | Falsy, opts?: { rescue: boolean }): Array<S | T>
+export function compact<T, S>(arr: Array<T>, body?: (t: T) => S | Falsy, opts?: { rescue: boolean }): Array<S | T> {
+  const rv: Array<S | T> = []
+  for (const e of arr) {
     try {
       const f = body ? body(e) : e
-      if (f) rv.push(f)
+      if (f) rv.push(f as S | T)
     } catch (err) {
       if (opts === undefined || opts.rescue === false) throw err
     }
@@ -90,30 +83,13 @@ export function flatmap<S, T>(t: Promise<T | Falsy> | (T | Falsy), body: (t: T) 
   }
 }
 
-// export async function async_flatmap<S, T>(t: Promise<T | Falsy>, body: (t: T) => Promise<S | Falsy>, opts?: {rescue?: boolean}): Promise<S | undefined> {
-//   try {
-//     const tt = await t
-//     if (tt) return await body(tt) || undefined
-//   } catch (err) {
-//     if (!opts?.rescue) throw err
-//   }
-// }
-
 //////////////////////////////////////////////////////// chuzzle
-declare global {
-  interface String {
-    chuzzle(): string | undefined
+export function chuzzle(input: string): string | undefined
+export function chuzzle(input: number): number | undefined
+export function chuzzle(input: string | number): string | number | undefined {
+  if (typeof input === "string") {
+    return input.trim() || undefined
+  } else {
+    return Number.isNaN(input) ? undefined : input
   }
-
-  interface Number {
-    chuzzle(): number | undefined
-  }
-}
-
-String.prototype.chuzzle = function() {
-  return this.trim() || undefined
-}
-
-Number.prototype.chuzzle = function() {
-  return Number.isNaN(this) ? undefined : this as number
 }
