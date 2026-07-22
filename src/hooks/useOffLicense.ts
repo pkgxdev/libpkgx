@@ -1,14 +1,17 @@
-import { Stowage } from "../types.ts"
+import type { Stowage } from "../types.ts"
 import host from "../utils/host.ts"
 import useConfig from "./useConfig.ts";
 
 type Type = 's3'
 
-export default function useOffLicense(_type: Type) {
+export default function useOffLicense(_type: Type): {
+  url: typeof url
+  key: typeof key
+} {
   return { url, key }
 }
 
-function key(stowage: Stowage) {
+function key(stowage: Stowage): string {
   const rv = [stowage.pkg.project]
   if (stowage.type == 'bottle') {
     const { platform, arch } = stowage.host ?? host()
@@ -24,6 +27,6 @@ function key(stowage: Stowage) {
   return rv.join("/")
 }
 
-function url(stowage: Stowage) {
+function url(stowage: Stowage): URL {
   return new URL(`${useConfig().dist}/${key(stowage)}`)
 }

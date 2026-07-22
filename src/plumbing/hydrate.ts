@@ -1,4 +1,4 @@
-import { PackageRequirement, Package } from "../types.ts"
+import type { PackageRequirement, Package } from "../types.ts"
 import * as semver from "../utils/semver.ts"
 import usePantry from "../hooks/usePantry.ts"
 import { is_what } from "../deps.ts"
@@ -19,7 +19,7 @@ const { isArray } = is_what
 /// - unicode.org: ICU major ABI (see pantry#4104, pkgx#899)
 /// - openssl.org: libssl.so.1.1 vs libssl.so.3
 /// - abseil.io: LTS inline-namespace + soversion (20250127 vs 20250512, …)
-export const MULTI_VERSION_PROJECTS = new Set([
+export const MULTI_VERSION_PROJECTS: Set<string> = new Set([
   "unicode.org",
   "openssl.org",
   "abseil.io",

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import ffi from "./ffi.ts";
 import { deno } from "../../../src/deps.ts";
 import {

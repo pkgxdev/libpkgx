@@ -1,7 +1,7 @@
 import { deno } from "../deps.ts"
 const { crypto: crypto_, streams: { writeAll } } = deno
 const { crypto } = crypto_
-import { encodeHex } from "jsr:@std/encoding@1"
+import { encodeHex } from "@std/encoding"
 import { PkgxError, panic } from "../utils/error.ts"
 import useConfig from "./useConfig.ts"
 import useFetch from "./useFetch.ts"
@@ -80,7 +80,10 @@ function cache({ for: url }: {for: URL}): Path {
   }
 }
 
-export default function useDownload() {
+export default function useDownload(): {
+  download: typeof download
+  cache: typeof cache
+} {
   return {
     download,
     cache

@@ -1,4 +1,4 @@
-import { Package, PackageRequirement, Installation } from "../types.ts"
+import type { Package, PackageRequirement, Installation } from "../types.ts"
 import { PkgxError } from "../utils/error.ts"
 import * as pkgutils from "../utils/pkg.ts"
 import SemVer from "../utils/semver.ts"
@@ -14,7 +14,15 @@ export class InstallationNotFoundError extends PkgxError {
   }
 }
 
-export default function useCellar() {
+export type UseCellar = {
+  has: (pkg: Package | PackageRequirement | Path) => Promise<Installation | undefined>
+  ls: (project: string) => Promise<Installation[]>
+  keg: (pkg: Package) => Path
+  resolve: (pkg: Package | PackageRequirement | Path | Installation) => Promise<Installation>
+  shelf: (project: string) => Path
+}
+
+export default function useCellar(): UseCellar {
   const config = useConfig()
 
   /// eg. ~/.pkgx/deno.land

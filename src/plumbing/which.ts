@@ -1,6 +1,6 @@
 import { provides as cache_provides, available as cache_available } from "../hooks/useSyncCache.ts"
 import usePantry, { PantryError } from "../hooks/usePantry.ts"
-import { PackageRequirement } from "../types.ts"
+import type { PackageRequirement } from "../types.ts"
 import * as semver from "../utils/semver.ts"
 
 export type WhichResult = PackageRequirement & {

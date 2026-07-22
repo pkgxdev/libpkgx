@@ -1,4 +1,4 @@
-import { Package, Installation, StowageNativeBottle } from "../types.ts"
+import { type Package, type Installation, StowageNativeBottle } from "../types.ts"
 import useOffLicense from "../hooks/useOffLicense.ts"
 import useDownload, { DownloadError } from "../hooks/useDownload.ts"
 import { flock } from "../utils/flock.ts"

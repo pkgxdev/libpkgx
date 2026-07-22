@@ -2,7 +2,7 @@ import { flock } from "../utils/flock.ts"
 import useDownload from "./useDownload.ts"
 import usePantry from "./usePantry.ts"
 import useConfig from "./useConfig.ts"
-import Path from "../utils/Path.ts"
+import type Path from "../utils/Path.ts"
 import useSyncCache from "./useSyncCache.ts";
 
 //FIXME tar is fetched from PATH :/ we want control

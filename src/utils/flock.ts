@@ -1,4 +1,4 @@
-import Path from "./Path.ts"
+import type Path from "./Path.ts"
 
 export async function flock(path: Path) {
   let opts: Deno.OpenOptions | undefined

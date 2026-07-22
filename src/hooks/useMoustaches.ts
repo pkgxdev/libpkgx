@@ -1,13 +1,13 @@
-import { Package, Installation } from "../types.ts"
-import SemVer from "../utils/semver.ts"
+import type { Package, Installation } from "../types.ts"
+import type SemVer from "../utils/semver.ts"
 import useConfig from "./useConfig.ts"
 import useCellar from "./useCellar.ts"
 
-function tokenizePackage(pkg: Package) {
+function tokenizePackage(pkg: Package): { from: string, to: string }[] {
   return [{ from: "prefix", to: useCellar().keg(pkg).string }]
 }
 
-function tokenizeVersion(version: SemVer, prefix = 'version') {
+function tokenizeVersion(version: SemVer, prefix = 'version'): { from: string, to: string }[] {
   const rv = [
     { from:    prefix,             to: `${version}` },
     { from: `${prefix}.major`,     to: `${version.major}` },
@@ -23,13 +23,22 @@ function tokenizeVersion(version: SemVer, prefix = 'version') {
   return rv
 }
 
-function apply(input: string, map: { from: string, to: string }[]) {
+function apply(input: string, map: { from: string, to: string }[]): string {
   return map.reduce((acc, {from, to}) =>
     acc.replace(new RegExp(`(^\\$)?{{\\s*${from}\\s*}}`, "g"), to),
     input)
 }
 
-export default function() {
+export default function(): {
+  apply: typeof apply
+  tokenize: {
+    version: typeof tokenizeVersion
+    pkg: typeof tokenizePackage
+    deps: (deps: Installation[]) => { from: string, to: string }[]
+    pkgx: () => { from: string, to: string }[]
+    all: (pkg: Package, deps_: Installation[]) => { from: string, to: string }[]
+  }
+} {
   const config = useConfig()
   const base = {
     apply,

@@ -1,0 +1,28 @@
+name: publish·jsr
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+concurrency:
+  group: publish/jsr/${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write # OIDC for tokenless JSR publish
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: dry-run
+        run: deno publish --dry-run --allow-slow-types --no-check --unstable-fs --unstable-ffi
+      - name: publish
+        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+        run: deno publish --allow-slow-types --no-check --unstable-fs --unstable-ffi

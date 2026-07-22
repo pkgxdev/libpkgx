@@ -16,11 +16,13 @@ $ npm install libpkgx
 # ^^ https://npmjs.com/libpkgx
 ```
 
-Or with [Deno]:
+Or with [Deno] via [JSR](https://jsr.io):
 
 ```ts
-import * as pkgx from "https://deno.land/x/libpkgx/mod.ts"
+import * as pkgx from "jsr:@pkgx/libpkgx"
 ```
+
+> `deno.land/x/libpkgx` is frozen (registry is read-only). Use JSR for new versions.
 
 ## Usage
 

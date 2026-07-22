@@ -1,6 +1,6 @@
 //CONTRACT you can’t use anything from hooks
 
-import { is_what, PlainObject } from "../deps.ts"
+import { is_what, type PlainObject } from "../deps.ts"
 const { isPlainObject, isArray } = is_what
 
 function validate_str(input: unknown): string {

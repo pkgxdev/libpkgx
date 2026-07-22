@@ -49,7 +49,7 @@ function platform_data_home_default(home: Path, { LOCALAPPDATA }: { LOCALAPPDATA
 
 const SEP = Deno.build.os == 'windows' ? ';' : ':'
 
-export function ConfigDefault(env = Deno.env.toObject()): Config {
+export function ConfigDefault(env: Record<string, string> = Deno.env.toObject()): Config {
   const home = flatmap(env['PKGX_HOME'], x => new Path(x)) ?? Path.home()
   const prefix = flatmap(env['PKGX_DIR']?.trim(), x => new Path(x)) ??
     flatmap(env['XDG_DATA_HOME'], x => new Path(x).join("pkgx")) ??
@@ -115,7 +115,7 @@ function boolize(input: string | undefined): boolean | undefined {
   }
 }
 
-function initialized() {
+function initialized(): boolean {
   return gt.sh_pkgx_config !== undefined
 }
 

@@ -1,6 +1,7 @@
-import host, { SupportedPlatform, SupportedArchitecture } from "./utils/host.ts"
-import SemVer, { Range } from "./utils/semver.ts"
-import Path from "./utils/Path.ts"
+import host, { type SupportedPlatform, type SupportedArchitecture } from "./utils/host.ts"
+import type SemVer from "./utils/semver.ts"
+import type { Range } from "./utils/semver.ts"
+import type Path from "./utils/Path.ts"
 
 export interface Package {
   project: string

@@ -1,4 +1,4 @@
-import { deno, PlainObject } from "../deps.ts"
+import { deno, type PlainObject } from "../deps.ts"
 import readLines from "./read-lines.ts"
 import { mkdtempSync } from "node:fs"
 import * as sys from "node:path"
@@ -25,7 +25,7 @@ export default class Path {
   readonly string: string
 
   /// the filesystem root
-  static root = new Path("/")
+  static root: Path = new Path("/")
 
   static cwd(): Path {
     return new Path(Deno.cwd())
@@ -95,7 +95,7 @@ export default class Path {
   }
 
   /// returns Path | undefined rather than throwing error if Path is not absolute
-  static abs(input: string | Path) {
+  static abs(input: string | Path): Path | undefined {
     try {
       return new Path(input)
     } catch {
@@ -336,7 +336,7 @@ export default class Path {
     return dst
   }
 
-  rm({recursive} = {recursive: false}) {
+  rm({recursive}: { recursive?: boolean } = {recursive: false}): Path {
     if (this.exists()) {
       try {
         Deno.removeSync(this.string, { recursive })
@@ -506,7 +506,7 @@ export default class Path {
     return this.string.startsWith(cwd.string) ? `./${this.relative({ to: cwd })}` : this.prettyString()
   }
 
-  [Symbol.for("Deno.customInspect")]() {
+  [Symbol.for("Deno.customInspect")](): string {
     return this.prettyString()
   }
 }

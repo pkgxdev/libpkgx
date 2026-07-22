@@ -1,7 +1,8 @@
 import "./src/utils/misc.ts"
 import { flatmap, validate } from "./src/utils/misc.ts"
 
-import host, { SupportedArchitecture, SupportedPlatform } from "./src/utils/host.ts"
+import host from "./src/utils/host.ts"
+import type { SupportedArchitecture, SupportedPlatform } from "./src/utils/host.ts"
 import SemVer, * as semver from "./src/utils/semver.ts"
 import Path from "./src/utils/Path.ts"
 

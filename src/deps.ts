@@ -1,18 +1,18 @@
-import * as is_what from "https://deno.land/x/is_what@v4.1.15/src/index.ts"
+import * as is_what from "is-what"
 export { is_what }
 
-import { type PlainObject } from "https://deno.land/x/is_what@v4.1.15/src/index.ts"
+import type { PlainObject } from "is-what"
 export type { PlainObject }
 
-import * as outdent from "https://deno.land/x/outdent@v0.8.0/mod.ts"
+import * as outdent from "outdent"
 export { outdent }
 
 // importing super specifically to reduce final npm bundle size
-import * as crypto from "jsr:@std/crypto@1"
-import { moveSync } from "jsr:@std/fs@1"
-import { writeAll } from "jsr:@std/io@^0.225.0"
-import { parse as parseYaml, parseAll as parseYamlALL } from "jsr:@std/yaml@1"
-import { SEPARATOR as SEP, fromFileUrl } from "jsr:@std/path@1"
+import * as crypto from "@std/crypto"
+import { moveSync } from "@std/fs"
+import { writeAll } from "@std/io/write-all"
+import { parse as parseYaml, parseAll as parseYamlALL } from "@std/yaml"
+import { SEPARATOR as SEP, fromFileUrl } from "@std/path"
 
 const streams = { writeAll }
 const fs = { moveSync }

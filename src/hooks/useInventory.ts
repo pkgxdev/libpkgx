@@ -1,4 +1,4 @@
-import { Package, PackageRequirement } from "../types.ts"
+import type { Package, PackageRequirement } from "../types.ts"
 import { DownloadError } from "./useDownload.ts"
 import SemVer from "../utils/semver.ts"
 import useFetch from "./useFetch.ts"
@@ -14,7 +14,7 @@ export interface Inventory {
   }
 }
 
-const select = async (rq: PackageRequirement | Package) => {
+const select = async (rq: PackageRequirement | Package): Promise<SemVer | undefined> => {
   const versions = await _internals.get(rq)
 
   if ("constraint" in rq) {
@@ -24,7 +24,7 @@ const select = async (rq: PackageRequirement | Package) => {
   }
 }
 
-const get = async (rq: PackageRequirement | Package) => {
+const get = async (rq: PackageRequirement | Package): Promise<SemVer[]> => {
   const { platform, arch } = host()
   const url = new URL(`${useConfig().dist}/${rq.project}/${platform}/${arch}/versions.txt`)
   const rsp = await useFetch(url)
@@ -47,7 +47,10 @@ const get = async (rq: PackageRequirement | Package) => {
   return versions
 }
 
-export default function useInventory() {
+export default function useInventory(): {
+  select: typeof select
+  get: typeof get
+} {
   return { select, get }
 }
 

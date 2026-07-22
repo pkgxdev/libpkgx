@@ -1,8 +1,9 @@
-import { is_what, PlainObject } from "../deps.ts"
+import { is_what, type PlainObject } from "../deps.ts"
 const { isNumber, isPlainObject, isString, isArray, isPrimitive, isBoolean } = is_what
-import { Package, Installation, PackageRequirement } from "../types.ts"
+import type { Package, Installation, PackageRequirement } from "../types.ts"
 import { provides as cache_provides, available as cache_available, runtime_env as cache_runtime_env, companions as cache_companions, dependencies as cache_dependencies } from "./useSyncCache.ts";
-import SemVer, * as semver from "../utils/semver.ts"
+import type SemVer from "../utils/semver.ts"
+import * as semver from "../utils/semver.ts"
 import useMoustaches from "./useMoustaches.ts"
 import { PkgxError } from "../utils/error.ts"
 import { validate } from "../utils/misc.ts"
@@ -45,7 +46,30 @@ export class PantryNotFoundError extends PantryError {
   }
 }
 
-export default function usePantry() {
+export interface PantryProject {
+  project: string
+  companions: () => Promise<PackageRequirement[]>
+  runtime: {
+    env: (version: SemVer, deps: Installation[]) => Promise<Record<string, string>>
+    deps: () => Promise<PackageRequirement[]>
+  }
+  available: () => Promise<boolean>
+  provides: () => Promise<string[]>
+  provider: () => Promise<((binname: string) => string[] | undefined) | undefined>
+  yaml: () => Promise<PlainObject>
+}
+
+export default function usePantry(): {
+  prefix: Path
+  which: (opts: { interprets: string }) => Promise<Interpreter | undefined>
+  ls: () => AsyncGenerator<{ project: string; path: Path }>
+  project: (input: string | { project: string }) => PantryProject
+  find: (name: string) => Promise<Array<PantryProject & { path?: Path }>>
+  parse_pkgs_node: (node: unknown) => PackageRequirement[]
+  expand_env_obj: (env: PlainObject, pkg: Package, deps: Installation[]) => Record<string, string>
+  missing: () => boolean
+  pantry_paths: () => Path[]
+} {
   const prefix = useConfig().data.join("pantry/projects")
   const is_cache_available = cache_available() && pantry_paths().length == 1
 
@@ -168,6 +192,7 @@ export default function usePantry() {
     }
 
     return {
+      project,
       companions,
       runtime: {
         env: runtime_env,
@@ -285,7 +310,7 @@ export default function usePantry() {
 }
 
 // deno-lint-ignore no-explicit-any
-export function parse_pkgs_node(node: any) {
+export function parse_pkgs_node(node: any): PackageRequirement[] {
   if (!node) return []
   node = validate.obj(node)
   platform_reduce(node)

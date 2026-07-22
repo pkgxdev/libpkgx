@@ -1,9 +1,10 @@
-import SemVer, * as semver from "../utils/semver.ts"
-import { Package, Installation } from "../types.ts"
+import type SemVer from "../utils/semver.ts"
+import * as semver from "../utils/semver.ts"
+import type { Package, Installation } from "../types.ts"
 import useCellar from "../hooks/useCellar.ts"
 import { panic } from "../utils/error.ts"
 import fs from "node:fs/promises"
-import Path from "../utils/Path.ts"
+import type Path from "../utils/Path.ts"
 
 export default async function link(pkg: Package | Installation) {
   const installation = await useCellar().resolve(pkg)
